@@ -5,10 +5,10 @@ Grupo de Pesquisa em Redes Ópticas - UFCG
 
 * Prof. Helder Alves Pereira (coordenador)
 * Prof. Paulo Ribeiro Lins Jr. 
-* Bárbara Nicoly
+* Bárbara Nicoly Menezes de Oliveira
 * Camila de Oliveira Abrantes
 * Isaque Pedro	
 * Marcelo Victor Ferreira Gurgel
-* Mateus Rodrigues 
+* Mateus Rodrigues Guedes
 * Matheus de Araújo Cavalcante
 * Priscila Karolyne Marques Lourenço 
