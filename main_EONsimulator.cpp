@@ -1,5 +1,3 @@
-// teste2.cpp : Defines the entry point for the console application.
-//
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
@@ -27,15 +25,8 @@ ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
 ofstream ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
 
 ifstream Topol("Topology.txt");
-//Definicoes do roteamento:
-#define DJK 0 // Dijkstra convencional
-#define DJK_Formas 1 //Dijkstra cujo peso do enlace � dado pelo n�mero de formas
-#define DJK_Acum 2 // Dijkstra acumulado
-//Definicoes da aloca��o de espectro:
-#define RD 0 // Random
-#define FF 1 // First-Fit
-#define MU 2  // Most Used
-#define FFO 3 //First-Fit with an optimized list
+enum Dijkstra { DJK, DJK_Formas , DJK_Acum};
+enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 
 ///////////////////////////////////
 enum EventType {UNKNOWN, Req, Desc, Exp, Comp};
@@ -71,12 +62,9 @@ void ReleaseCon(Conexao *);
 bool ReleaseSlot(const Route*, int);
 bool CheckSlotAvailability(const Route*, const int s);
 bool FillSlot(const Route* route, const int s, const bool b);
-void DefineNextEventOfCon(Event* evt);
 void ScheduleEvent(Event*);
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si);
 void AccountForBlocking(int NslotsReq, int NslotsUsed);
-
-
 
 void Dijkstra();
 void DijkstraFormas(const int orN, const int deN, const int L);
