@@ -8,9 +8,9 @@
 #include <climits>
 #include <vector>
 using namespace std;
-
-#include "Def.h"
+ 
 #include "General.h"
+#include "Def.h"
 #include "Route.h"
 #include "Conexao.h"
 #include "Heuristics.h"
