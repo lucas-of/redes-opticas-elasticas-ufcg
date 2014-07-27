@@ -2,23 +2,19 @@
 #define Route_H
 
 #include <assert.h>
-#include <vector>
 #include <iostream>
-using namespace std;
+#include <vector>
 
-
-//////////////////////////////////////////////
-class Route
-{
-public:
-    Route(vector<int>&);
-    int getOrN() const;
-    int getDeN() const;
-    unsigned getNhops() const;
-    int getNode(unsigned) const;
-    void print() const;
-private:
-    vector<int> Path;
+class Route {
+    public:
+        Route (std::vector<int> &);
+        int getDeN() const; //retorna ultimo no da rota
+        unsigned int getNhops() const; //retorna numero de nos ate o destino
+        int getNode(int) const; //retorna o no na posicao i da rota
+        int getOrN() const; //retorna primeiro no da rota
+        void print() const; //imrpime rota
+    private:
+        std::vector<int> Path;
 };
 
 #endif
