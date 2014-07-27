@@ -13,8 +13,7 @@ SOURCES += \
 
 OTHER_FILES += \
     Topology.txt \
-    README.md \
-    Makefile
+    README.md
 
 HEADERS += \
     Conexao.h \
