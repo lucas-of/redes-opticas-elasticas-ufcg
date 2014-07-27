@@ -1,70 +1,47 @@
 #ifndef General_H
 #define General_H
 
-#include <iostream>
 #include <assert.h>
+#include <iostream>
+#include <math.h>
 #include <stdlib.h>
 #include <vector>
+
 using namespace std;
-#include <math.h>
 
-////////////////////////////////////////////////////////////////
-class General
-{
-public:
-    template <class T>
-    static void setVector(T* V, int size, T value);
-    template <class T>
-    static void printAnsiVector(vector<T>&);
-    static long double exponential(long double L);
-    static long double uniforme(long double xmin, long double xmax);
-    template <class T>
-    static const T& ABS(const T& x);
-    template <class T>
-    static const T& MAX (const T& a, const T& b);
-    template <class T>
-    static const T& MIN (const T& a, const T& b);
-    //template <class T>
-    //static ofstream&(const vector<T>&);
-private:
-
+class General { //classe Geral, serve a diversos usos. usa template e metodos static
+    public:
+        template <class T> static const T& ABS(const T& x); //retorna o módulo de T
+        static long double exponential(long double L); //gera valor regido por dist. exponencial
+        template <class T> static const T& MAX (const T& a, const T& b); //retorna o máximo entre A e B
+        template <class T> static const T& MIN (const T& a, const T& b); //retorna o mínimo entre A e B
+        template <class T> static void printAnsiVector(vector<T>&); //imprime um vetor de T
+        template <class T> static void setVector(T* V, int size, T value); //inicializa vetor de comrpimento size com value
+        static long double uniforme(long double xmin, long double xmax); //gera valor regido por dist. unif. entre xmin e xmax
 };
 
-////////////////////////////////////////////////////////////////
-template <class T>
-void General::setVector(T* V, int size, T value)
-{
-    for(int i = 0; i < size; i++)
-        V[i] = value;
-}
+//TEMPLATES DEVEM SER IMPLEMENTADOS NO HEADER
 
-// -------------------------------------------------------------------------- //
-template <class T>
-void General::printAnsiVector(vector<T>& v)
-{
-    for(unsigned i = 0; i < v.size(); i++)
-        cout<<v.at(i)<<" ";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template <class T>
-const T& General::ABS(const T& x)
-{
+template <class T> const T& General::ABS(const T& x) {
     return (x>0)?x:-x;
 }
 
-// -------------------------------------------------------------------------- //
-template <class T>
-const T& General::MAX (const T& a, const T& b)
-{
+template <class T> const T& General::MAX (const T& a, const T& b) {
     return (a>b)?a:b;
 }
 
-// -------------------------------------------------------------------------- //
-template <class T>
-const T& General::MIN (const T& a, const T& b)
-{
+template <class T> const T& General::MIN (const T& a, const T& b) {
     return (a<b)?a:b;
+}
+
+template <class T> void General::printAnsiVector(vector<T> &v) {
+    for(int i = 0; i < v.size(); i++)
+        std::cout << v.at(i) << " ";
+}
+
+template <class T> void General::setVector(T* V, int size, T value) {
+    for(int i = 0; i < size; i++)
+        V[i] = value;
 }
 
 #endif

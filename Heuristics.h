@@ -6,7 +6,6 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-
 #include "Def.h"
 
 /////////////////////////////////////////////////////////////
