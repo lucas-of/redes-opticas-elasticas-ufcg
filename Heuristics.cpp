@@ -207,24 +207,3 @@ int Heuristics::calcNumFormAloc(int L, bool* Disp)  //L indica a largura da requ
     }
     return sum;
 }
-
-// -------------------------------------------------------------------------- //
-int Heuristics::calcNumAloc(int L, bool* Disp)
-{
-    int sum = 0, si = 0, se;
-    while(si <= Def::getSE()-L)
-    {
-        for(se = si; se < si+L; se++)
-            if(Disp[se] == false)
-            {
-                si = se+1;
-                break;
-            }
-        if(se == si+L)  // Os slots si,si+1,...,si+L-1 estão disponíveis
-        {
-            sum++;
-            si = se;
-        }
-    }
-    return sum;
-}
