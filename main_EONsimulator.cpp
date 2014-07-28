@@ -8,7 +8,7 @@
 #include <climits>
 #include <vector>
 using namespace std;
- 
+
 #include "General.h"
 #include "Def.h"
 #include "Route.h"
@@ -229,7 +229,6 @@ void Sim()
     //Indica como o trafego e distribuido entre s=1,2,...,SE
     Def::setLaUniform(laNet);
     //Def::setLaRandom(laNet);
-    //Def::setLaManual(laNet);
     if(Alg_Aloc == FFO)
     {
         //Indica uma Heuristica:
@@ -1102,64 +1101,64 @@ void MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
 /*
 // ----------------------------------------------------------------------------- //
 void MSCL(const Route* route, const int NslotsReq, int& NslotsUsed, int& si){
-	bool *vetDisp = new bool[Def::getSE()];
-	int s;
+    bool *vetDisp = new bool[Def::getSE()];
+    int s;
     //Checa a disponibilidade no caminho 'path' para cada slot s:
     for(s = 0; s < Def::getSE(); s++)
         vetDisp[s] = checkDisp(route, s); //Checa a disponibilidade na rota 'route' para o slot s;
-	//Obtem quais slots podem comecar a requisicao:
-	bool *vetDispFitSi = new bool[Def::getSE()];
+    //Obtem quais slots podem comecar a requisicao:
+    bool *vetDispFitSi = new bool[Def::getSE()];
     for(s = 0; s <= Def::getSE() - NslotsReq; s++)
-		vetDispFitSi[s] = checkFitSi(vetDisp, s, NslotsReq); //Se a conexao pode ser inserida em s, s+1,...,s+NslotsReq-1
-	//Calcular a disponibilidade de cada caminho que interfere com path
-	int H = Route[path*(N+1)]; //H = numero de hops da requisicao
-	int r, path_int, L_or, L_de;
-	bool vetDispInt[Def::getSE()];
-	vector<bool> *RouteDisp = new vector<bool>[RouteInt[path]->size()];
-	for(r = 0; r < RouteInt[path]->size(); r++){
-		path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
-		H = Route[path_int*(N+1)]; //H = numero de hops da conexao
-		for(s = 0; s < Def::getSE(); s++){
-			RouteDisp[r].push_back(true);
-			for(int c = 1; c <= H; c++)	{
-				L_or = Route[path_int*(N+1)+c];
-				L_de = Route[path_int*(N+1)+c+1];
-				if(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true){ //O slot s esta ocupado no enlace L_or->L_de
-					RouteDisp[r].at(s) = false;
-					break;
-				}
-			}
-		}
-	}
-	//Calcular a perda de cada possibilidade de alocacao:
-	int vetCapInic[Def::getSE()+1], vetCapFin[Def::getSE()+1];
-	double perda, perdaMin = MAX_DOUBLE;
-	for(s = 0; s <= Def::getSE() - NslotsReq; s++)
-		if(vetDispFitSi[s] == true){ //O caminho pode ser iniciado neste slot
-			perda = 0.0;
-			//Obter as rotas interferentes
-			for(r = 0; r < RouteInt[path]->size(); r++){
-				path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
-				//Carrega DispInt com a disponibilidade inicial da rota de �ndice r_int:
-				for(int se = 0; se < Def::getSE(); se++)
-					vetDispInt[se] = RouteDisp[r].at(se);
-				//Calcula a capacidade de alocacao nesta rota:
-				calcVetCap(vetDispInt, vetCapInic);
-				//Assume a alocacao da rota de indice r nos slots s,s+1,...,s+NslotsReq-1 => retira os slots s,s+1,...,s+NslotsReq-1 de vetDispInt
-				for(int i = s; i < s + NslotsReq; i++)
-					vetDispInt[i] = false;
-				calcVetCap(vetDispInt, vetCapFin);
-				perda += calcPerda(vetCapInic, vetCapFin);
-			}
-			if(perda < perdaMin){
-				perdaMin = perda;
-				si = s;
-				NslotsUsed = NslotsReq;
-			}
-		}
-	delete []vetDisp;
-	delete []vetDispFitSi;
-	delete []RouteDisp;
+        vetDispFitSi[s] = checkFitSi(vetDisp, s, NslotsReq); //Se a conexao pode ser inserida em s, s+1,...,s+NslotsReq-1
+    //Calcular a disponibilidade de cada caminho que interfere com path
+    int H = Route[path*(N+1)]; //H = numero de hops da requisicao
+    int r, path_int, L_or, L_de;
+    bool vetDispInt[Def::getSE()];
+    vector<bool> *RouteDisp = new vector<bool>[RouteInt[path]->size()];
+    for(r = 0; r < RouteInt[path]->size(); r++){
+        path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
+        H = Route[path_int*(N+1)]; //H = numero de hops da conexao
+        for(s = 0; s < Def::getSE(); s++){
+            RouteDisp[r].push_back(true);
+            for(int c = 1; c <= H; c++)	{
+                L_or = Route[path_int*(N+1)+c];
+                L_de = Route[path_int*(N+1)+c+1];
+                if(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true){ //O slot s esta ocupado no enlace L_or->L_de
+                    RouteDisp[r].at(s) = false;
+                    break;
+                }
+            }
+        }
+    }
+    //Calcular a perda de cada possibilidade de alocacao:
+    int vetCapInic[Def::getSE()+1], vetCapFin[Def::getSE()+1];
+    double perda, perdaMin = MAX_DOUBLE;
+    for(s = 0; s <= Def::getSE() - NslotsReq; s++)
+        if(vetDispFitSi[s] == true){ //O caminho pode ser iniciado neste slot
+            perda = 0.0;
+            //Obter as rotas interferentes
+            for(r = 0; r < RouteInt[path]->size(); r++){
+                path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
+                //Carrega DispInt com a disponibilidade inicial da rota de �ndice r_int:
+                for(int se = 0; se < Def::getSE(); se++)
+                    vetDispInt[se] = RouteDisp[r].at(se);
+                //Calcula a capacidade de alocacao nesta rota:
+                calcVetCap(vetDispInt, vetCapInic);
+                //Assume a alocacao da rota de indice r nos slots s,s+1,...,s+NslotsReq-1 => retira os slots s,s+1,...,s+NslotsReq-1 de vetDispInt
+                for(int i = s; i < s + NslotsReq; i++)
+                    vetDispInt[i] = false;
+                calcVetCap(vetDispInt, vetCapFin);
+                perda += calcPerda(vetCapInic, vetCapFin);
+            }
+            if(perda < perdaMin){
+                perdaMin = perda;
+                si = s;
+                NslotsUsed = NslotsReq;
+            }
+        }
+    delete []vetDisp;
+    delete []vetDispFitSi;
+    delete []RouteDisp;
 }
 */
 
