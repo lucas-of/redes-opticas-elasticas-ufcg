@@ -20,5 +20,7 @@ HEADERS += \
     Def.h \
     General.h \
     Heuristics.h \
-    Route.h
+    Route.h \
+    Main_Auxiliar.h \
+    Event.h
 
