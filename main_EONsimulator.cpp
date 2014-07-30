@@ -18,23 +18,21 @@
 using namespace std;
 
 //Protótipos de Funções
-void AccountForBlocking(int NslotsReq, int NslotsUsed); //Realiza ações necessárias para quando uma conexão foi bloqueada
-bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); //Indica se a conexao pode ser inserida em [s:s+NslotsReq]
-bool CheckSlotAvailability(const Route*, const int s); //Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota
-void clearMemory(); //Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.
-void CompressCon(Event*); /*Diminui a quantidade de slots reservados para a conexão. Está desabilitado atualmente! (assert(false)). Pode ser configurada para retirar sempre o slot da direita ou o da esquerda ou o da direita, escolhido aleatoriamente. Lembrar de conferir isto.*/
+void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
+bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
+bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
+void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
+void CompressCon(Event*); /*Diminui a quantidade de slots reservados para a conexão. Pode ser configurada para retirar sempre o slot da direita ou o da esquerda ou o da direita, escolhido aleatoriamente. Lembrar de conferir isto.*/
 void CompressRandom(Conexao *con); /*Comprime conexão, removendo slot da esquerda ou da direita*/
 void CompressRight(Conexao *con); /*Comprime conexão, removendo o slot da direita*/
-void createStructures();
-void DefineNextEventOfCon(Event* evt);
-void ExpandCon(Event*);
-bool FillSlot(const Route* route, const int s, const bool b);
-void loadTopology();
-void Load();
-void ReleaseCon(Conexao *);
-bool ReleaseSlot(const Route*, int);
-void RemoveCon(Event*);
-void RequestCon(Event*);
+void createStructures(); /*Cria estrutura topológica da rede, e carrega os dados de Topology.txt*/
+void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
+void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
+bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
+void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
+bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
+void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
+void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão. Código estranho presente aqui!!!*/
 void ScheduleEvent(Event*);
 void setReqEvent(Event*, TIME);
 void Sim();
@@ -135,15 +133,15 @@ void clearMemory() {
 }
 
 void CompressCon(Event* evt) {
-    assert(false); //Tirar isso aqui quando quiser considerar Expansao e Compressao
-
-    //Remover um slot lateral
-    Conexao *con = evt->conexao;
-    CompressRight(con); //Remove sempre o slot da direita. Tentar outras heuristicas
-    //CompressRandom(con);
-    assert(con->getLastSlot() >= con->getFirstSlot()); //Apenas para checar erros
-    DefineNextEventOfCon(evt);
-    ScheduleEvent(evt);
+    if (ExpComp) {
+        //Remover um slot lateral
+        Conexao *con = evt->conexao;
+        CompressRight(con); //Remove sempre o slot da direita. Tentar outras heuristicas
+        //CompressRandom(con);
+        assert(con->getLastSlot() >= con->getFirstSlot()); //Apenas para checar erros
+        DefineNextEventOfCon(evt);
+        ScheduleEvent(evt);
+    }
 }
 
 void CompressRandom(Conexao *con)  {
@@ -165,61 +163,230 @@ void CompressRight(Conexao *con) {
     con->incLastSlot(-1);
 }
 
-void Load()
-{
-    int Npontos;
-    int aux;
+void createStructures() {
+    Topology = new long double[Def::getNnodes()*Def::getNnodes()]; //matriz de conexões entre nós
+    Topology_S = new bool[Def::getNnodes()*Def::getNnodes()*Def::getSE()]; //matriz de ocupação de slots de cada enlace
+    //Carrega topologia de rede a partir do arquivo Topology.txt
+    AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
+    int orN, deN;
+    for (orN = 0; orN < Def::getNnodes(); orN++) {
+        for(deN = 0; deN < Def::getNnodes(); deN++) {
+            Topol>>Topology[orN*Def::getNnodes()+deN];
+            cout<<Topology[orN*Def::getNnodes()+deN]<<" ";
+        }
+        cout << endl;
+    }
+}
+
+void DefineNextEventOfCon (Event* evt) {
+    //Recalcula Te (tempo de expansao) e Tc (tempo de compressao) e os compara com o tempo para desativacao
+    //So pode haver expansao se o numero de slots for menor do que Def::getSE()
+
+    Conexao *con = evt->conexao;
+    TIME Te, Tc, evtTime;
+    EventType evtType = UNKNOWN;
+    if ( (ExpComp == true) && ((con->getLastSlot() - con->getFirstSlot() + 1) < Def::getSE()) )
+        //Se o numero de slots utilizados for menor do que Def::getSE()
+        Te = simTime + General::exponential(laE);
+    else
+        Te = Def::MAX_DOUBLE;
+        //So pode haver compressao se o numero de slots for maior ou igual a 2, pois 1 e o numero minimo do slots que podem estar ativos para uma conexao
+
+    if ( (ExpComp == true) && (con->getLastSlot() - con->getFirstSlot() > 0) )
+        Tc = simTime + General::exponential(muC);
+    else
+        Tc = Def::MAX_DOUBLE;
+        //Checa o proximo evento dentre expansao, compressao e desativacao
+    if(Te < Tc) {
+        if(Te < con->getTimeDesc()) {
+            evtTime = Te;
+            evtType = Exp;
+        } else {
+            evtTime = con->getTimeDesc();
+            evtType = Desc;
+        }
+    } else {
+        if(Tc < con->getTimeDesc()) {
+            evtTime = Tc;
+            evtType = Comp;
+        } else {
+            evtTime = con->getTimeDesc();
+            evtType = Desc;
+        }
+    }
+    evt->time = evtTime;
+    evt->type = evtType;
+}
+
+void ExpandCon(Event* evt) {
+    if (ExpComp) {
+        Conexao *con = evt->conexao;
+        //Procura um slot lateral. Assume-se que tenta primeiro o slot a esquerda e depois o a direita.
+        if(con->getFirstSlot() > 0 && CheckSlotAvailability(con->getRoute(), con->getFirstSlot()-1)) {
+            FillSlot(con->getRoute(), con->getFirstSlot()-1, true);
+            con->incFirstSlot(-1);
+        } else if(con->getLastSlot()<Def::getSE()-1 && CheckSlotAvailability(con->getRoute(),con->getLastSlot()+1)) {
+            FillSlot(con->getRoute(), con->getLastSlot()+1, true);
+            con->incLastSlot(+1);
+        } else
+            Def::numSlots_Bloq++;
+        Def::numSlots_Req++;
+        DefineNextEventOfCon(evt);
+        ScheduleEvent(evt);
+    }
+}
+
+bool FillSlot(const Route* route, const int s, const bool b) {
+    int L_or, L_de;
+    for (unsigned c = 0; c < route->getNhops(); c++) {
+        L_or = route->getNode(c);
+        L_de = route->getNode(c+1);
+        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] != b);
+        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = b;
+    }
+    return true;
+}
+
+void Load() {
+    int Npontos, aux;
+
     //Adquire o numero de Nos:
     Topol>>aux;
     Def::setNnodes(aux);
-    cout<<"Numero de nos: "<<Def::getNnodes()<<endl;
+    cout << "Numero de nos: "<< Def::getNnodes() << endl;
+
     Topol>>aux;
     Def::setSE(aux);
-    cout<<"Numero de Slots por Enlace: "<<Def::getSE()<<endl;
-    //Other inputs to the simulator:
+    cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
+
+    //Outras entradas para o simulador
     cout<<"Entre com a Quantidade maxima de Slots por Requisicao [1 <= SR <= "<<Def::getSE()<<"]: ";
-    cin>> aux;
+    cin >> aux;
     Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
-    cout<<DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<<endl;
-    cout<<"Entre com o Alg_Routing:";
+
+    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<<endl;
+    cout << "Entre com o Algoritmo de Roteamento:";
     cin >> Alg_Routing;
+
     cout<<RD<<" - Random \n"<<FF<<" - FirstFit \n"<<MU<<" - Most Used \n"<<FFO<<" - FirstFitOpt "<<endl;
-    cout<<"Entre com o AlgAloc: ";
-    cin>> Alg_Aloc;
-    if(Alg_Aloc == FFO || Alg_Aloc == FF)
-    {
+    cout << "Entre com o Algoritmo de Alocacao: ";
+    cin >> Alg_Aloc;
+
+    //Cria as listas First Fit
+    if(Alg_Aloc == FFO || Alg_Aloc == FF) {
         FFlists = new vector<int>*[Def::getSR()+1];
         for(int i = 0; i < Def::getSR()+1; i++)
             FFlists[i] = new vector<int>(0);
     }
-    cout<<"Entre com o mu: ";
-    cin>> mu; //mu = taxa de desativacao das conexoes;
-    cout<<"LaNet Min= ";
+
+    cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
+    cin >> mu; //mu = taxa de desativacao das conexoes;
+    cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
+    cout << "LaNet minimo = ";
     cin >> LaNetMin; // La = taxa de chegada das conexoes;
-    cout<<"LaNet Max= ";
+    cout <<"LaNet maximo = ";
     cin >> LaNetMax;
-    cout<<"#Pontos no grafico= ";
+    cout<<"#Pontos no grafico = ";
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
+
     //Dados para a expansao e compressao das conexoes:
-    cout<<"Sera considerado Expansao e Compressao do numero de subportadoras das Conexoes? <0>Falso; <1>Verdadeiro;"<<endl;
-    cin>> ExpComp;
-    if(ExpComp)
-    {
+    cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;
+    cin >> ExpComp;
+    if(ExpComp) {
         cout<<"Entre com o muC: ";
         cin>> muC;
         cout<<"Entre com o LaE: ";
         cin >> laE;
     }
+
     long double nR;
-    cout<<"Entre com a #Req.: ";
+    cout<<"Entre com o numero maximo de requisicoes que o programa vai rodar antes de terminar: ";
     cin>> nR;
     Def::setNumReqMax(nR);
-    //
+
     for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
         Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
-
 }
+
+bool ReleaseSlot(const Route* route, int s) {
+    int L_or, L_de;
+    for(unsigned c = 0; c < route->getNhops(); c++) {
+        L_or = route->getNode(c);
+        L_de = route->getNode(c+1);
+        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true);
+        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = false;
+    }
+    return true;
+}
+
+void RemoveCon(Event* evt) {
+    for(int s = evt->conexao->getFirstSlot(); s <= evt->conexao->getLastSlot(); s++) {
+        assert( (s >= 0) && (s < Def::getSE()) );
+        ReleaseSlot(evt->conexao->getRoute(), s);
+    }
+    delete evt->conexao;
+    delete evt;
+}
+
+void RequestCon(Event* evt) {
+    int orN, deN, NslotsReq, NslotsUsed, si;
+    SDPairReq(orN, deN);
+    deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
+    NslotsReq = SlotsReq();
+    Def::numReq++;
+    Def::numSlots_Req += NslotsReq;
+
+    if(Alg_Routing == DJK_Formas)
+        DijkstraFormas(orN, deN, NslotsReq);
+    if(Alg_Routing == DJK_Acum)
+        DijkstraAcum(orN, deN, NslotsReq);
+
+    //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
+    Route *route;
+    bool success = false;
+    for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
+        route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
+        NslotsUsed = 0;
+        si = -1;
+        TryToConnect(route, NslotsReq, NslotsUsed, si);
+        assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
+        if(NslotsUsed > 0) { //A conexao foi aceita
+            assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
+            //Inserir a conexao na rede
+            int L_or, L_de;
+            for(unsigned c = 0; c < route->getNhops(); c++) {
+                L_or = route->getNode(c);
+                L_de = route->getNode(c+1);
+                for(int s = si; s < si + NslotsUsed; s++) {
+                    assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == false);
+                    Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = true;
+                    //Os slots sao marcados como ocupados
+                }
+            }
+
+            Def::numHopsPerRoute += route->getNhops();
+            Def::netOccupancy += NslotsUsed*route->getNhops();
+            //Cria uma nova conexao
+            Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
+            //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
+            Event *evt = new Event;
+            evt->conexao = newConexao;
+            DefineNextEventOfCon(evt);
+            ScheduleEvent(evt);
+            break;
+        }
+    }
+
+    //Verifica quantas conexoes e quantos slots foram bloqueados
+    AccountForBlocking(NslotsReq, NslotsUsed);
+    //Define o novo evento de chegada de requisicao
+    long double IAT = General::exponential(laNet); //Inter-arrival time
+    setReqEvent(evt, simTime + IAT);
+    assert(evt->type == Req);
+    ScheduleEvent(evt); //Reusa este mesmo objeto evt
+}
+
 
 // ------------------------------------------------------------- //
 void Simulate()
@@ -349,23 +516,7 @@ void SimCompFFO()
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-void createStructures()
-{
-    Topology = new long double[Def::getNnodes()*Def::getNnodes()];
-    Topology_S = new bool[Def::getNnodes()*Def::getNnodes()*Def::getSE()];
-    //Load Topology from input file:
-    AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-    int orN, deN;
-    for(orN = 0; orN < Def::getNnodes(); orN++)
-    {
-        for(deN = 0; deN < Def::getNnodes(); deN++)
-        {
-            Topol>>Topology[orN*Def::getNnodes()+deN];
-            cout<<Topology[orN*Def::getNnodes()+deN]<<"  ";
-        }
-        cout<<endl;
-    }
-}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 void setReqEvent(Event* evt, TIME t)
@@ -377,70 +528,6 @@ void setReqEvent(Event* evt, TIME t)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
-void RequestCon(Event* evt)
-{
-    int orN, deN, NslotsReq, NslotsUsed, si;
-    SDPairReq(orN, deN);
-    deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
-    //orN = 0;
-    //deN = 3;
-    NslotsReq = SlotsReq();
-    //NslotsReq = 1;
-    //cout<<"orN= "<<orN<<"  deN= "<<deN<<"  NslotsReq= "<<NslotsReq<<endl;
-    //cin.get();
-    Def::numReq++;
-    Def::numSlots_Req += NslotsReq;
-    if(Alg_Routing == DJK_Formas)
-        DijkstraFormas(orN, deN, NslotsReq);
-    if(Alg_Routing == DJK_Acum)
-        DijkstraAcum(orN, deN, NslotsReq);
-
-    //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
-    Route *route;
-    bool success = false;
-    for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++)
-    {
-        route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
-        //route->print(); cout<<endl;
-        NslotsUsed = 0;
-        si = -1;
-        TryToConnect(route, NslotsReq, NslotsUsed, si);
-        assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
-        if(NslotsUsed > 0)  //A conexao foi aceita
-        {
-            assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-            //Inserir a conexao na rede
-            int L_or, L_de;
-            for(unsigned c = 0; c < route->getNhops(); c++)
-            {
-                L_or = route->getNode(c);
-                L_de = route->getNode(c+1);
-                for(int s = si; s < si + NslotsUsed; s++)
-                {
-                    assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == false);
-                    Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = true; //Os slots s�o ocupados
-                }
-            }
-            Def::numHopsPerRoute += route->getNhops();
-            Def::netOccupancy += NslotsUsed*route->getNhops();
-            //Cria uma nova conexao
-            Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
-            //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
-            Event *evt = new Event;
-            evt->conexao = newConexao;
-            DefineNextEventOfCon(evt);
-            ScheduleEvent(evt);
-            break;
-        }
-    }
-    //Verifica quantas conexoes e quantos slots foram bloqueados
-    AccountForBlocking(NslotsReq, NslotsUsed);
-    //Define o novo evento de chegada de requisicao
-    long double IAT = General::exponential(laNet); //Inter-arrival time
-    setReqEvent(evt, simTime + IAT);
-    assert(evt->type == Req);
-    ScheduleEvent(evt); //Reusa este mesmo objeto evt
-}
 
 // -------------------------------------------------------------------------- //
 int SlotsReq()
@@ -463,76 +550,22 @@ int SlotsReq()
 }
 
 // -------------------------------------------------------------------------- //
-void RemoveCon(Event* evt)
-{
-    ReleaseCon(evt->conexao);
-    delete evt;
-}
+
 
 // -------------------------------------------------------------------------- //
-void ReleaseCon(Conexao *con) //Retirar a conexao da rede:
-{
-    for(int s = con->getFirstSlot(); s <= con->getLastSlot(); s++)
-    {
-        assert( (s >= 0) && (s < Def::getSE()) );
-        ReleaseSlot(con->getRoute(), s);
-    }
-    delete con;
-}
 
-// -------------------------------------------------------------------------- //
-bool ReleaseSlot(const Route* route, int s)
-{
-    int L_or, L_de;
-    for(unsigned c = 0; c < route->getNhops(); c++)
-    {
-        L_or = route->getNode(c);
-        L_de = route->getNode(c+1);
-        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true); //Just to check errors
-        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = false;
-    }
-    return true;
-}
-
-// -------------------------------------------------------------------------- //
-void ExpandCon(Event* evt)
-{
-    assert(false); //Tirar isso aqui quando quiser considerar Expansao e Compressao
-    Conexao *con = evt->conexao;
-    //Procura um slot lateral. Assume-se que tenta primeiro o slot a esquerda e depois o a direita.
-    if(con->getFirstSlot() > 0 && CheckSlotAvailability(con->getRoute(), con->getFirstSlot()-1))
-    {
-        FillSlot(con->getRoute(), con->getFirstSlot()-1, true);
-        con->incFirstSlot(-1);
-    }
-    else if(con->getLastSlot() < Def::getSE()-1 && CheckSlotAvailability(con->getRoute(), con->getLastSlot()+1))
-    {
-        FillSlot(con->getRoute(), con->getLastSlot()+1, true);
-        con->incLastSlot(+1);
-    }
-    else
-        Def::numSlots_Bloq++;
-    Def::numSlots_Req++;
-    DefineNextEventOfCon(evt);
-    ScheduleEvent(evt);
-}
 
 // -------------------------------------------------------------------------- //
 
 
 // -------------------------------------------------------------------------- //
-bool FillSlot(const Route* route, const int s, const bool b)
-{
-    int L_or, L_de;
-    for(unsigned c = 0; c < route->getNhops(); c++)
-    {
-        L_or = route->getNode(c);
-        L_de = route->getNode(c+1);
-        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] != b);
-        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = b;
-    }
-    return true;
-}
+
+
+// -------------------------------------------------------------------------- //
+
+
+// -------------------------------------------------------------------------- //
+
 
 // -------------------------------------------------------------------------- //
 
@@ -544,53 +577,7 @@ bool FillSlot(const Route* route, const int s, const bool b)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-void DefineNextEventOfCon(Event* evt)
-{
-    Conexao *con = evt->conexao;
-    //Recalcula Te (tempo de expansao) e Tc (tempo de compressao) e os compara com o tempo para desativacao
-    //So pode haver expansao se o numero de slots for menor do que Def::getSE()
-    TIME Te, Tc, evtTime;
-    EventType evtType = UNKNOWN;
-    if( (ExpComp == true) && ((con->getLastSlot() - con->getFirstSlot() + 1) < Def::getSE()) ) //Se o numero de slots utilizados for menor do que Def::getSE()
-        Te = simTime + General::exponential(laE);
-    else
-        Te = Def::MAX_DOUBLE;
-    //So pode haver compressao se o numero de slots for maior ou igual a 2, pois 1 e o numero minimo do slots que podem estar ativos para uma conexao
-    if( (ExpComp == true) && (con->getLastSlot() - con->getFirstSlot() + 1 > 1) )
-        Tc = simTime + General::exponential(muC);
-    else
-        Tc = Def::MAX_DOUBLE;
-    //Checa o proximo evento dentre expansao, compressao e desativacao
-    if(Te < Tc)
-    {
-        if(Te < con->getTimeDesc())
-        {
-            evtTime = Te;
-            evtType = Exp;
-        }
-        else
-        {
-            evtTime = con->getTimeDesc();
-            evtType = Desc;
-        }
-    }
-    else
-    {
-        if(Tc < con->getTimeDesc())
-        {
-            evtTime = Tc;
-            evtType = Comp;
-        }
-        else
-        {
-            evtTime = con->getTimeDesc();
-            evtType = Desc;
-        }
-    }
-    //
-    evt->time = evtTime;
-    evt->type = evtType;
-}
+
 
 // -------------------------------------------------------------------------- //
 void ScheduleEvent(Event *evt)
@@ -649,7 +636,7 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 // -------------------------------------------------------------------------- //
 void Dijkstra()
 {
-    int orN, deN, VA, i, j, k, path, h, hops;
+    int orN, deN, VA, i, j, k=0, path, h, hops;
     long double min;
     vector<int> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
