@@ -34,6 +34,7 @@ bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlac
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
+void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
@@ -44,13 +45,12 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 
 
 void Dijkstra(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
-void DijkstraAcum(const int orN, const int deN, const int L);
-void DijkstraFormas(const int orN, const int deN, const int L);
-void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si);
-void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si);
-void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si);
-void Random(const Route*, const int NslotsReq, int& NslotsUsed, int& si);
-void SDPairReq(int &orN, int &deN);
+void DijkstraAcum(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace como o custo do caminho*/
+void DijkstraFormas(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace e número de nós até o destino como o custo do caminho*/
+void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit*/
+void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
+void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/
+void Random(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Dentre os slots que podem atender a solicitação, sorteia um*/
 
 
 int main() {
@@ -382,6 +382,77 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
     AllRoutes[path].push_back(new Route(r));
 }
 
+void DijkstraFormas(const int orN, const int deN, const int L) {
+    //L e a largura de banda (em numero de slots) da requisicao
+    assert(orN != deN);
+    int VA, i, j, k, path, h, hops;
+    long double min;
+    bool *DispLink = new bool[Def::getSE()];
+    long double *CustoVertice = new long double[Def::getNnodes()];
+    long double custoLink;
+    int *Precedente = new int[Def::getNnodes()];
+    int *PathRev = new int[Def::getNnodes()];
+    bool *Status = new bool[Def::getNnodes()];
+    //Busca para todos os pares de no a rota mais curta:
+    for(i = 0; i < Def::getNnodes(); i++) {
+        if(i != orN)
+            CustoVertice[i] = Def::MAX_DOUBLE;
+        else
+            CustoVertice[i] = 0.0;
+        Precedente[i] = -1;
+        Status[i] = 0;
+    }
+    VA = Def::getNnodes();
+    while(VA > 0) {
+        //Procura o vertice de menor custo
+        min = Def::MAX_DOUBLE;
+        for(i = 0; i < Def::getNnodes(); i++)
+            if((Status[i] == 0)&&(CustoVertice[i] < min)) {
+                min = CustoVertice[i];
+                k = i;
+            }
+        Status[k] = 1; //k e o vertice de menor custo;
+        VA = VA-1;
+        //Verifica se precisa atualizar ou nao os vizinhos de k
+        for(j = 0; j < Def::getNnodes(); j++)
+            if((Status[j] == 0)&&(Topology[k*Def::getNnodes()+j] != 0)) {
+                //O no j e nao marcado e vizinho do no k
+                //Calcula O vetor de disponibilidade do enlace entre k e j
+                for(int s = 0; s < Def::getSE(); s++)
+                    DispLink[s] = !Topology_S[s*Def::getNnodes()*Def::getNnodes() + k*Def::getNnodes() + j];
+                custoLink = Heuristics::calculateCostLink(DispLink, L);
+                if(CustoVertice[k] + custoLink < CustoVertice[j]) {
+                    CustoVertice[j] = CustoVertice[k] + custoLink;
+                    Precedente[j] = k;
+                }
+            }
+    }
+
+    //Formar a rota:
+    path = orN*Def::getNnodes()+deN;
+    AllRoutes[path].clear();
+    PathRev[0] = deN;
+    hops = 0;
+    j = deN;
+    while(j != orN) {
+        hops = hops+1;
+        PathRev[hops] = Precedente[j];
+        j = Precedente[j];
+    }
+    vector<int> r;
+    r.clear();
+    for(h = 0; h <= hops; h++)
+        r.push_back(PathRev[hops-h]);
+    assert(r.at(0) == orN && r.at(hops) == orN);
+    AllRoutes[path].push_back(new Route(r));
+
+    delete []CustoVertice;
+    delete []Precedente;
+    delete []Status;
+    delete []PathRev;
+    delete []DispLink;
+}
+
 void ExpandCon(Event* evt) {
     if (ExpComp) {
         Conexao *con = evt->conexao;
@@ -410,6 +481,49 @@ bool FillSlot(const Route* route, const int s, const bool b) {
     }
     return true;
 }
+
+void FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+    si = -1;
+    NslotsUsed = 0; //Valores nao permitidos
+    int sum;
+    for(int s = 0; s <= Def::getSE() - NslotsReq; s++) {
+        sum = 0;
+        for(int se = s; se < s + NslotsReq; se++) {
+            if(CheckSlotAvailability(route, se))
+                sum++;
+            else
+                break;
+        }
+        if(sum == NslotsReq) { //conseguiu alocar slots
+            si = s;
+            NslotsUsed = NslotsReq;
+            break;
+        }
+    }
+}
+
+void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+    assert( (si == -1) && (NslotsUsed == 0) );
+    int s, sum;
+    for(int sOrd = 0; sOrd < Def::getSE(); sOrd++) {
+        s = FFlists[NslotsReq]->at(sOrd);
+        if(s <= Def::getSE()-NslotsReq) {
+            //si e capaz de suportar a requisicao;
+            sum = 0;
+            for(int se = s; se < s + NslotsReq; se++)
+                if(CheckSlotAvailability(route, se))
+                    sum++;
+                else
+                    break;
+        }
+        if(sum == NslotsReq) { //O slot s pode atender a requisicao
+            si = s;
+            NslotsUsed = NslotsReq;
+            break;
+        }
+    }
+}
+
 
 void Load() {
     int Npontos, aux;
@@ -471,6 +585,100 @@ void Load() {
 
     for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
         Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
+}
+
+void MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+    int *vetSlotsUsed = new int[Def::getSE()];
+    bool *vetDisp = new bool[Def::getSE()];
+
+    //Checa a disponibilidade no caminho 'path' para cada slot s;
+    for(int s = 0; s < Def::getSE(); s++)
+        vetDisp[s] = CheckSlotAvailability(route, s);
+
+    //Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
+    int soma;
+    for(int s = 0; s < Def::getSE(); s++) {
+        if(vetDisp[s] == true)
+            vetSlotsUsed[s] = sumOccupation(s);
+        else
+            vetSlotsUsed[s] = -1;
+    }
+
+    //Obtem o slot mais ocupado dentre os que podem receber a requisicao
+    bool fit;
+    double maxSoma = -1;//Smax*N*N+1;
+    NslotsUsed = 0;
+    si = -1;
+    for(int s = 0; s <= Def::getSE()-NslotsReq; s++) {
+        fit = true;
+        soma = 0;
+        for(int b = s; b < s + NslotsReq; b++)
+            if(vetDisp[b] == true) {
+                assert(vetSlotsUsed[b] >= 0);
+                soma += vetSlotsUsed[b];
+            } else {
+                fit = false;
+                break;
+            }
+        if(fit == true && soma > maxSoma) { //A requisicao se encaixa entre os slots s,s+1,...,s+NslotsReq-1 e nesta posicao havera a maior soma de enlaces ocupados na rede;
+            maxSoma = soma;
+            NslotsUsed = NslotsReq;
+            si = s;
+        }
+    }
+    delete []vetSlotsUsed;
+    delete []vetDisp;
+}
+
+void Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+    int soma=0, somaAlocacao=0, alocarSlot;
+    bool *vetDisp = new bool[Def::getSE()];
+    int *vetAloc = new int[Def::getSE()];
+    for(int s = 0; s < Def::getSE(); s++)
+        vetAloc[s] = 0;
+
+    //Checa a disponibilidade no caminho 'path' para cada slot s;
+    for(int s = 0; s < Def::getSE(); s++)
+        vetDisp[s] = CheckSlotAvailability(route, s);
+    //Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
+    bool fit;
+    NslotsUsed = 0;
+    si = -1;
+    for(int s = 0; s <= Def::getSE() - NslotsReq; s++) {
+        fit = true;
+        soma = 0;
+        for(int b = s; b < s + NslotsReq; b++)
+            if(vetDisp[b] == true)
+                soma++;
+            else {
+                fit = false;
+                break;
+            }
+        if(fit == true && soma == NslotsReq) {
+            //A requisicao se encaixa entre os slots s,s+1,...,s+NslotsReq-1
+            somaAlocacao++; // verifica quantas posicoes estao disponiveis para alocacao
+            vetAloc[s] = 1; //posso alocar a partir desta posicao
+        }
+    }
+
+    // fazer o sorteio do slot que sera alocada
+    if(somaAlocacao > 0) {
+        // se existir pelo menos um conjunto slot disponivel com o tamanho da solicitacao
+        alocarSlot = rand()% somaAlocacao; // fazer alocacao no conjunto de slot dispovivel "alocarSlot"
+        int s = 0;
+        while ((s < Def::getSE()) && (alocarSlot >= 0)) {
+            if(vetAloc[s] == 1)
+                alocarSlot--;
+            s++;
+        }
+        NslotsUsed = NslotsReq;
+        si = s-1; // -1 porque foi incrementado no final do while
+    } else {
+        NslotsUsed = 0;
+        si = -1;
+    }
+    delete []vetDisp;
+    delete []vetAloc;
 }
 
 bool ReleaseSlot(const Route* route, int s) {
@@ -566,6 +774,17 @@ void ScheduleEvent(Event *evt) {
         firstEvent = evt;
     else
         evtAnt->nextEvent = evt;
+}
+
+void SDPairReq(int &orN, int &deN) {
+    orN = rand()% Def::getNnodes();
+    deN = rand()% (Def::getNnodes()-1);
+    if(deN >= orN)
+        deN += 1;
+    if( (orN < 0) || (orN>= Def::getNnodes()) || (deN<0) || (deN>=Def::getNnodes()) ||(deN == orN)) {
+        cout<<"Erro em SDPair";
+        cin.get();
+    }
 }
 
 void setReqEvent(Event* evt, TIME t) {
@@ -726,325 +945,5 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
             break;
         default:
             cout<<"Algoritmo nao definido"<<endl;
-    }
-}
-
-
-
-
-
-
-// -------------------------------------------------------------------------- //
-void DijkstraFormas(const int orN, const int deN, const int L) 	//L e a largura de banda (em numero de slots) da requisicao
-{
-    assert(orN != deN);
-    int VA, i, j, k, path, h, hops;
-    long double min;
-    bool *DispLink = new bool[Def::getSE()];
-    long double *CustoVertice = new long double[Def::getNnodes()];
-    long double custoLink;
-    int *Precedente = new int[Def::getNnodes()];
-    int *PathRev = new int[Def::getNnodes()];
-    bool *Status = new bool[Def::getNnodes()];
-    //Busca para todos os pares de no a rota mais curta:
-    for(i = 0; i < Def::getNnodes(); i++)
-    {
-        if(i != orN)
-            CustoVertice[i] = Def::MAX_DOUBLE;
-        else
-            CustoVertice[i] = 0.0;
-        Precedente[i] = -1;
-        Status[i] = 0;
-    }
-    VA = Def::getNnodes();
-    while(VA > 0)
-    {
-        //Procura o vertice de menor custo
-        min = Def::MAX_DOUBLE;
-        for(i = 0; i < Def::getNnodes(); i++)
-            if((Status[i] == 0)&&(CustoVertice[i] < min))
-            {
-                min = CustoVertice[i];
-                k = i;
-            }
-        Status[k] = 1; //k e o vertice de menor custo;
-        VA = VA-1;
-        //Verifica se precisa atualizar ou nao os vizinhos de k
-        for(j = 0; j < Def::getNnodes(); j++)
-            if((Status[j] == 0)&&(Topology[k*Def::getNnodes()+j] != 0))  //O no j e nao marcado e vizinho do no k
-            {
-                //Calcula O vetor de disponibilidade do enlace entre k e j
-                for(int s = 0; s < Def::getSE(); s++)
-                    DispLink[s] = !Topology_S[s*Def::getNnodes()*Def::getNnodes() + k*Def::getNnodes() + j];
-                custoLink = Heuristics::calculateCostLink(DispLink, L);
-                if(CustoVertice[k] + custoLink < CustoVertice[j])
-                {
-                    CustoVertice[j] = CustoVertice[k] + custoLink;
-                    Precedente[j] = k;
-                }
-            }
-    }//Fim do while
-    //Formar a rota:
-    path = orN*Def::getNnodes()+deN;
-    AllRoutes[path].clear();
-    PathRev[0] = deN;
-    hops = 0;
-    j = deN;
-    while(j != orN)
-    {
-        hops = hops+1;
-        PathRev[hops] = Precedente[j];
-        j = Precedente[j];
-    }
-    vector<int> r;
-    r.clear();
-    for(h = 0; h <= hops; h++)
-        r.push_back(PathRev[hops-h]);
-    assert(r.at(0) == orN && r.at(hops) == orN);
-    AllRoutes[path].push_back(new Route(r));
-    //
-    delete []CustoVertice;
-    delete []Precedente;
-    delete []Status;
-    delete []PathRev;
-    delete []DispLink;
-}
-
-// -------------------------------------------------------------------------- //
-
-////////////////////////////////////////////////////////////////////////////////
-void SDPairReq(int &orN, int &deN)
-{
-    //cout<<"Trafego espacial uniforme"<<endl;
-    orN = rand()% Def::getNnodes();
-    deN = rand()% (Def::getNnodes()-1);
-    if(deN >= orN)
-        deN += 1;
-    if( (orN < 0) || (orN>= Def::getNnodes()) || (deN<0) || (deN>=Def::getNnodes()) ||(deN == orN))
-    {
-        cout<<"Erro em SDPair";
-        cin.get();
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// -------------------------------------------------------------------------- //
-////////////////////////////////////////////////////////////////////////////////
-void Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
-{
-    int soma=0, somaAlocacao=0, alocarSlot;
-    bool *vetDisp = new bool[Def::getSE()];
-    int *vetAloc = new int[Def::getSE()];
-    //
-    for(int s = 0; s < Def::getSE(); s++)
-        vetAloc[s] = 0;
-    //Checa a disponibilidade no caminho 'path' para cada slot s;
-    for(int s = 0; s < Def::getSE(); s++)
-        vetDisp[s] = CheckSlotAvailability(route, s);//Checa a disponibilidade no caminho 'path' para o slot s;
-    //Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
-    bool fit;
-    NslotsUsed = 0;
-    si = -1;
-    for(int s = 0; s <= Def::getSE() - NslotsReq; s++)
-    {
-        fit = true;
-        soma = 0;
-        for(int b = s; b < s + NslotsReq; b++)
-            if(vetDisp[b] == true)
-                soma++;
-            else
-            {
-                fit = false;
-                break;
-            }
-        if(fit == true && soma == NslotsReq)  //A requisicao se encaixa entre os slots s,s+1,...,s+NslotsReq-1
-        {
-            somaAlocacao++; // verifica quantas posicoes estao disponiveis para alocacao
-            vetAloc[s] = 1; //posso alocar a partir desta posicao
-        }
-    }
-    // fazer o sorteio do slot que sera alocada
-    if(somaAlocacao > 0) // se existir pelo menos um conjunto slot disponivel com o tamanho da solicitacao
-    {
-        alocarSlot = rand()% somaAlocacao; // fazer alocacao no conjunto de slot dispovivel "alocarSlot"
-        int s = 0;
-        while ((s < Def::getSE()) && (alocarSlot >= 0))
-        {
-            if(vetAloc[s] == 1)
-                alocarSlot--;
-            s++;
-        }
-        NslotsUsed = NslotsReq;
-        si = s-1; // -1 porque foi incrementado no final do while
-    }
-    else
-    {
-        NslotsUsed = 0;
-        si = -1;
-    }
-    delete []vetDisp;
-    delete []vetAloc;
-}
-
-// -------------------------------------------------------------------------- //
-void FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
-{
-    si = -1;
-    NslotsUsed = 0; //Valores nao permitidos
-    int sum;
-    for(int s = 0; s <= Def::getSE() - NslotsReq; s++)
-    {
-        sum = 0;
-        for(int se = s; se < s + NslotsReq; se++)
-        {
-            if(CheckSlotAvailability(route, se))
-                sum++;
-            else
-                break;
-        }
-        if(sum == NslotsReq)
-        {
-            si = s;
-            NslotsUsed = NslotsReq;
-            break;
-        }
-    }
-}
-
-// -------------------------------------------------------------------------- //
-void MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
-{
-    int *vetSlotsUsed = new int[Def::getSE()];
-    bool *vetDisp = new bool[Def::getSE()];
-    //Checa a disponibilidade no caminho 'path' para cada slot s;
-    for(int s = 0; s < Def::getSE(); s++)
-        vetDisp[s] = CheckSlotAvailability(route, s);//Checa a disponibilidade no caminho 'path' para o slot s;
-    //Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
-    int soma;
-    for(int s = 0; s < Def::getSE(); s++)
-    {
-        if(vetDisp[s] == true)
-            vetSlotsUsed[s] = sumOccupation(s);
-        else
-            vetSlotsUsed[s] = -1;
-    }
-    //Obtem o slot mais ocupado dentre os que podem receber a requisicao
-    bool fit;
-    double maxSoma = -1;//Smax*N*N+1;
-    NslotsUsed = 0;
-    si = -1;
-    for(int s = 0; s <= Def::getSE()-NslotsReq; s++)
-    {
-        fit = true;
-        soma = 0;
-        for(int b = s; b < s + NslotsReq; b++)
-            if(vetDisp[b] == true)
-            {
-                assert(vetSlotsUsed[b] >= 0);
-                soma += vetSlotsUsed[b];
-            }
-            else
-            {
-                fit = false;
-                break;
-            }
-        if(fit == true && soma > maxSoma)  //A requisicao se encaixa entre os slots s,s+1,...,s+NslotsReq-1 e nesta posicao havera a maior soma de enlaces ocupados na rede;
-        {
-            maxSoma = soma;
-            NslotsUsed = NslotsReq;
-            si = s;
-        }
-    }
-    delete []vetSlotsUsed;
-    delete []vetDisp;
-}
-
-/*
-// ----------------------------------------------------------------------------- //
-void MSCL(const Route* route, const int NslotsReq, int& NslotsUsed, int& si){
-    bool *vetDisp = new bool[Def::getSE()];
-    int s;
-    //Checa a disponibilidade no caminho 'path' para cada slot s:
-    for(s = 0; s < Def::getSE(); s++)
-        vetDisp[s] = checkDisp(route, s); //Checa a disponibilidade na rota 'route' para o slot s;
-    //Obtem quais slots podem comecar a requisicao:
-    bool *vetDispFitSi = new bool[Def::getSE()];
-    for(s = 0; s <= Def::getSE() - NslotsReq; s++)
-        vetDispFitSi[s] = checkFitSi(vetDisp, s, NslotsReq); //Se a conexao pode ser inserida em s, s+1,...,s+NslotsReq-1
-    //Calcular a disponibilidade de cada caminho que interfere com path
-    int H = Route[path*(N+1)]; //H = numero de hops da requisicao
-    int r, path_int, L_or, L_de;
-    bool vetDispInt[Def::getSE()];
-    vector<bool> *RouteDisp = new vector<bool>[RouteInt[path]->size()];
-    for(r = 0; r < RouteInt[path]->size(); r++){
-        path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
-        H = Route[path_int*(N+1)]; //H = numero de hops da conexao
-        for(s = 0; s < Def::getSE(); s++){
-            RouteDisp[r].push_back(true);
-            for(int c = 1; c <= H; c++)	{
-                L_or = Route[path_int*(N+1)+c];
-                L_de = Route[path_int*(N+1)+c+1];
-                if(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true){ //O slot s esta ocupado no enlace L_or->L_de
-                    RouteDisp[r].at(s) = false;
-                    break;
-                }
-            }
-        }
-    }
-    //Calcular a perda de cada possibilidade de alocacao:
-    int vetCapInic[Def::getSE()+1], vetCapFin[Def::getSE()+1];
-    double perda, perdaMin = MAX_DOUBLE;
-    for(s = 0; s <= Def::getSE() - NslotsReq; s++)
-        if(vetDispFitSi[s] == true){ //O caminho pode ser iniciado neste slot
-            perda = 0.0;
-            //Obter as rotas interferentes
-            for(r = 0; r < RouteInt[path]->size(); r++){
-                path_int = RouteInt[path]->at(r); //r_int e o indice da rota que interfere com a rota de indice r
-                //Carrega DispInt com a disponibilidade inicial da rota de �ndice r_int:
-                for(int se = 0; se < Def::getSE(); se++)
-                    vetDispInt[se] = RouteDisp[r].at(se);
-                //Calcula a capacidade de alocacao nesta rota:
-                calcVetCap(vetDispInt, vetCapInic);
-                //Assume a alocacao da rota de indice r nos slots s,s+1,...,s+NslotsReq-1 => retira os slots s,s+1,...,s+NslotsReq-1 de vetDispInt
-                for(int i = s; i < s + NslotsReq; i++)
-                    vetDispInt[i] = false;
-                calcVetCap(vetDispInt, vetCapFin);
-                perda += calcPerda(vetCapInic, vetCapFin);
-            }
-            if(perda < perdaMin){
-                perdaMin = perda;
-                si = s;
-                NslotsUsed = NslotsReq;
-            }
-        }
-    delete []vetDisp;
-    delete []vetDispFitSi;
-    delete []RouteDisp;
-}
-*/
-
-// -------------------------------------------------------------------------- //
-void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
-{
-    assert( (si == -1) && (NslotsUsed == 0) );
-    int s, sum;
-    for(int sOrd = 0; sOrd < Def::getSE(); sOrd++)
-    {
-        s = FFlists[NslotsReq]->at(sOrd);
-        if(s <= Def::getSE()-NslotsReq)  //si e capaz de suportar a requisicao;
-        {
-            sum = 0;
-            for(int se = s; se < s + NslotsReq; se++)
-                if(CheckSlotAvailability(route, se))
-                    sum++;
-                else
-                    break;
-        }
-        if(sum == NslotsReq)  //O slot s pode atender a requisicao
-        {
-            si = s;
-            NslotsUsed = NslotsReq;
-            break;
-        }
     }
 }
