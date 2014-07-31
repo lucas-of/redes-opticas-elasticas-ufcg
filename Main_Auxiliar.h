@@ -2,9 +2,8 @@
 #define MAIN_AUXILIAR_H
 
 #include <iostream>
+#include <fstream>
 #include <vector>
-#include "Conexao.h"
-#include "Def.h"
 #include "Event.h"
 
 using namespace std;
