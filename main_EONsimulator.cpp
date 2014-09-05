@@ -165,21 +165,15 @@ void CompressRight(Conexao *con) {
 }
 
 void createStructures() {
-    Topology = new long double*[Def::getNnodes()]; //matriz de conexões entre nós
-    for (int i=0 ; i < Def::getNnodes() ; i++) Topology[i] = new long double[Def::getNnodes()];
-    Topology_S = new bool**[Def::getNnodes()]; //matriz de ocupação de slots de cada enlace
-    for (int i=0 ; i < Def::getNnodes() ; i++) {
-        Topology_S[i] = new bool*[Def::getNnodes()];
-        for (int j=0; j < Def::getNnodes() ; j++)
-            Topology_S[i][j] = new bool[Def::getSE()];
-    }
+    Topology = new long double[Def::getNnodes()*Def::getNnodes()]; //matriz de conexões entre nós
+    Topology_S = new bool[Def::getNnodes()*Def::getNnodes()*Def::getSE()]; //matriz de ocupação de slots de cada enlace
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
     int orN, deN;
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
-            Topol>>Topology[orN][deN];
-            cout<<Topology[orN][deN]<<" ";
+            Topol>>Topology[orN*Def::getNnodes()+deN];
+            cout<<Topology[orN*Def::getNnodes()+deN]<<" ";
         }
         cout << endl;
     }
