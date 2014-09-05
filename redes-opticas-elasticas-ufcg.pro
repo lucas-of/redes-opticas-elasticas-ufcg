@@ -9,7 +9,8 @@ SOURCES += \
     General.cpp \
     Heuristics.cpp \
     main_EONsimulator.cpp \
-    Route.cpp
+    Route.cpp \
+    node.cpp
 
 OTHER_FILES += \
     Topology.txt \
@@ -22,5 +23,6 @@ HEADERS += \
     Heuristics.h \
     Route.h \
     Main_Auxiliar.h \
-    Event.h
+    Event.h \
+    node.h
 
