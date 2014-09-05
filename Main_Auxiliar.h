@@ -24,7 +24,7 @@ enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /
 
 //Variáveis necessárias em main_EONsimulator.cpp
 bool ExpComp;
-bool *Topology_S;
+bool ***Topology_S;
 bool *Traf;
 Event *firstEvent;
 int Alg_Aloc;
@@ -36,7 +36,7 @@ long double LaNetMax;
 long double LaPasso;
 long double mu;
 long double muC;
-long double *Topology;
+long double **Topology;
 TIME simTime;
 vector<int> **FFlists = NULL;
 vector<int> **RouteInt;
