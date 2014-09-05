@@ -1,4 +1,4 @@
-#ifndef Def_H
+﻿#ifndef Def_H
 #define Def_H
 
 #include <assert.h>
@@ -19,6 +19,13 @@ class Def {
         static long double numReqMax; //é o número máximo de requisições
         static int SE; //S é o número de slots por Enlace
         static int SR; //SR é o número máximo de slots requisitados
+        
+        static long double Pin;//Pin potencia de entrada
+        static long double OSNRin;//OSNRin OSNR de entrada
+        static long double Lsss;//Lsssm perdas nos dispositivos
+        static long double Cenl;//Cenl comprimento dos enlaces
+        static long double DistA;//DistA distancia entre os amplificadores de linha
+        static int arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
 
     public:
         static double MAX_DOUBLE; //limites - maior DOUBLE possível
@@ -30,6 +37,13 @@ class Def {
         static long double numReq_Bloq; //número de requisições bloqueadas
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
+        
+        static void set_Pin(long double);
+        static void set_OSNRin(long double);
+        static void set_Lsss(long double);
+        static void set_Cenl(long double);
+        static void set_DistaA(long double);
+        static void set_Arquitetura(int);
 
         static double getLaNet(int);
         static int getNnodes();
@@ -43,5 +57,12 @@ class Def {
         static void setNumReqMax(long double);
         static void setSE(int);
         static void setSR(int);
+        
+        static long double get_Pin();
+        static long double get_OSRNin();
+        static long double get_Lsss();
+        static long double get_Cenl();
+        static long double get_DistaA();
+        static int set_Arquitetura();
 };
 #endif
