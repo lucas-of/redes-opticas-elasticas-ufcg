@@ -14,6 +14,8 @@
 #include "General.h"
 #include "Heuristics.h"
 #include "Route.h"
+#include "Node.h"
+#include "Enlace.h"
 
 using namespace std;
 
@@ -173,9 +175,24 @@ void createStructures() {
         for (int j=0; j < Def::getNnodes() ; j++)
             Topology_S[i][j] = new bool[Def::getSE()];
     }
+
+    for (int i=0;i < Def::getNnodes() ; i++) {
+	Node meuno;
+	Rede.push_back(meuno);
+    }
+
+    for (int i=0; i < 10; i++){
+	for(int j=0; j < 10; j++){//MEXERAQUI
+		if(Topology[i][j] == 1){
+			Enlace meuenlace(&Rede.at(i),&Rede.at(j));
+			Caminho.push_back(meuenlace);
+		}
+	}
+    }	
+
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-    int orN, deN;
+    int orN, deN;	
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
             Topol>>Topology[orN][deN];
