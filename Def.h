@@ -23,7 +23,7 @@ class Def {
         static long double Pin;//Pin potencia de entrada
         static long double OSNRin;//OSNRin OSNR de entrada
         static long double Lsss;//Lsssm perdas nos dispositivos
-        static long double Cenl;//Cenl comprimento dos enlaces
+        static long double Cenl;//Cenl comprimento dos enlaces, uma matriz
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static int arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
 

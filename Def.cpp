@@ -16,7 +16,12 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
-
+long double Def::Pin=0.0;
+long double Def::OSNRin=0.0;
+long double Def::Lsss=0.0;
+long double Def::Cenl=0.0;//Comprimento dos enlaces, uma matriz
+long double Def::DistA=0.0;
+int Def::arquitetura=0;
 
 double Def::getLaNet(int Lr) {
     assert(Lr>0 && Lr <= SR);
@@ -95,4 +100,53 @@ void Def::setSE(int x) {
 
 void Def::setSR(int x) {
     SR = x;
+}
+
+void Def::set_Pin(long double p){
+    Pin=p;
+}
+
+void Def::set_OSNRin(long double o){
+    OSNRin=o;
+}
+
+void Def::set_Lsss(long double l){
+    Lsss=l;
+}
+
+void Def::set_Cenl(long double c){//É dado por uma matriz
+    Cenl=c;
+}
+
+void Def::set_DistaA(long double d){
+    DistaA=d;
+}
+
+void Def::set_Arquiterura(int a){
+    arquiterura=a;
+}
+
+
+long double Def::get_Pin(){
+    return Pin;
+}
+
+long double Def::get_OSRNin(){
+    return OSRNin;
+}
+
+long double Def::get_Lsss(){
+    return Lsss;
+}
+
+long double Def::get_Cenl(){//É dado por uma matriz
+    return Cenl;
+}
+
+long double Def::get_DistaA(){
+    return DistaA;
+}
+
+int Def::set_Arquitetura(){
+    return arquitetura;
 }
