@@ -114,7 +114,7 @@ void clearMemory() {
             //Há uma conexao
             con = firstEvent->conexao;
             route = con->getRoute();
-            for (unsigned c = 0; c < route->getNhops(); c++) {
+            for (int c = 0; c < route->getNhops(); c++) {
                 //remove todos os slots ocupados da conexao
                 L_or = route->getNode(c);
                 L_de = route->getNode(c+1);
@@ -170,25 +170,16 @@ void CompressRight(Conexao *con) {
 void createStructures() {
     Topology = new long double*[Def::getNnodes()]; //matriz de conexões entre nós
     for (int i=0 ; i < Def::getNnodes() ; i++) Topology[i] = new long double[Def::getNnodes()];
-    Topology_S = new bool**[Def::getNnodes()]; //matriz de ocupação de slots de cada enlace
-    for (int i=0 ; i < Def::getNnodes() ; i++) {
+    Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
+    for (int i=0 ; i < Def::getSE() ; i++) {
         Topology_S[i] = new bool*[Def::getNnodes()];
         for (int j=0; j < Def::getNnodes() ; j++)
-            Topology_S[i][j] = new bool[Def::getSE()];
+            Topology_S[i][j] = new bool[Def::getNnodes()];
     }
 
     for (int i=0;i < Def::getNnodes() ; i++) {
         Node a_node;
         Rede.push_back(a_node);
-    }
-
-    for (int i=0; i < 10; i++){
-        for(int j=0; j < 10; j++){//MEXERAQUI
-            if(Topology[i][j] == 1){
-                Enlace meuenlace(&Rede.at(i),&Rede.at(j));
-                Caminho.push_back(meuenlace);
-            }
-        }
     }
 
     //Carrega topologia de rede a partir do arquivo Topology.txt
@@ -204,6 +195,17 @@ void createStructures() {
 
     //Calcula o grau de cada no
     GrauDosNodes();
+
+    //Implemente os Enlaces
+    Caminho = new vector<Enlace>[Def::getNnodes()];
+    for (int i=0; i < Def::getNnodes(); i++){
+        for(int j=0; j < Def::getNnodes(); j++){
+            if(Topology[i][j] == 1){
+                Enlace meuenlace(&Rede.at(i),&Rede.at(j));
+                Caminho[i].push_back(meuenlace);
+            }
+        }
+    }
 }
 
 void DefineNextEventOfCon (Event* evt) {
