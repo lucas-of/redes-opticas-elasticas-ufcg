@@ -6,6 +6,7 @@
 #include <vector>
 #include "Event.h"
 #include "Node.h"
+#include "Enlace.h"
 
 using namespace std;
 
