@@ -31,6 +31,7 @@ void createStructures(); /*Cria estrutura topológica da rede, e carrega os dado
 void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
 void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
+void GrauDosNodes(void); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -177,18 +178,18 @@ void createStructures() {
     }
 
     for (int i=0;i < Def::getNnodes() ; i++) {
-	Node meuno;
-	Rede.push_back(meuno);
+        Node a_node;
+        Rede.push_back(a_node);
     }
 
     for (int i=0; i < 10; i++){
-	for(int j=0; j < 10; j++){//MEXERAQUI
-		if(Topology[i][j] == 1){
-			Enlace meuenlace(&Rede.at(i),&Rede.at(j));
-			Caminho.push_back(meuenlace);
-		}
-	}
-    }	
+        for(int j=0; j < 10; j++){//MEXERAQUI
+            if(Topology[i][j] == 1){
+                Enlace meuenlace(&Rede.at(i),&Rede.at(j));
+                Caminho.push_back(meuenlace);
+            }
+        }
+    }
 
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
@@ -200,6 +201,9 @@ void createStructures() {
         }
         cout << endl;
     }
+
+    //Calcula o grau de cada no
+    GrauDosNodes();
 }
 
 void DefineNextEventOfCon (Event* evt) {
@@ -495,6 +499,18 @@ void ExpandCon(Event* evt) {
     }
 }
 
+void GrauDosNodes() {
+    int node_temp = 0;
+    Def::clearGrauNo();
+    for (int orN = 0; orN < Def::getNnodes() ; orN++) {
+        for (int deN = 0; deN < Def::getNnodes() ; deN++) {
+            if (Topology[orN][deN] == 1) node_temp++;
+        }
+        Def::setGrauNo(node_temp);
+        node_temp=0;
+    }
+}
+
 bool FillSlot(const Route* route, const int s, const bool b) {
     int L_or, L_de;
     for (unsigned c = 0; c < route->getNhops(); c++) {
@@ -547,7 +563,6 @@ void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
         }
     }
 }
-
 
 void Load() {
     int Npontos, aux;
@@ -895,7 +910,6 @@ void SimCompFFO() {
     Resul2<<"Maxima diferenca percentual Positiva entre FFOext e FFOconv: "<<difPerc_FFOconv_FFOext_Pos<<endl;
     Resul2<<"Maxima diferenca percentual Negativa entre FFOext e FFOconv: "<<difPerc_FFOconv_FFOext_Neg<<endl;
 }
-
 
 void Simulate() {
     clearMemory();

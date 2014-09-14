@@ -3,6 +3,7 @@
 
 //Inicializa constantes estáticas
 vector<double> Def::LaNet(0);
+vector<int> Def::GrauNo(0);
 double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
@@ -17,6 +18,14 @@ long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
 
+void Def::clearGrauNo() {
+    GrauNo.clear();
+}
+
+int Def::getGrauNo(int No) {
+    assert(No <= Nnodes);
+    return GrauNo.at(No);
+}
 
 double Def::getLaNet(int Lr) {
     assert(Lr>0 && Lr <= SR);
@@ -37,6 +46,11 @@ int Def::getNnodes() {
 
 long double Def::getNumReqMax() {
     return numReqMax;
+}
+
+void Def::setGrauNo(int Grau) {
+    assert(GrauNo.size() < (unsigned) Nnodes);
+    GrauNo.push_back(Grau);
 }
 
 void Def::setLaCheck(double la) {

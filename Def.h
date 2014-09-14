@@ -14,6 +14,7 @@ typedef long double TIME;
 
 class Def {
     private:
+        static vector<int> GrauNo; //O grau de cada no
         static vector<double> LaNet; //La é o tráfego por cada slot
         static int Nnodes; // N é o número de nós;
         static long double numReqMax; //é o número máximo de requisições
@@ -31,12 +32,15 @@ class Def {
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
 
+        static void clearGrauNo();
+        static int getGrauNo(int);
         static double getLaNet(int);
         static int getNnodes();
         static long double getNumReqMax();
         static void setNnodes(int);
         static int getSE();
         static int getSR();
+        static void setGrauNo(int Grau);
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots
         static void setLaUniform(double); //tráfego uniforme entre enlaces
