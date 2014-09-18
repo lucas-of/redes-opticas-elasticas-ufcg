@@ -21,6 +21,7 @@ using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
+double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -70,6 +71,7 @@ int main() {
     delete []Topology;
     delete []Topology_S;
     delete []AllRoutes;
+    delete []Caminho;
     if (FFlists != NULL) delete FFlists;
     cout << "Fim do programa";
     cin.get();
@@ -81,6 +83,10 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     if(NslotsUsed <= 0) //A conexao foi bloqueada
         Def::numReq_Bloq++;
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
+}
+
+double AvaliarOSNR(const Route *Rota) {
+    return 0;
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -114,7 +120,7 @@ void clearMemory() {
             //Há uma conexao
             con = firstEvent->conexao;
             route = con->getRoute();
-            for (int c = 0; c < route->getNhops(); c++) {
+            for (unsigned c = 0; c < route->getNhops(); c++) {
                 //remove todos os slots ocupados da conexao
                 L_or = route->getNode(c);
                 L_de = route->getNode(c+1);
@@ -326,7 +332,7 @@ void Dijkstra() {
 void DijkstraAcum(const int orN, const int deN, const int L) {
     //L e a largura de banda (em numero de slots) da requisicao
     assert(deN != orN);
-    int VA, i, j, s, k, h, path, hops, hopsAux;
+    int VA, i, j, s, k=0, h, path, hops, hopsAux;
     long double min, custoAux;
     vector<int> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
@@ -415,7 +421,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
 void DijkstraFormas(const int orN, const int deN, const int L) {
     //L e a largura de banda (em numero de slots) da requisicao
     assert(orN != deN);
-    int VA, i, j, k, path, h, hops;
+    int VA, i, j, k=0, path, h, hops;
     long double min;
     bool *DispLink = new bool[Def::getSE()];
     long double *CustoVertice = new long double[Def::getNnodes()];
@@ -501,18 +507,6 @@ void ExpandCon(Event* evt) {
     }
 }
 
-void GrauDosNodes() {
-    int node_temp = 0;
-    Def::clearGrauNo();
-    for (int orN = 0; orN < Def::getNnodes() ; orN++) {
-        for (int deN = 0; deN < Def::getNnodes() ; deN++) {
-            if (Topology[orN][deN] == 1) node_temp++;
-        }
-        Def::setGrauNo(node_temp);
-        node_temp=0;
-    }
-}
-
 bool FillSlot(const Route* route, const int s, const bool b) {
     int L_or, L_de;
     for (unsigned c = 0; c < route->getNhops(); c++) {
@@ -546,7 +540,7 @@ void FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
 
 void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
     assert( (si == -1) && (NslotsUsed == 0) );
-    int s, sum;
+    int s, sum=0;
     for(int sOrd = 0; sOrd < Def::getSE(); sOrd++) {
         s = FFlists[NslotsReq]->at(sOrd);
         if(s <= Def::getSE()-NslotsReq) {
@@ -563,6 +557,18 @@ void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
             NslotsUsed = NslotsReq;
             break;
         }
+    }
+}
+
+void GrauDosNodes() {
+    int node_temp = 0;
+    Def::clearGrauNo();
+    for (int orN = 0; orN < Def::getNnodes() ; orN++) {
+        for (int deN = 0; deN < Def::getNnodes() ; deN++) {
+            if (Topology[orN][deN] == 1) node_temp++;
+        }
+        Def::setGrauNo(node_temp);
+        node_temp=0;
     }
 }
 
@@ -597,6 +603,11 @@ void Load() {
         for(int i = 0; i < Def::getSR()+1; i++)
             FFlists[i] = new vector<int>(0);
     }
+
+    double OSNR;
+    cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
+    cin >> OSNR;
+    Def::setLimiarOSNR(OSNR);
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
@@ -757,6 +768,7 @@ void RequestCon(Event* evt) {
 
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
+    double OSNR;
     for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
         route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
         NslotsUsed = 0;
@@ -765,28 +777,31 @@ void RequestCon(Event* evt) {
         assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
+            OSNR = AvaliarOSNR(route);
+            if (OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
             //Inserir a conexao na rede
-            int L_or, L_de;
-            for(unsigned c = 0; c < route->getNhops(); c++) {
-                L_or = route->getNode(c);
-                L_de = route->getNode(c+1);
-                for(int s = si; s < si + NslotsUsed; s++) {
-                    assert(Topology_S[s][L_or][L_de] == false);
-                    Topology_S[s][L_or][L_de] = true;
-                    //Os slots sao marcados como ocupados
+                int L_or, L_de;
+                for(unsigned c = 0; c < route->getNhops(); c++) {
+                    L_or = route->getNode(c);
+                    L_de = route->getNode(c+1);
+                    for(int s = si; s < si + NslotsUsed; s++) {
+                        assert(Topology_S[s][L_or][L_de] == false);
+                        Topology_S[s][L_or][L_de] = true;
+                        //Os slots sao marcados como ocupados
+                    }
                 }
-            }
 
-            Def::numHopsPerRoute += route->getNhops();
-            Def::netOccupancy += NslotsUsed*route->getNhops();
-            //Cria uma nova conexao
-            Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
-            //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
-            Event *evt = new Event;
-            evt->conexao = newConexao;
-            DefineNextEventOfCon(evt);
-            ScheduleEvent(evt);
-            break;
+                Def::numHopsPerRoute += route->getNhops();
+                Def::netOccupancy += NslotsUsed*route->getNhops();
+                //Cria uma nova conexao
+                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
+                //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
+                Event *evt = new Event;
+                evt->conexao = newConexao;
+                DefineNextEventOfCon(evt);
+                ScheduleEvent(evt);
+                break;
+            }
         }
     }
 
