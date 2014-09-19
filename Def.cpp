@@ -3,10 +3,12 @@
 
 //Inicializa constantes estáticas
 vector<double> Def::LaNet(0);
+vector<int> Def::GrauNo(0);
 double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes = 0;
+long double Def::limiarOSNR = 0.0;
 long double Def::netOccupancy = 0.0;
 long double Def::numHopsPerRoute = 0.0;
 long double Def::numReq = 0.0;
@@ -17,10 +19,22 @@ long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
 
+void Def::clearGrauNo() {
+    GrauNo.clear();
+}
+
+int Def::getGrauNo(int No) {
+    assert(No <= Nnodes);
+    return GrauNo.at(No);
+}
 
 double Def::getLaNet(int Lr) {
     assert(Lr>0 && Lr <= SR);
     return LaNet.at(Lr);
+}
+
+double Def::getlimiarOSNR() {
+    return limiarOSNR;
 }
 
 int Def::getSE() {
@@ -37,6 +51,11 @@ int Def::getNnodes() {
 
 long double Def::getNumReqMax() {
     return numReqMax;
+}
+
+void Def::setGrauNo(int Grau) {
+    assert(GrauNo.size() < (unsigned) Nnodes);
+    GrauNo.push_back(Grau);
 }
 
 void Def::setLaCheck(double la) {
@@ -77,6 +96,11 @@ void Def::setLaUniform(double la) {
     for(int Lr = 1; Lr <= SR; Lr++)
         LaNet.push_back((double)la/SR);
     setLaCheck(la); //Checa
+}
+
+void Def::setLimiarOSNR(double OSNR) {
+    assert (OSNR >= 0);
+    limiarOSNR = OSNR;
 }
 
 void Def::setNnodes(int x) {

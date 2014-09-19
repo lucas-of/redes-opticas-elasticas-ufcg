@@ -14,11 +14,14 @@
 #include "General.h"
 #include "Heuristics.h"
 #include "Route.h"
+#include "Node.h"
+#include "Enlace.h"
 
 using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
+double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -29,6 +32,7 @@ void createStructures(); /*Cria estrutura topológica da rede, e carrega os dado
 void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
 void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
+void GrauDosNodes(void); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -67,6 +71,7 @@ int main() {
     delete []Topology;
     delete []Topology_S;
     delete []AllRoutes;
+    delete []Caminho;
     if (FFlists != NULL) delete FFlists;
     cout << "Fim do programa";
     cin.get();
@@ -78,6 +83,10 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     if(NslotsUsed <= 0) //A conexao foi bloqueada
         Def::numReq_Bloq++;
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
+}
+
+double AvaliarOSNR(const Route *Rota) {
+    return 0;
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -94,7 +103,7 @@ bool CheckSlotAvailability(const Route* route, const int s) {
     for(unsigned int c = 0; c < route->getNhops(); c++) {
         L_or = route->getNode(c);
         L_de = route->getNode(c+1);
-        if(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true)
+        if(Topology_S[s][L_or][L_de] == true)
             return false; //Basta o slot s nao estar disponivel em uma das fibras da rota;
     }
     return true; //O slot s esta disponivel em todas as fibras da rota;
@@ -116,7 +125,7 @@ void clearMemory() {
                 L_or = route->getNode(c);
                 L_de = route->getNode(c+1);
                 for (s = con->getFirstSlot(); s <= con->getLastSlot(); s++)
-                    Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = false;
+                    Topology_S[s][L_or][L_de] = false;
             }
             delete con;
         }
@@ -129,7 +138,7 @@ void clearMemory() {
     for(int orN = 0; orN < Def::getNnodes(); orN++)
         for(int deN = 0; deN < Def::getNnodes(); deN++)
             for(s = 0; s < Def::getSE(); s++)
-                assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + orN*Def::getNnodes() + deN] == false);
+                assert(Topology_S[s][orN][deN] == false);
     assert(firstEvent == NULL);
 }
 
@@ -165,17 +174,43 @@ void CompressRight(Conexao *con) {
 }
 
 void createStructures() {
-    Topology = new long double[Def::getNnodes()*Def::getNnodes()]; //matriz de conexões entre nós
-    Topology_S = new bool[Def::getNnodes()*Def::getNnodes()*Def::getSE()]; //matriz de ocupação de slots de cada enlace
+    Topology = new long double*[Def::getNnodes()]; //matriz de conexões entre nós
+    for (int i=0 ; i < Def::getNnodes() ; i++) Topology[i] = new long double[Def::getNnodes()];
+    Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
+    for (int i=0 ; i < Def::getSE() ; i++) {
+        Topology_S[i] = new bool*[Def::getNnodes()];
+        for (int j=0; j < Def::getNnodes() ; j++)
+            Topology_S[i][j] = new bool[Def::getNnodes()];
+    }
+
+    for (int i=0;i < Def::getNnodes() ; i++) {
+        Node a_node;
+        Rede.push_back(a_node);
+    }
+
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-    int orN, deN;
+    int orN, deN;	
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
-            Topol>>Topology[orN*Def::getNnodes()+deN];
-            cout<<Topology[orN*Def::getNnodes()+deN]<<" ";
+            Topol>>Topology[orN][deN];
+            cout<<Topology[orN][deN]<<" ";
         }
         cout << endl;
+    }
+
+    //Calcula o grau de cada no
+    GrauDosNodes();
+
+    //Implemente os Enlaces
+    Caminho = new vector<Enlace>[Def::getNnodes()];
+    for (int i=0; i < Def::getNnodes(); i++){
+        for(int j=0; j < Def::getNnodes(); j++){
+            if(Topology[i][j] == 1){
+                Enlace meuenlace(&Rede.at(i),&Rede.at(j));
+                Caminho[i].push_back(meuenlace);
+            }
+        }
     }
 }
 
@@ -249,8 +284,8 @@ void Dijkstra() {
             Status[k] = 1;
             VA = VA-1;
             for(j = 0; j < Def::getNnodes(); j++)
-                if((Status[j] == 0)&&(Topology[k*Def::getNnodes()+j] != 0)&&(CustoVertice[k]+Topology[k*Def::getNnodes()+j] < CustoVertice[j])) {
-                    CustoVertice[j] = CustoVertice[k]+Topology[k*Def::getNnodes()+j];
+                if((Status[j] == 0)&&(Topology[k][j] != 0)&&(CustoVertice[k]+Topology[k][j] < CustoVertice[j])) {
+                    CustoVertice[j] = CustoVertice[k]+Topology[k][j];
                     Precedente[j] = k;
                 }
         }
@@ -297,11 +332,12 @@ void Dijkstra() {
 void DijkstraAcum(const int orN, const int deN, const int L) {
     //L e a largura de banda (em numero de slots) da requisicao
     assert(deN != orN);
-    int VA, i, j, s, k, h, path, hops, hopsAux;
+    int VA, i, j, s, k=0, h, path, hops, hopsAux;
     long double min, custoAux;
     vector<int> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
-    bool *DispVertice = new bool[Def::getNnodes()*Def::getSE()];
+    bool **DispVertice = new bool*[Def::getNnodes()];
+    for (int i=0 ; i<Def::getNnodes() ; i++) DispVertice[i] = new bool[Def::getSE()];
     int *HopsVertice = new int[Def::getNnodes()]; //O numero de hops ate chegar aquele no pelo caminho mais curto
     bool *DispAux = new bool[Def::getSE()];
     int *Precedente = new int[Def::getNnodes()]; //Informa em cada no por onde chegou a rota mais curta
@@ -314,12 +350,12 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
             CustoVertice[i] = Def::MAX_DOUBLE;
             HopsVertice[i] = Def::MAX_INT;
             for(s = 0; s < Def::getSE(); s++)
-                DispVertice[i*Def::getSE() + s] = false; //O slot e assumido indisponivel
+                DispVertice[i][s] = false; //O slot e assumido indisponivel
         } else {
             CustoVertice[i] = 0.0;
             HopsVertice[i] = 0;
             for(s = 0; s < Def::getSE(); s++)
-                DispVertice[i*Def::getSE() + s] = true; //O slot e assumido disponivel
+                DispVertice[i][s] = true; //O slot e assumido disponivel
         }
         Precedente[i] = -1;
         Status[i] = 0; //No ainda nao foi marcado
@@ -338,11 +374,11 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
         //A partir do no k, atualiza ou nao o custo de seus nos vizinhos (j)
         VA = VA-1;
         for(j = 0; j < Def::getNnodes(); j++)
-            if((Status[j] == false)&&(Topology[k*Def::getNnodes()+j] != 0)) {
+            if((Status[j] == false)&&(Topology[k][j] != 0)) {
                 //O no j e nao marcado e vizinho do no k
                 //Calcula O vetor de disponibilidade em j por uma rota proveniente de k
                 for(s = 0; s < Def::getSE(); s++)
-                    DispAux[s] = DispVertice[k*Def::getSE() + s] * !Topology_S[s*Def::getNnodes()*Def::getNnodes() + k*Def::getNnodes() + j];
+                    DispAux[s] = DispVertice[k][s] * !Topology_S[s][k][j];
                 //Calcula o numero de hops em j por uma rota proveniente de k
                 hopsAux = HopsVertice[k]+1;
                 //Checa se o custo em j deve ser atualizado
@@ -351,7 +387,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
                     HopsVertice[j] = hopsAux;
                     CustoVertice[j] = custoAux;
                     for(int s = 0; s < Def::getSE(); s++)
-                        DispVertice[j*Def::getSE() + s] = DispAux[s];
+                        DispVertice[j][s] = DispAux[s];
                     Precedente[j] = k;
                 }
             }
@@ -385,7 +421,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
 void DijkstraFormas(const int orN, const int deN, const int L) {
     //L e a largura de banda (em numero de slots) da requisicao
     assert(orN != deN);
-    int VA, i, j, k, path, h, hops;
+    int VA, i, j, k=0, path, h, hops;
     long double min;
     bool *DispLink = new bool[Def::getSE()];
     long double *CustoVertice = new long double[Def::getNnodes()];
@@ -415,11 +451,11 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
         VA = VA-1;
         //Verifica se precisa atualizar ou nao os vizinhos de k
         for(j = 0; j < Def::getNnodes(); j++)
-            if((Status[j] == 0)&&(Topology[k*Def::getNnodes()+j] != 0)) {
+            if((Status[j] == 0)&&(Topology[k][j] != 0)) {
                 //O no j e nao marcado e vizinho do no k
                 //Calcula O vetor de disponibilidade do enlace entre k e j
                 for(int s = 0; s < Def::getSE(); s++)
-                    DispLink[s] = !Topology_S[s*Def::getNnodes()*Def::getNnodes() + k*Def::getNnodes() + j];
+                    DispLink[s] = !Topology_S[s][k][j];
                 custoLink = Heuristics::calculateCostLink(DispLink, L);
                 if(CustoVertice[k] + custoLink < CustoVertice[j]) {
                     CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -476,8 +512,8 @@ bool FillSlot(const Route* route, const int s, const bool b) {
     for (unsigned c = 0; c < route->getNhops(); c++) {
         L_or = route->getNode(c);
         L_de = route->getNode(c+1);
-        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] != b);
-        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = b;
+        assert(Topology_S[s][L_or][L_de] != b);
+        Topology_S[s][L_or][L_de] = b;
     }
     return true;
 }
@@ -504,7 +540,7 @@ void FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si)
 
 void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
     assert( (si == -1) && (NslotsUsed == 0) );
-    int s, sum;
+    int s, sum=0;
     for(int sOrd = 0; sOrd < Def::getSE(); sOrd++) {
         s = FFlists[NslotsReq]->at(sOrd);
         if(s <= Def::getSE()-NslotsReq) {
@@ -524,6 +560,17 @@ void FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
     }
 }
 
+void GrauDosNodes() {
+    int node_temp = 0;
+    Def::clearGrauNo();
+    for (int orN = 0; orN < Def::getNnodes() ; orN++) {
+        for (int deN = 0; deN < Def::getNnodes() ; deN++) {
+            if (Topology[orN][deN] == 1) node_temp++;
+        }
+        Def::setGrauNo(node_temp);
+        node_temp=0;
+    }
+}
 
 void Load() {
     int Npontos, aux;
@@ -556,6 +603,11 @@ void Load() {
         for(int i = 0; i < Def::getSR()+1; i++)
             FFlists[i] = new vector<int>(0);
     }
+
+    double OSNR;
+    cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
+    cin >> OSNR;
+    Def::setLimiarOSNR(OSNR);
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
@@ -686,8 +738,8 @@ bool ReleaseSlot(const Route* route, int s) {
     for(unsigned c = 0; c < route->getNhops(); c++) {
         L_or = route->getNode(c);
         L_de = route->getNode(c+1);
-        assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == true);
-        Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = false;
+        assert(Topology_S[s][L_or][L_de] == true);
+        Topology_S[s][L_or][L_de] = false;
     }
     return true;
 }
@@ -716,6 +768,7 @@ void RequestCon(Event* evt) {
 
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
+    double OSNR;
     for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
         route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
         NslotsUsed = 0;
@@ -724,28 +777,31 @@ void RequestCon(Event* evt) {
         assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
+            OSNR = AvaliarOSNR(route);
+            if (OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
             //Inserir a conexao na rede
-            int L_or, L_de;
-            for(unsigned c = 0; c < route->getNhops(); c++) {
-                L_or = route->getNode(c);
-                L_de = route->getNode(c+1);
-                for(int s = si; s < si + NslotsUsed; s++) {
-                    assert(Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] == false);
-                    Topology_S[s*Def::getNnodes()*Def::getNnodes() + L_or*Def::getNnodes() + L_de] = true;
-                    //Os slots sao marcados como ocupados
+                int L_or, L_de;
+                for(unsigned c = 0; c < route->getNhops(); c++) {
+                    L_or = route->getNode(c);
+                    L_de = route->getNode(c+1);
+                    for(int s = si; s < si + NslotsUsed; s++) {
+                        assert(Topology_S[s][L_or][L_de] == false);
+                        Topology_S[s][L_or][L_de] = true;
+                        //Os slots sao marcados como ocupados
+                    }
                 }
-            }
 
-            Def::numHopsPerRoute += route->getNhops();
-            Def::netOccupancy += NslotsUsed*route->getNhops();
-            //Cria uma nova conexao
-            Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
-            //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
-            Event *evt = new Event;
-            evt->conexao = newConexao;
-            DefineNextEventOfCon(evt);
-            ScheduleEvent(evt);
-            break;
+                Def::numHopsPerRoute += route->getNhops();
+                Def::netOccupancy += NslotsUsed*route->getNhops();
+                //Cria uma nova conexao
+                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
+                //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
+                Event *evt = new Event;
+                evt->conexao = newConexao;
+                DefineNextEventOfCon(evt);
+                ScheduleEvent(evt);
+                break;
+            }
         }
     }
 
@@ -872,7 +928,6 @@ void SimCompFFO() {
     Resul2<<"Maxima diferenca percentual Negativa entre FFOext e FFOconv: "<<difPerc_FFOconv_FFOext_Neg<<endl;
 }
 
-
 void Simulate() {
     clearMemory();
     //Cria o primeiro evento da rede como uma requisicao:
@@ -920,7 +975,7 @@ int sumOccupation(int s) {
     int soma=0;
     for(int origem = 0; origem < Def::getNnodes(); origem++)
         for(int destino = 0; destino < Def::getNnodes(); destino++)
-            if( (Topology[origem*Def::getNnodes() + destino] > 0.0) && (Topology_S[s*Def::getNnodes()*Def::getNnodes() + origem*Def::getNnodes() + destino] == true) )
+            if( (Topology[origem][destino] > 0.0) && (Topology_S[s][origem][destino] == true) )
                 //Se houver enlace entre origem e destino e o slot 's' estiver livre neste enlace
                 soma++;
     return soma;
