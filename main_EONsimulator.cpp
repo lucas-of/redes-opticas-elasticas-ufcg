@@ -574,7 +574,7 @@ void Load() {
     Def::set_Pin(op);
     cout<<"Entre com OSNR de entrada"<<endl;
     cin>>op;
-    Def::set_OSRNin(op);
+    Def::set_OSNRin(op);
     cout<<"Entre com as perdas nos dispositivos"<<endl;
     cin>>op;
     Def::set_Lsss(op);

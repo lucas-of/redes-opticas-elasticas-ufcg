@@ -26,6 +26,11 @@ class Def {
         static long double Cenl;//Cenl comprimento dos enlaces, uma matriz
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static int arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
+        static long double lambda;//comprimento de onda (em nanometros)
+        static long double Bslot;//largura de banda do slot
+        static long double Famp;//fator do ruido amplificador
+        static long double LFB;
+        static long double LDCF;
 
     public:
         static double MAX_DOUBLE; //limites - maior DOUBLE possível
@@ -44,13 +49,18 @@ class Def {
         static void set_Cenl(long double);
         static void set_DistaA(long double);
         static void set_Arquitetura(int);
+        static void set_lambda(long double);
+        static void set_Bslot(long double);
+        static void set_Famp(long double);
 
         static double getLaNet(int);
+        static long double getlambda(void);
         static int getNnodes();
         static long double getNumReqMax();
         static void setNnodes(int);
         static int getSE();
         static int getSR();
+        static long double get_Bslot();
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots
         static void setLaUniform(double); //tráfego uniforme entre enlaces
@@ -58,11 +68,14 @@ class Def {
         static void setSE(int);
         static void setSR(int);
         
+        static long double get_LFB();
+        static long double get_LDCF();
         static long double get_Pin();
         static long double get_OSRNin();
         static long double get_Lsss();
         static long double get_Cenl();
         static long double get_DistaA();
+        static long double get_Famp();
         static int set_Arquitetura();
 };
 #endif
