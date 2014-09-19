@@ -11,14 +11,15 @@ class Enlace {
         Node* get_NodeDestino(void);
         long double get_ganho_enlace();
         long double get_Nnz();
-        void calcula_Nnz();
     private:
         double distancia;
         Node *Origem, *Destino;
         unsigned int num_amplif;
         long double ganho_enlace;
         void calcula_ganho_enlace();
-        long double Nnz;//posição do amplificador
+        void calcula_Nnz();
+        void calcula_num_amplificadores(double dist);
+        long double Nnz;//ruido do amplificador
 };
 
 #endif // ENLACE_H

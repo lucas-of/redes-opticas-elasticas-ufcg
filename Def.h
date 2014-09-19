@@ -20,11 +20,10 @@ class Def {
         static long double numReqMax; //é o número máximo de requisições
         static int SE; //S é o número de slots por Enlace
         static int SR; //SR é o número máximo de slots requisitados
-        
+
         static long double Pin;//Pin potencia de entrada
         static long double OSNRin;//OSNRin OSNR de entrada
         static long double Lsss;//Lsssm perdas nos dispositivos
-        static long double Cenl;//Cenl comprimento dos enlaces, uma matriz
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static int arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
         static long double lambda;//comprimento de onda (em nanometros)
@@ -44,29 +43,28 @@ class Def {
         static long double numReq_Bloq; //número de requisições bloqueadas
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
-        
-        static void set_Pin(long double);
-        static void set_OSNRin(long double);
-        static void set_Lsss(long double);
-        static void set_Cenl(long double);
-        static void set_DistaA(long double);
-        static void set_Arquitetura(int);
-        static void set_lambda(long double);
-        static void set_Bslot(long double);
-        static void set_Famp(long double);
 
         static void clearGrauNo();
+        static long double get_Bslot();
         static int getGrauNo(int);
+        static long double getlambda(void);
         static double getLaNet(int);
         static double getlimiarOSNR();
-        static long double getlambda(void);
         static int getNnodes();
         static long double getNumReqMax();
         static void setNnodes(int);
         static int getSE();
         static int getSR();
+        static void set_Arquitetura(int);
+        static void set_Bslot(long double);
+        static void set_DistaA(long double);
+        static void set_Famp(long double);
+        static void set_lambda(long double);
+        static void set_Lsss(long double);
+        static void set_OSNRin(long double);
+        static void set_Pin(long double);
+
         static void setGrauNo(int Grau);
-        static long double get_Bslot();
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots
         static void setLaUniform(double); //tráfego uniforme entre enlaces
@@ -74,15 +72,14 @@ class Def {
         static void setNumReqMax(long double);
         static void setSE(int);
         static void setSR(int);
-        
+
+        static int get_Arquitetura();
         static long double get_LFB();
         static long double get_LDCF();
         static long double get_Pin();
         static long double get_OSRNin();
         static long double get_Lsss();
-        static long double get_Cenl();
         static long double get_DistaA();
         static long double get_Famp();
-        static int set_Arquitetura();
 };
 #endif

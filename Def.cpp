@@ -23,7 +23,6 @@ int Def::SR = 0;
 long double Def::Pin=0.0;
 long double Def::OSNRin=0.0;
 long double Def::Lsss=0.0;
-long double Def::Cenl=0.0;//Comprimento dos enlaces, uma matriz
 long double Def::DistA=0.0;
 int Def::arquitetura=0;
 long double Def::lambda = 0.0;
@@ -152,7 +151,7 @@ void Def::setSR(int x) {
     SR = x;
 }
 
-void Def::set_Pin(long double p){
+void Def::set_Pin(long double p) {
     assert (p >0);
     Pin=p;
 }
@@ -167,18 +166,12 @@ void Def::set_Lsss(long double l){
     Lsss=l;
 }
 
-void Def::set_Cenl(long double c){//É dado por uma matriz
-
-}
-
-void Def::set_Bslot(long double b)
-{
+void Def::set_Bslot(long double b) {
     assert (b >0);
     Bslot = b;
 }
 
-void Def::set_Famp(long double f)
-{
+void Def::set_Famp(long double f) {
     assert (f >0);
     Famp = f;
 }
@@ -204,24 +197,18 @@ long double Def::get_Lsss(){
     return Lsss;
 }
 
-long double Def::get_Cenl(){//É dado por uma matriz
-    return Cenl;
-}
-
-long double Def::get_DistaA(){
+long double Def::get_DistaA() {
     return DistA;
 }
 
-long double Def::get_Bslot()
-{
+long double Def::get_Bslot() {
     return Bslot;
 }
 
-long double Def::get_Famp()
-{
+long double Def::get_Famp() {
     return Famp;
 }
 
-int Def::set_Arquitetura(){
+int Def::get_Arquitetura() {
     return arquitetura;
 }

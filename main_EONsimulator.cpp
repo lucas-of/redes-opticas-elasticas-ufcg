@@ -190,7 +190,7 @@ void createStructures() {
 
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-    int orN, deN;	
+    int orN, deN;
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
             Topol>>Topology[orN][deN];
@@ -204,11 +204,16 @@ void createStructures() {
 
     //Implemente os Enlaces
     Caminho = new vector<Enlace>[Def::getNnodes()];
+    Enlace infinito(NULL,NULL,Def::MAX_INT);
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
+            double distancia_temp;
+            Topol>>distancia_temp;
             if(Topology[i][j] == 1){
-                Enlace meuenlace(&Rede.at(i),&Rede.at(j),1);
+                Enlace meuenlace(&Rede.at(i),&Rede.at(j),distancia_temp);
                 Caminho[i].push_back(meuenlace);
+            } else {
+                Caminho[i].push_back(infinito);
             }
         }
     }
@@ -630,10 +635,7 @@ void Load() {
     cout<<"Entre com as perdas nos dispositivos"<<endl;
     cin>>op;
     Def::set_Lsss(op);
-    cout<<"Entre com o comprimento do enlace"<<endl;
-    cin>>op;
-    Def::set_Cenl(op);
-    cout<<"Entre com distancia entre os enlaces"<<endl;
+    cout<<"Entre com distancia entre os amplificadores"<<endl;
     cin>>op;
     Def::set_DistaA(op);
     cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
