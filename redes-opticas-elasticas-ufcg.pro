@@ -26,4 +26,5 @@ HEADERS += \
     Main_Auxiliar.h \
     Event.h \
     Node.h \
-    Enlace.h
+    Enlace.h \
+    Constantes.h

@@ -207,7 +207,7 @@ void createStructures() {
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
             if(Topology[i][j] == 1){
-                Enlace meuenlace(&Rede.at(i),&Rede.at(j));
+                Enlace meuenlace(&Rede.at(i),&Rede.at(j),1);
                 Caminho[i].push_back(meuenlace);
             }
         }
@@ -574,6 +574,7 @@ void GrauDosNodes() {
 
 void Load() {
     int Npontos, aux;
+    long double op;
 
     //Adquire o numero de Nos:
     Topol>>aux;
@@ -619,6 +620,25 @@ void Load() {
     cout<<"#Pontos no grafico = ";
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
+
+    cout<<"Entre com a potencia de entrada"<<endl;
+    cin>>op;
+    Def::set_Pin(op);
+    cout<<"Entre com OSNR de entrada"<<endl;
+    cin>>op;
+    Def::set_OSNRin(op);
+    cout<<"Entre com as perdas nos dispositivos"<<endl;
+    cin>>op;
+    Def::set_Lsss(op);
+    cout<<"Entre com o comprimento do enlace"<<endl;
+    cin>>op;
+    Def::set_Cenl(op);
+    cout<<"Entre com distancia entre os enlaces"<<endl;
+    cin>>op;
+    Def::set_DistaA(op);
+    cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
+    cin>>aux;
+    Def::set_Arquitetura(aux);
 
     //Dados para a expansao e compressao das conexoes:
     cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;
