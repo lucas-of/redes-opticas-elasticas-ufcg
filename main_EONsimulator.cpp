@@ -184,8 +184,7 @@ void createStructures() {
     }
 
     for (int i=0;i < Def::getNnodes() ; i++) {
-        Node a_node;
-        Rede.push_back(a_node);
+        Rede.push_back(Node(i));
     }
 
     //Carrega topologia de rede a partir do arquivo Topology.txt
@@ -204,16 +203,14 @@ void createStructures() {
 
     //Implemente os Enlaces
     Caminho = new vector<Enlace>[Def::getNnodes()];
-    Enlace infinito(NULL,NULL,Def::MAX_INT);
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
             double distancia_temp;
             Topol>>distancia_temp;
             if(Topology[i][j] == 1){
-                Enlace meuenlace(&Rede.at(i),&Rede.at(j),distancia_temp);
-                Caminho[i].push_back(meuenlace);
+                Caminho[i].push_back(Enlace(&Rede.at(i),&Rede.at(j),distancia_temp));
             } else {
-                Caminho[i].push_back(infinito);
+                Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
             }
         }
     }
@@ -262,7 +259,7 @@ void DefineNextEventOfCon (Event* evt) {
 void Dijkstra() {
     int orN, deN, VA, i, j, k=0, path, h, hops;
     long double min;
-    vector<int> r;
+    vector<Node*> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
     int *Precedente = new int[Def::getNnodes()];
     int *PathRev = new int[Def::getNnodes()];
@@ -309,7 +306,7 @@ void Dijkstra() {
                 }
                 r.clear();
                 for(h = 0; h <= hops; h++)
-                    r.push_back(PathRev[hops-h]);
+                    r.push_back(&Rede.at(PathRev[hops-h]));
                 AllRoutes[path].push_back(new Route(r));
             }
         }
@@ -339,7 +336,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
     assert(deN != orN);
     int VA, i, j, s, k=0, h, path, hops, hopsAux;
     long double min, custoAux;
-    vector<int> r;
+    vector<Node*> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
     bool **DispVertice = new bool*[Def::getNnodes()];
     for (int i=0 ; i<Def::getNnodes() ; i++) DispVertice[i] = new bool[Def::getSE()];
@@ -408,7 +405,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
     }
     r.clear();
     for(h = 0; h <= hops; h++)
-        r.push_back(PathRev[hops-h]);
+        r.push_back(&Rede.at(PathRev[hops-h]));
     delete []CustoVertice;
     delete []Precedente;
     delete []Status;
@@ -480,11 +477,11 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
         PathRev[hops] = Precedente[j];
         j = Precedente[j];
     }
-    vector<int> r;
+    vector<Node*> r;
     r.clear();
     for(h = 0; h <= hops; h++)
-        r.push_back(PathRev[hops-h]);
-    assert(r.at(0) == orN && r.at(hops) == orN);
+        r.push_back(&Rede.at(PathRev[hops-h]));
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
     AllRoutes[path].push_back(new Route(r));
 
     delete []CustoVertice;
@@ -640,7 +637,10 @@ void Load() {
     Def::set_DistaA(op);
     cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
     cin>>aux;
-    Def::set_Arquitetura(aux);
+    if (aux == 1)
+        Def::set_Arquitetura(Def::BS);
+    else if (aux == 2)
+        Def::set_Arquitetura(Def::SS);
 
     //Dados para a expansao e compressao das conexoes:
     cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;

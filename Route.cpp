@@ -1,6 +1,10 @@
 #include "Route.h"
 
-Route::Route(std::vector<int>& path) : Path(path) {}
+Route::Route(std::vector<Node *> &path) {
+    for (int i=0; i<path.size() ; i++) {
+        Path.push_back(path.at(i)->get_whoami());
+    }
+}
 
 int Route::getDeN() const {
     assert(Path.size()>0);

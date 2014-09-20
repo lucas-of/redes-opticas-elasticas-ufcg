@@ -10,6 +10,7 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
     Destino = NDest;
     distancia = dist;
     calcula_num_amplificadores(dist);
+    calcula_Nnz();
     calcula_ganho_enlace();
 }
 

@@ -13,6 +13,10 @@ typedef long double TIME;
 #include "General.h"
 
 class Def {
+    public:
+        enum Arquitetura {
+            BS, SS
+        };
     private:
         static vector<int> GrauNo; //O grau de cada no
         static vector<double> LaNet; //La é o tráfego por cada slot
@@ -25,7 +29,7 @@ class Def {
         static long double OSNRin;//OSNRin OSNR de entrada
         static long double Lsss;//Lsssm perdas nos dispositivos
         static long double DistA;//DistA distancia entre os amplificadores de linha
-        static int arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
+        static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
         static long double lambda;//comprimento de onda (em nanometros)
         static long double Bslot;//largura de banda do slot
         static long double Famp;//fator do ruido amplificador
@@ -55,7 +59,7 @@ class Def {
         static void setNnodes(int);
         static int getSE();
         static int getSR();
-        static void set_Arquitetura(int);
+        static void set_Arquitetura(Arquitetura);
         static void set_Bslot(long double);
         static void set_DistaA(long double);
         static void set_Famp(long double);
@@ -73,7 +77,7 @@ class Def {
         static void setSE(int);
         static void setSR(int);
 
-        static int get_Arquitetura();
+        static Arquitetura get_Arquitetura();
         static long double get_LFB();
         static long double get_LDCF();
         static long double get_Pin();

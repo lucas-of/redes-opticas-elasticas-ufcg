@@ -4,10 +4,11 @@
 #include <assert.h>
 #include <iostream>
 #include <vector>
+#include "Node.h"
 
 class Route {
     public:
-        Route (std::vector<int> &);
+        Route (std::vector<Node*> &);
         int getDeN() const; //retorna ultimo no da rota
         unsigned int getNhops() const; //retorna numero de nos ate o destino
         int getNode(int) const; //retorna o no na posicao i da rota

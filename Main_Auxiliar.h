@@ -41,7 +41,6 @@ long double muC;
 long double **Topology;
 TIME simTime;
 vector<int> **FFlists = NULL;
-vector<int> **RouteInt;
 vector<Route*> *AllRoutes;
 vector<Node> Rede;
 vector<Enlace> *Caminho;

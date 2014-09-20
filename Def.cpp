@@ -24,7 +24,7 @@ long double Def::Pin=0.0;
 long double Def::OSNRin=0.0;
 long double Def::Lsss=0.0;
 long double Def::DistA=0.0;
-int Def::arquitetura=0;
+Def::Arquitetura Def::arquitetura=Def::BS;
 long double Def::lambda = 0.0;
 long double Def::Bslot = 0;
 long double Def::Famp = 0;
@@ -180,7 +180,7 @@ void Def::set_DistaA(long double d){
     DistA = d;
 }
 
-void Def::set_Arquitetura(int a){
+void Def::set_Arquitetura(Arquitetura a){
     arquitetura=a;
 }
 
@@ -209,6 +209,6 @@ long double Def::get_Famp() {
     return Famp;
 }
 
-int Def::get_Arquitetura() {
+Def::Arquitetura Def::get_Arquitetura() {
     return arquitetura;
 }

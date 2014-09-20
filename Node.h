@@ -3,12 +3,13 @@
 
 class Node {
     private:
+        int whoami;
         long double Nnz;//Representa a posicão do amplificador
         long double Nin;//Ruido de entrada, que é dado por potencia sobre ruido de entrada
     public:
-        Node();
+        Node(int);
         void calc_Nin();
-        void calc_Nnz();
+        int get_whoami();
 };
 
 #endif //NODE_H

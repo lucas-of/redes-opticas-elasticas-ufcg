@@ -1,14 +1,15 @@
 #include "Node.h"
 #include "Def.h"
 
-Node::Node() {
-    
+Node::Node(int who) {
+    assert (who>=0);
+    whoami = who;
 }
 
 void Node::calc_Nin(){//Ruido do amplificar
     Nin = Def::get_Pin() / Def::get_OSRNin();
 }
 
-void Node::calc_Nnz(){//posição do amplificador
-    Nnz=123;
+int Node::get_whoami() {
+    return whoami;
 }
