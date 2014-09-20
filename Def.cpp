@@ -20,14 +20,14 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
-long double Def::Pin=0.0;
-long double Def::OSNRin=0.0;
-long double Def::Lsss=0.0;
-long double Def::DistA=0.0;
+long double Def::Pin=1.0;
+long double Def::OSNRin=1.0;
+long double Def::Lsss=1.0;
+long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
-long double Def::lambda = 0.0;
-long double Def::Bslot = 0;
-long double Def::Famp = 0;
+long double Def::lambda = 1.0;
+long double Def::Bslot = 1;
+long double Def::Famp = 1;
 long double Def::LFB = exp(Constante::alphaFB*Constante::dFB/4.34);
 long double Def::LDCF = exp(Constante::alphaDCF*Constante::dDCF/4.34);
 
@@ -49,7 +49,7 @@ void Def::clearGrauNo() {
 }
 
 int Def::getGrauNo(int No) {
-    assert(No <= Nnodes);
+    assert(No < Nnodes);
     return GrauNo.at(No);
 }
 

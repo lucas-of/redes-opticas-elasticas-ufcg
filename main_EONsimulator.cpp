@@ -183,10 +183,6 @@ void createStructures() {
             Topology_S[i][j] = new bool[Def::getNnodes()];
     }
 
-    for (int i=0;i < Def::getNnodes() ; i++) {
-        Rede.push_back(Node(i));
-    }
-
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
     int orN, deN;
@@ -200,6 +196,10 @@ void createStructures() {
 
     //Calcula o grau de cada no
     GrauDosNodes();
+
+    for (int i=0;i < Def::getNnodes() ; i++) {
+        Rede.push_back(Node(i));
+    }
 
     //Implemente os Enlaces
     Caminho = new vector<Enlace>[Def::getNnodes()];
@@ -481,7 +481,7 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
     r.clear();
     for(h = 0; h <= hops; h++)
         r.push_back(&Rede.at(PathRev[hops-h]));
-    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == orN);
     AllRoutes[path].push_back(new Route(r));
 
     delete []CustoVertice;
