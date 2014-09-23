@@ -30,7 +30,7 @@ class Def {
         static long double Lsss;//Lsssm perdas nos dispositivos
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
-        static long double lambda;//comprimento de onda (em nanometros)
+        static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
         static long double Famp;//fator do ruido amplificador
         static long double LFB;
@@ -60,12 +60,8 @@ class Def {
         static int getSE();
         static int getSR();
         static void set_Arquitetura(Arquitetura);
-        static void set_Bslot(long double);
         static void set_DistaA(long double);
-        static void set_Famp(long double);
-        static void set_lambda(long double);
         static void set_Lsss(long double);
-        static void set_OSNRin(long double);
         static void set_Pin(long double);
 
         static void setGrauNo(int Grau);

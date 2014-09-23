@@ -21,16 +21,15 @@ long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
-long double Def::OSNRin=1.0;
-long double Def::Lsss=1.0;
+long double Def::OSNRin=30.0;
+long double Def::Lsss=3.0;
 long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
-long double Def::lambda = 1.0;
-long double Def::Bslot = 1;
-long double Def::Famp = 1;
+long double Def::lambda = 1550.12E-9;
+long double Def::Bslot = 1.0;
+long double Def::Famp = 5.0;
 long double Def::LFB = exp(Constante::alphaFB*Constante::dFB/4.34);
 long double Def::LDCF = exp(Constante::alphaDCF*Constante::dDCF/4.34);
-
 
 long double Def::getlambda() {
     return lambda;
@@ -51,11 +50,6 @@ void Def::clearGrauNo() {
 int Def::getGrauNo(int No) {
     assert(No < Nnodes);
     return GrauNo.at(No);
-}
-
-void Def::set_lambda(long double l) {
-    assert (l>0);
-    lambda = l * pow(10,-9);
 }
 
 double Def::getLaNet(int Lr) {
@@ -145,6 +139,7 @@ void Def::setNumReqMax(long double x) {
 void Def::setSE(int x) {
     assert(x > 0);
     SE = x;
+    Bslot = (100E9)/SE;
 }
 
 void Def::setSR(int x) {
@@ -156,24 +151,9 @@ void Def::set_Pin(long double p) {
     Pin=p;
 }
 
-void Def::set_OSNRin(long double o){
-    assert (o>0);
-    OSNRin=o;
-}
-
 void Def::set_Lsss(long double l){
     assert (l >0);
     Lsss=l;
-}
-
-void Def::set_Bslot(long double b) {
-    assert (b >0);
-    Bslot = b;
-}
-
-void Def::set_Famp(long double f) {
-    assert (f >0);
-    Famp = f;
 }
 
 void Def::set_DistaA(long double d){
@@ -183,7 +163,6 @@ void Def::set_DistaA(long double d){
 void Def::set_Arquitetura(Arquitetura a){
     arquitetura=a;
 }
-
 
 long double Def::get_Pin(){
     return Pin;

@@ -87,25 +87,25 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
 
 long double AvaliarOSNR(const Route *Rota) {
     long double Potencia = Def::get_Pin();
-    long double Ruido = Def::get_Pin()/Def::get_OSRNin();
+    long double Ruido = Def::get_Pin()/pow(10,0.1*Def::get_OSRNin());
 
-    for (int i = 0; i<= Rota->getNhops() ; i++ ) {
+    for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
         if (i!=0) {
-            Potencia *= Rede.at(i).get_gain_pot();
-            Ruido *= Rede.at(i).get_gain_pot();
+            Potencia *= pow(10,0.1*Rede.at(i).get_gain_pot());
+            Ruido *= pow(10,0.1*Rede.at(i).get_gain_pot());
             Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
 
-            Potencia *= Rede.at(i).get_loss();
-            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
+            Potencia *= pow(10,0.1*Rede.at(i).get_loss());
+            Ruido *= pow(10,0.1*Rede.at(i).get_loss()); //Perda nos elementos da rede (demux)
         }
 
         if (i != Rota->getNhops()) {
-            Potencia *= Rede.at(i).get_loss();
-            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (mux)
+            Potencia *= pow(10,0.1*Rede.at(i).get_loss());
+            Ruido *= pow(10,0.1*Rede.at(i).get_loss()); //Perda nos elementos da rede (mux)
 
-            Potencia *= Rede.at(i).get_gain_preamp();
-            Ruido *= Rede.at(i).get_gain_preamp();
-            Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
+            Potencia *= pow(10,0.1*Rede.at(i).get_gain_preamp());
+            Ruido *= pow(10,0.1*Rede.at(i).get_gain_preamp());
+            Ruido += pow(10,0.1*Rede.at(i).get_ruido_preamp()); //Perdas nos preamplificadores
 
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
         }
@@ -506,7 +506,7 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
     r.clear();
     for(h = 0; h <= hops; h++)
         r.push_back(&Rede.at(PathRev[hops-h]));
-    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == orN);
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
     AllRoutes[path].push_back(new Route(r));
 
     delete []CustoVertice;
@@ -648,15 +648,7 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    cout<<"Entre com a potencia de entrada"<<endl;
-    cin>>op;
-    Def::set_Pin(op);
-    cout<<"Entre com OSNR de entrada"<<endl;
-    cin>>op;
-    Def::set_OSNRin(op);
-    cout<<"Entre com as perdas nos dispositivos"<<endl;
-    cin>>op;
-    Def::set_Lsss(op);
+    Def::set_Pin(1.0);
     cout<<"Entre com distancia entre os amplificadores"<<endl;
     cin>>op;
     Def::set_DistaA(op);
