@@ -10,7 +10,6 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
     Destino = NDest;
     distancia = dist;
     calcula_num_amplificadores(dist);
-    calcula_Nnz();
     calcula_ganho_enlace();
 }
 
@@ -24,12 +23,4 @@ void Enlace::calcula_ganho_enlace() {
 
 long double Enlace::get_ganho_enlace() {
     return ganho_enlace;
-}
-
-void Enlace::calcula_Nnz(){
-    Nnz = (Constante::h*Constante::c*Def::get_Bslot()*Def::getSE()*ganho_enlace*Def::get_Famp()/(2*Def::getlambda()));
-}
-
-long double Enlace::get_Nnz(){
-    return Nnz;
 }
