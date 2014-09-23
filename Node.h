@@ -4,8 +4,6 @@
 class Node {
     private:
         int whoami;
-        long double Nnz;//Representa a posicão do amplificador
-        long double Nin;//Ruido de entrada, que é dado por potencia sobre ruido de entrada
         long double loss;
         long double gain_preamp;
         long double ruido_preamp;
@@ -17,7 +15,6 @@ class Node {
         void calcula_ruido_pot();
     public:
         Node(int);
-        void calc_Nin();
         int get_whoami();
         long double get_loss();
         long double get_gain_preamp();

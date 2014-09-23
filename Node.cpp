@@ -7,10 +7,7 @@ Node::Node(int who) {
     whoami = who;
     loss = 1.0/Def::get_Lsss();
     calcula_ganho_preamp();
-}
-
-void Node::calc_Nin(){//Ruido do amplificador
-    Nin = Def::get_Pin() / Def::get_OSRNin();
+    calcula_ganho_pot();
 }
 
 int Node::get_whoami() {
@@ -28,6 +25,7 @@ void Node::calcula_ganho_preamp() {
 
 void Node::calcula_ganho_pot() {
     gain_pot = Def::get_Lsss();
+    calcula_ruido_pot();
 }
 
 void Node::calcula_ruido_preamp() {

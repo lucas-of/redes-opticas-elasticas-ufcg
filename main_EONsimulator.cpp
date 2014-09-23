@@ -21,7 +21,7 @@ using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
-double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
+long double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -85,8 +85,44 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
 }
 
-double AvaliarOSNR(const Route *Rota) {
-    return 0;
+long double AvaliarOSNR(const Route *Rota) {
+    long double Potencia = Def::get_Pin();
+    long double Ruido = Def::get_Pin()/Def::get_OSRNin();
+
+    for (int i = 0; i<= Rota->getNhops() ; i++ ) {
+        if (i!=0) {
+            Potencia *= Rede.at(i).get_gain_pot();
+            Ruido *= Rede.at(i).get_gain_pot();
+            Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
+
+            cout << "1P" << Potencia << "N" << Ruido << endl;
+
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
+
+            cout << "2P" << Potencia << "N" << Ruido << endl;
+        }
+
+        if (i != Rota->getNhops()) {
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (mux)
+            cout << "3P" << Potencia << "N" << Ruido << endl;
+
+
+            Potencia *= Rede.at(i).get_gain_preamp();
+            Ruido *= Rede.at(i).get_gain_preamp();
+            Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
+            cout << "4P" << Potencia << "N" << Ruido << endl;
+
+            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
+            cout << "5P" << Potencia << "N" << Ruido << endl;
+        }
+
+        cout << "P" << Potencia << "N" << Ruido << endl;
+
+    }
+
+    return log10(Potencia/Ruido);
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {

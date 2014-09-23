@@ -9,9 +9,12 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
     Origem = NOrig;
     Destino = NDest;
     distancia = dist;
-    calcula_num_amplificadores(dist);
-    calcula_ganho_enlace_indiv();
-    calcula_ganho_enlace();
+    if (NOrig != NULL) {
+        calcula_num_amplificadores(dist);
+        calcula_ganho_enlace_indiv();
+        calcula_ganho_enlace();
+        calcula_ruido_enlace();
+    }
 }
 
 void Enlace::calcula_num_amplificadores(double dist) {
