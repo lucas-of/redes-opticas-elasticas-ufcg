@@ -28,19 +28,9 @@ Def::Arquitetura Def::arquitetura=Def::BS;
 long double Def::lambda = 1550.12E-9;
 long double Def::Bslot = 1.0;
 long double Def::Famp = 5.0;
-long double Def::LFB = exp(Constante::alphaFB*Constante::dFB/4.34);
-long double Def::LDCF = exp(Constante::alphaDCF*Constante::dDCF/4.34);
 
 long double Def::getlambda() {
     return lambda;
-}
-
-long double Def::get_LFB() {
-    return LFB;
-}
-
-long double Def::get_LDCF() {
-    return LDCF;
 }
 
 void Def::clearGrauNo() {

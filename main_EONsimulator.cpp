@@ -87,25 +87,25 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
 
 long double AvaliarOSNR(const Route *Rota) {
     long double Potencia = Def::get_Pin();
-    long double Ruido = Def::get_Pin()/pow(10,0.1*Def::get_OSRNin());
+    long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
 
     for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
         if (i!=0) {
-            Potencia *= pow(10,0.1*Rede.at(i).get_gain_pot());
-            Ruido *= pow(10,0.1*Rede.at(i).get_gain_pot());
+            Potencia *= Rede.at(i).get_gain_pot();
+            Ruido *= Rede.at(i).get_gain_pot();
             Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
 
-            Potencia *= pow(10,0.1*Rede.at(i).get_loss());
-            Ruido *= pow(10,0.1*Rede.at(i).get_loss()); //Perda nos elementos da rede (demux)
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
         }
 
         if (i != Rota->getNhops()) {
-            Potencia *= pow(10,0.1*Rede.at(i).get_loss());
-            Ruido *= pow(10,0.1*Rede.at(i).get_loss()); //Perda nos elementos da rede (mux)
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (mux)
 
-            Potencia *= pow(10,0.1*Rede.at(i).get_gain_preamp());
-            Ruido *= pow(10,0.1*Rede.at(i).get_gain_preamp());
-            Ruido += pow(10,0.1*Rede.at(i).get_ruido_preamp()); //Perdas nos preamplificadores
+            Potencia *= Rede.at(i).get_gain_preamp();
+            Ruido *= Rede.at(i).get_gain_preamp();
+            Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
 
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
         }

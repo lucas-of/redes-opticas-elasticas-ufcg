@@ -33,8 +33,6 @@ class Def {
         static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
         static long double Famp;//fator do ruido amplificador
-        static long double LFB;
-        static long double LDCF;
 
     public:
         static long double limiarOSNR; //limiar de OSNR para estabelecimento de conexão
@@ -74,8 +72,6 @@ class Def {
         static void setSR(int);
 
         static Arquitetura get_Arquitetura();
-        static long double get_LFB();
-        static long double get_LDCF();
         static long double get_Pin();
         static long double get_OSRNin();
         static long double get_Lsss();

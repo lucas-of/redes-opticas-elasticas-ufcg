@@ -18,10 +18,13 @@ class Enlace {
         long double ganho_enlace;
         long double ganho_enlace_indiv;
         long double ruido_enlace;
+        long double L_FB;
+        long double L_DCF;
+        void calcula_perdas();
         void calcula_ganho_enlace();
         void calcula_ganho_enlace_indiv();
         void calcula_ruido_enlace();
-        void calcula_num_amplificadores(double dist);
+        void calcula_num_amplificadores();
 };
 
 #endif // ENLACE_H
