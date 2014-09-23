@@ -95,31 +95,20 @@ long double AvaliarOSNR(const Route *Rota) {
             Ruido *= Rede.at(i).get_gain_pot();
             Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
 
-            cout << "1P" << Potencia << "N" << Ruido << endl;
-
             Potencia *= Rede.at(i).get_loss();
             Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
-
-            cout << "2P" << Potencia << "N" << Ruido << endl;
         }
 
         if (i != Rota->getNhops()) {
             Potencia *= Rede.at(i).get_loss();
             Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (mux)
-            cout << "3P" << Potencia << "N" << Ruido << endl;
-
 
             Potencia *= Rede.at(i).get_gain_preamp();
             Ruido *= Rede.at(i).get_gain_preamp();
             Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
-            cout << "4P" << Potencia << "N" << Ruido << endl;
 
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
-            cout << "5P" << Potencia << "N" << Ruido << endl;
         }
-
-        cout << "P" << Potencia << "N" << Ruido << endl;
-
     }
 
     return log10(Potencia/Ruido);
