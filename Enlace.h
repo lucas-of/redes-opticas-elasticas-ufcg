@@ -10,12 +10,17 @@ class Enlace {
         Node* get_NodeOrigem(void);
         Node* get_NodeDestino(void);
         long double get_ganho_enlace();
+        long double get_ruido_enlace();
     private:
         double distancia;
         Node *Origem, *Destino;
-        unsigned int num_amplif;
+        int num_amplif;
         long double ganho_enlace;
+        long double ganho_enlace_indiv;
+        long double ruido_enlace;
         void calcula_ganho_enlace();
+        void calcula_ganho_enlace_indiv();
+        void calcula_ruido_enlace();
         void calcula_num_amplificadores(double dist);
 };
 
