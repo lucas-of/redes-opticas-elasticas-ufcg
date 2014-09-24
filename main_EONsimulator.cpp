@@ -21,7 +21,7 @@ using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
-double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
+long double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -85,8 +85,33 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
 }
 
-double AvaliarOSNR(const Route *Rota) {
-    return 0;
+long double AvaliarOSNR(const Route *Rota) {
+    long double Potencia = Def::get_Pin();
+    long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
+
+    for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
+        if (i!=0) {
+            Potencia *= Rede.at(i).get_gain_pot();
+            Ruido *= Rede.at(i).get_gain_pot();
+            Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
+
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
+        }
+
+        if (i != Rota->getNhops()) {
+            Potencia *= Rede.at(i).get_loss();
+            Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (mux)
+
+            Potencia *= Rede.at(i).get_gain_preamp();
+            Ruido *= Rede.at(i).get_gain_preamp();
+            Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
+
+            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
+        }
+    }
+
+    return log10(Potencia/Ruido);
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -183,11 +208,6 @@ void createStructures() {
             Topology_S[i][j] = new bool[Def::getNnodes()];
     }
 
-    for (int i=0;i < Def::getNnodes() ; i++) {
-        Node a_node;
-        Rede.push_back(a_node);
-    }
-
     //Carrega topologia de rede a partir do arquivo Topology.txt
     AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
     int orN, deN;
@@ -202,18 +222,20 @@ void createStructures() {
     //Calcula o grau de cada no
     GrauDosNodes();
 
+    for (int i=0;i < Def::getNnodes() ; i++) {
+        Rede.push_back(Node(i));
+    }
+
     //Implemente os Enlaces
     Caminho = new vector<Enlace>[Def::getNnodes()];
-    Enlace infinito(NULL,NULL,Def::MAX_INT);
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
             double distancia_temp;
             Topol>>distancia_temp;
             if(Topology[i][j] == 1){
-                Enlace meuenlace(&Rede.at(i),&Rede.at(j),distancia_temp);
-                Caminho[i].push_back(meuenlace);
+                Caminho[i].push_back(Enlace(&Rede.at(i),&Rede.at(j),distancia_temp));
             } else {
-                Caminho[i].push_back(infinito);
+                Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
             }
         }
     }
@@ -262,7 +284,7 @@ void DefineNextEventOfCon (Event* evt) {
 void Dijkstra() {
     int orN, deN, VA, i, j, k=0, path, h, hops;
     long double min;
-    vector<int> r;
+    vector<Node*> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
     int *Precedente = new int[Def::getNnodes()];
     int *PathRev = new int[Def::getNnodes()];
@@ -309,7 +331,7 @@ void Dijkstra() {
                 }
                 r.clear();
                 for(h = 0; h <= hops; h++)
-                    r.push_back(PathRev[hops-h]);
+                    r.push_back(&Rede.at(PathRev[hops-h]));
                 AllRoutes[path].push_back(new Route(r));
             }
         }
@@ -339,7 +361,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
     assert(deN != orN);
     int VA, i, j, s, k=0, h, path, hops, hopsAux;
     long double min, custoAux;
-    vector<int> r;
+    vector<Node*> r;
     long double *CustoVertice = new long double[Def::getNnodes()];
     bool **DispVertice = new bool*[Def::getNnodes()];
     for (int i=0 ; i<Def::getNnodes() ; i++) DispVertice[i] = new bool[Def::getSE()];
@@ -408,7 +430,7 @@ void DijkstraAcum(const int orN, const int deN, const int L) {
     }
     r.clear();
     for(h = 0; h <= hops; h++)
-        r.push_back(PathRev[hops-h]);
+        r.push_back(&Rede.at(PathRev[hops-h]));
     delete []CustoVertice;
     delete []Precedente;
     delete []Status;
@@ -480,11 +502,11 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
         PathRev[hops] = Precedente[j];
         j = Precedente[j];
     }
-    vector<int> r;
+    vector<Node*> r;
     r.clear();
     for(h = 0; h <= hops; h++)
-        r.push_back(PathRev[hops-h]);
-    assert(r.at(0) == orN && r.at(hops) == orN);
+        r.push_back(&Rede.at(PathRev[hops-h]));
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
     AllRoutes[path].push_back(new Route(r));
 
     delete []CustoVertice;
@@ -626,21 +648,16 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    cout<<"Entre com a potencia de entrada"<<endl;
-    cin>>op;
-    Def::set_Pin(op);
-    cout<<"Entre com OSNR de entrada"<<endl;
-    cin>>op;
-    Def::set_OSNRin(op);
-    cout<<"Entre com as perdas nos dispositivos"<<endl;
-    cin>>op;
-    Def::set_Lsss(op);
+    Def::set_Pin(1.0);
     cout<<"Entre com distancia entre os amplificadores"<<endl;
     cin>>op;
     Def::set_DistaA(op);
     cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
     cin>>aux;
-    Def::set_Arquitetura(aux);
+    if (aux == 1)
+        Def::set_Arquitetura(Def::BS);
+    else if (aux == 2)
+        Def::set_Arquitetura(Def::SS);
 
     //Dados para a expansao e compressao das conexoes:
     cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;
