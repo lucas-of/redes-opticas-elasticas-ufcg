@@ -21,7 +21,7 @@ using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
-long double AvaliarOSNR(const Route *Rota); /*avalia a ONSR da routa passada como parâmetro*/
+long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -85,7 +85,7 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
 }
 
-long double AvaliarOSNR(const Route *Rota) {
+long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
     long double Potencia = Def::get_Pin();
     long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
 
@@ -107,7 +107,7 @@ long double AvaliarOSNR(const Route *Rota) {
             Ruido *= Rede.at(i).get_gain_preamp();
             Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
 
-            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
+            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed); //perda no enlace
         }
     }
 
@@ -816,7 +816,7 @@ void RequestCon(Event* evt) {
         assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-            OSNR = AvaliarOSNR(route);
+            OSNR = AvaliarOSNR(route,NslotsUsed);
             if (OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
             //Inserir a conexao na rede
                 int L_or, L_de;
