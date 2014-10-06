@@ -6,7 +6,7 @@
 Node::Node(int who) {
     assert (who>=0);
     whoami = who;
-    loss = General::dB(1.0/Def::get_Lsss());
+    loss = General::dB(-1*Def::get_Lsss());
     calcula_ganho_preamp();
     calcula_ganho_pot();
 }
@@ -30,11 +30,13 @@ void Node::calcula_ganho_pot() {
 }
 
 void Node::calcula_ruido_preamp() {
-    ruido_preamp = (Constante::h*Constante::c*Def::get_Bslot()*Def::getSE()*gain_preamp*General::dB(Def::get_Famp())/(2*Def::getlambda()));
+    double freq = Constante::c/Def::getlambda();
+    ruido_preamp = 0.5*Constante::h*freq*Def::get_Bslot()*gain_preamp*Def::get_Famp();
 }
 
 void Node::calcula_ruido_pot() {
-    ruido_pot = (Constante::h*Constante::c*Def::get_Bslot()*Def::getSE()*gain_pot*General::dB(Def::get_Famp())/(2*Def::getlambda()));
+    double freq = Constante::c/Def::getlambda();
+    ruido_pot = 0.5*Constante::h*freq*Def::get_Bslot()*gain_pot*Def::get_Famp();
 }
 
 long double Node::get_gain_preamp() {
@@ -45,14 +47,14 @@ long double Node::get_loss() {
     return loss;
 }
 
-long double Node::get_ruido_preamp() {
-    return ruido_preamp;
+long double Node::get_ruido_preamp(int nslots) {
+    return nslots*ruido_preamp;
 }
 
 long double Node::get_gain_pot() {
     return gain_pot;
 }
 
-long double Node::get_ruido_pot() {
-    return ruido_pot;
+long double Node::get_ruido_pot(int nslots) {
+    return nslots*ruido_pot;
 }

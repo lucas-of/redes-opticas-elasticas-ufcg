@@ -18,9 +18,9 @@ class Node {
         int get_whoami();
         long double get_loss();
         long double get_gain_preamp();
-        long double get_ruido_preamp();
+        long double get_ruido_preamp(int nslots);
         long double get_gain_pot();
-        long double get_ruido_pot();
+        long double get_ruido_pot(int nslots);
 };
 
 #endif //NODE_H
