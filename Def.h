@@ -33,6 +33,8 @@ class Def {
         static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
         static long double Famp;//fator do ruido amplificador
+        static long double Dcr; //relacionado a dispersao cromatica
+        static long double DDCF; //coeficiente de dispersao
 
     public:
         static long double limiarOSNR; //limiar de OSNR para estabelecimento de conexão
@@ -77,5 +79,7 @@ class Def {
         static long double get_Lsss();
         static long double get_DistaA();
         static long double get_Famp();
+        static long double get_DDCF();
+        static long double get_Dcr();
 };
 #endif

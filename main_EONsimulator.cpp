@@ -93,8 +93,7 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
         if (i!=0) {
             Potencia *= Rede.at(i).get_gain_pot();
             Ruido *= Rede.at(i).get_gain_pot();
-            Ruido += Rede.at(i).get_ruido_pot(); //Perdas nos amplificadores de potência
-
+            Ruido += Rede.at(i).get_ruido_pot(NSlotsUsed); //Perdas nos amplificadores de potência
             Potencia *= Rede.at(i).get_loss();
             Ruido *= Rede.at(i).get_loss(); //Perda nos elementos da rede (demux)
         }
@@ -105,13 +104,14 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 
             Potencia *= Rede.at(i).get_gain_preamp();
             Ruido *= Rede.at(i).get_gain_preamp();
-            Ruido += Rede.at(i).get_ruido_preamp(); //Perdas nos preamplificadores
+            Ruido += Rede.at(i).get_ruido_preamp(NSlotsUsed); //Perdas nos preamplificadores
 
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed); //perda no enlace
         }
     }
 
-    return log10(Potencia/Ruido);
+    double osnr = 10*log10(Potencia/Ruido);
+    return osnr;
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -648,7 +648,10 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    Def::set_Pin(1.0);
+    cout << "Entre com a potencia de entrada." << endl;
+    cin>>op;
+    assert(op>0);
+    Def::set_Pin(op);
     cout<<"Entre com distancia entre os amplificadores"<<endl;
     cin>>op;
     Def::set_DistaA(op);

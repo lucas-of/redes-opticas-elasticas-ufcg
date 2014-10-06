@@ -25,9 +25,9 @@ long double Def::OSNRin=30.0;
 long double Def::Lsss=3.0;
 long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
-long double Def::lambda = 1550.12E-9;
+long double Def::lambda = 154459E-11;
 long double Def::Bslot = 1.0;
-long double Def::Famp = 5.0;
+long double Def::Famp = General::dB(5.0);
 
 long double Def::getlambda() {
     return lambda;
@@ -129,7 +129,6 @@ void Def::setNumReqMax(long double x) {
 void Def::setSE(int x) {
     assert(x > 0);
     SE = x;
-    Bslot = (100E9)/SE;
 }
 
 void Def::setSR(int x) {
@@ -171,6 +170,7 @@ long double Def::get_DistaA() {
 }
 
 long double Def::get_Bslot() {
+    Bslot = (100E9)/Def::getSE();
     return Bslot;
 }
 
