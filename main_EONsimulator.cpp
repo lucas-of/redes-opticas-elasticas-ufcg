@@ -91,10 +91,10 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 
     for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
         if (i!=0) {
-            Potencia *= Rede.at(Rota->getNode(i)).get_gain_pot();
+            Potencia *= Rede.at(Rota->getNode(i)).get_gain_preamp();
             Ruido *= Rede.at(Rota->getNode(i)).get_gain_preamp();
             Ruido += Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed); //Perdas nos amplificadores de potência
-            cout << "PREAMP" << endl;
+            //cout << "Adicionar Ruido PREAMP do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed) << endl;
             Potencia *= Rede.at(Rota->getNode(i)).get_loss();
             Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (demux)
         }
@@ -103,12 +103,12 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
             Potencia *= Rede.at(Rota->getNode(i)).get_loss();
             Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (mux)
             Potencia *= Rede.at(Rota->getNode(i)).get_gain_pot();
-            cout << "POT" << endl;
             Ruido *= Rede.at(Rota->getNode(i)).get_gain_pot();
             Ruido += Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed); //Perdas nos preamplificadores
+            //cout << "Adicionar Ruido POT do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed) << endl;
 
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed); //perda no enlace
-            cout << "ENLACE " << endl;
+            //cout << "Adicionar Ruido do ENLACE entre " << Rota->getNode(i) << " e " << Rota->getNode(i+1) << ", com " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_comprimento() << " valendo  " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed) << endl;
         }
     }
 

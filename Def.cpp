@@ -27,7 +27,7 @@ long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
 long double Def::lambda = 154459E-11;
 long double Def::Bslot = 1.0;
-long double Def::Famp = General::dB(5.0);
+long double Def::Famp = General::dB((long double) 5.0);
 
 long double Def::getlambda() {
     return lambda;
