@@ -16,6 +16,7 @@
 #include "Route.h"
 #include "Node.h"
 #include "Enlace.h"
+#include "ASE_Noise.cpp"
 
 using namespace std;
 
@@ -83,37 +84,6 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed) {
     if(NslotsUsed <= 0) //A conexao foi bloqueada
         Def::numReq_Bloq++;
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
-}
-
-long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
-    long double Potencia = Def::get_Pin();
-    long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
-
-    for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
-        if (i!=0) {
-            Potencia *= Rede.at(Rota->getNode(i)).get_gain_preamp();
-            Ruido *= Rede.at(Rota->getNode(i)).get_gain_preamp();
-            Ruido += Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed); //Perdas nos amplificadores de potência
-            //cout << "Adicionar Ruido PREAMP do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed) << endl;
-            Potencia *= Rede.at(Rota->getNode(i)).get_loss();
-            Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (demux)
-        }
-
-        if (i != Rota->getNhops()) {
-            Potencia *= Rede.at(Rota->getNode(i)).get_loss();
-            Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (mux)
-            Potencia *= Rede.at(Rota->getNode(i)).get_gain_pot();
-            Ruido *= Rede.at(Rota->getNode(i)).get_gain_pot();
-            Ruido += Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed); //Perdas nos preamplificadores
-            //cout << "Adicionar Ruido POT do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed) << endl;
-
-            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed); //perda no enlace
-            //cout << "Adicionar Ruido do ENLACE entre " << Rota->getNode(i) << " e " << Rota->getNode(i+1) << ", com " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_comprimento() << " valendo  " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed) << endl;
-        }
-    }
-
-    double osnr = 10*log10(Potencia/Ruido);
-    return osnr;
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -614,7 +584,8 @@ void Load() {
     cin >> op;
     Def::setBslot(op);
 
-    Def::setSE(ceil(100E9/Def::get_Bslot())); //o enlace tem 100GHz de banda
+    Topol>>aux;
+    Def::setSE(aux); //o enlace tem 100GHz de banda
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
 
     //Outras entradas para o simulador

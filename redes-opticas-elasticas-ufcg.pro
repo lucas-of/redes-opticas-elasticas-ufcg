@@ -11,7 +11,8 @@ SOURCES += \
     main_EONsimulator.cpp \
     Route.cpp \
     Node.cpp \
-    Enlace.cpp
+    Enlace.cpp \
+    ASE_Noise.cpp
 
 OTHER_FILES += \
     Topology.txt \
