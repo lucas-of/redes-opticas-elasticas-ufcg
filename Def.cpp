@@ -29,6 +29,11 @@ long double Def::lambda = 154459E-11;
 long double Def::Bslot = 1.0;
 long double Def::Famp = General::dB((long double) 5.0);
 
+void Def::setBslot(double Bslot) {
+    assert (Bslot > 0);
+    Def::Bslot = Bslot * 1E9;
+}
+
 long double Def::getlambda() {
     return lambda;
 }
@@ -170,7 +175,6 @@ long double Def::get_DistaA() {
 }
 
 long double Def::get_Bslot() {
-    Bslot = (100E9)/Def::getSE();
     return Bslot;
 }
 

@@ -64,6 +64,7 @@ class Def {
         static void set_Lsss(long double);
         static void set_Pin(long double);
 
+        static void setBslot(double);
         static void setGrauNo(int Grau);
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots

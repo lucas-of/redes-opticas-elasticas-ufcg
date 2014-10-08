@@ -610,17 +610,18 @@ void Load() {
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
-    Topol>>aux;
-    Def::setSE(aux);
+    cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
+    cin >> op;
+    Def::setBslot(op);
+
+    Def::setSE(ceil(100E9/Def::get_Bslot())); //o enlace tem 100GHz de banda
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
 
     //Outras entradas para o simulador
-    cout<<"Entre com a Quantidade maxima de Slots por Requisicao [1 <= SR <= "<<Def::getSE()<<"]: ";
-    cin >> aux;
-    Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
+    Def::setSR(Def::getSE()); //Uma requisicao pode pedir no maximo SE slots
 
     cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<<endl;
-    cout << "Entre com o Algoritmo de Roteamento:";
+    cout << "Entre com o Algoritmo de Roteamento: ";
     cin >> Alg_Routing;
 
     cout<<RD<<" - Random \n"<<FF<<" - FirstFit \n"<<MU<<" - Most Used \n"<<FFO<<" - FirstFitOpt "<<endl;
