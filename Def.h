@@ -45,8 +45,10 @@ class Def {
         static long double numHopsPerRoute; //número de nós por rota
         static long double numReq; //número de requisições
         static long double numReq_Bloq; //número de requisições bloqueadas
+        static long double numReq_BloqPorOSNR; //número de requisições bloqueadas por OSNR
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
+        static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
 
         static void clearGrauNo();
         static long double get_Bslot();

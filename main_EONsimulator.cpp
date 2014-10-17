@@ -22,6 +22,7 @@ using namespace std;
 
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
+void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 bool CheckSlotAvailability(const Route*, const int s); /*Checa se a rota route está disponível para o uso, com o slot s livre em toda a rota*/
@@ -580,13 +581,17 @@ void Load() {
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
-    cout<<"Considera a OSNR?"<<endl<<"1-Sim"<<endl<<"2-Nao"<<endl;
-    cin>>avaliaosnr;
-    assert (avaliaosnr==1 || avaliaosnr==2);
+    cout<<"Considera a OSNR?"<<endl<<SIM<<" - Sim"<<endl<<NAO<<" - Nao"<<endl;
+    cin>>aux;
+    AvaliaOsnr = (Respostas)aux;
+    cout << AvaliaOsnr << endl;
 
-    cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
-    cin >> op;
-    Def::setBslot(op);
+
+    if (AvaliaOsnr == SIM) {
+        cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
+        cin >> op;
+        Def::setBslot(op);
+    }
 
     Topol>>aux;
     Def::setSE(aux); //o enlace tem 100GHz de banda
@@ -612,7 +617,7 @@ void Load() {
             FFlists[i] = new vector<int>(0);
     }
 
-    if (avaliaosnr==1) {
+    if (AvaliaOsnr==SIM) {
         double OSNR;
         cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
         cin >> OSNR;
@@ -630,7 +635,7 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    if (avaliaosnr==1) {
+    if (AvaliaOsnr==SIM) {
         cout << "Entre com a potencia de entrada, em dBm." << endl;
         cin>>op;
         Def::set_Pin(op);
@@ -802,8 +807,8 @@ void RequestCon(Event* evt) {
         assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-            if (avaliaosnr==1) OSNR = AvaliarOSNR(route,NslotsUsed);
-            if (avaliaosnr==2 || OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
+            if (AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route,NslotsUsed);
+            if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
             //Inserir a conexao na rede
                 int L_or, L_de;
                 for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -826,6 +831,8 @@ void RequestCon(Event* evt) {
                 DefineNextEventOfCon(evt);
                 ScheduleEvent(evt);
                 break;
+            } else { //conexao bloqueada por OSNR
+                AccountForBlockingOSNR(NslotsReq,NslotsUsed);
             }
         }
     }
@@ -978,6 +985,7 @@ void Simulate() {
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
     cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
     Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
+    ResulOSNR << (long double) Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
 }
 
 int SlotsReq() {

@@ -7,12 +7,14 @@
 #include "Event.h"
 #include "Node.h"
 #include "Enlace.h"
+#include "Constantes.h"
 
 using namespace std;
 
 //Abre arquivos de texto para leitura ou escrita
 ofstream Resul("Result.txt");
 ofstream Metrica("Metrica.txt");
+ofstream ResulOSNR("ResulOSNR.txt");
 ofstream Resul2("Result2.txt");
 ofstream ResulFFOmet_FFOext("ResultFFOmet_FFOext.txt");
 ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
@@ -44,6 +46,6 @@ vector<int> **FFlists = NULL;
 vector<Route*> *AllRoutes;
 vector<Node> Rede;
 vector<Enlace> *Caminho;
-int avaliaosnr;
+Respostas AvaliaOsnr;
 
 #endif // MAIN_AUXILIAR_H

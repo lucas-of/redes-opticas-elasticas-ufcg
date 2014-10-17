@@ -1,3 +1,5 @@
+#include "Def.h"
+
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
     long double Potencia = Def::get_Pin();
     long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
@@ -27,4 +29,10 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 
     double osnr = 10*log10(Potencia/Ruido);
     return osnr;
+}
+
+void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed) {
+    if(NslotsUsed <= 0) //A conexao foi bloqueada
+        Def::numReq_BloqPorOSNR++;
+    Def::numSlots_BloqPorOSNR += (NslotsReq - NslotsUsed);
 }

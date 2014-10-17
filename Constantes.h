@@ -10,4 +10,8 @@ namespace Constante {
     static long double h = 6.626E-34;
 }
 
+enum Respostas{
+    SIM, NAO
+};
+
 #endif // CONSTANTES_H
