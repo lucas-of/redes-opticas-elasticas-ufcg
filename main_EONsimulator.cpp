@@ -580,6 +580,10 @@ void Load() {
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
+    cout<<"Considera a OSNR?"<<endl<<"1-Sim"<<endl<<"2-Nao"<<endl;
+    cin>>avaliaosnr;
+    assert (avaliaosnr==1 || avaliaosnr==2);
+
     cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
     cin >> op;
     Def::setBslot(op);
@@ -608,10 +612,12 @@ void Load() {
             FFlists[i] = new vector<int>(0);
     }
 
-    double OSNR;
-    cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
-    cin >> OSNR;
-    Def::setLimiarOSNR(OSNR);
+    if (avaliaosnr==1) {
+        double OSNR;
+        cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
+        cin >> OSNR;
+        Def::setLimiarOSNR(OSNR);
+    }
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
@@ -624,18 +630,20 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    cout << "Entre com a potencia de entrada, em dBm." << endl;
-    cin>>op;
-    Def::set_Pin(op);
-    cout<<"Entre com distancia entre os amplificadores"<<endl;
-    cin>>op;
-    Def::set_DistaA(op);
-    cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
-    cin>>aux;
-    if (aux == 1)
-        Def::set_Arquitetura(Def::BS);
-    else if (aux == 2)
-        Def::set_Arquitetura(Def::SS);
+    if (avaliaosnr==1) {
+        cout << "Entre com a potencia de entrada, em dBm." << endl;
+        cin>>op;
+        Def::set_Pin(op);
+        cout<<"Entre com distancia entre os amplificadores"<<endl;
+        cin>>op;
+        Def::set_DistaA(op);
+        cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
+        cin>>aux;
+        if (aux == 1)
+            Def::set_Arquitetura(Def::BS);
+        else if (aux == 2)
+            Def::set_Arquitetura(Def::SS);
+    }
 
     //Dados para a expansao e compressao das conexoes:
     cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;
@@ -794,8 +802,8 @@ void RequestCon(Event* evt) {
         assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-            OSNR = AvaliarOSNR(route,NslotsUsed);
-            if (OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
+            if (avaliaosnr==1) OSNR = AvaliarOSNR(route,NslotsUsed);
+            if (avaliaosnr==2 || OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
             //Inserir a conexao na rede
                 int L_or, L_de;
                 for(unsigned c = 0; c < route->getNhops(); c++) {

@@ -44,5 +44,6 @@ vector<int> **FFlists = NULL;
 vector<Route*> *AllRoutes;
 vector<Node> Rede;
 vector<Enlace> *Caminho;
+int avaliaosnr;
 
 #endif // MAIN_AUXILIAR_H
