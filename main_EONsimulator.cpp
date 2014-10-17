@@ -589,7 +589,9 @@ void Load() {
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
 
     //Outras entradas para o simulador
-    Def::setSR(Def::getSE()); //Uma requisicao pode pedir no maximo SE slots
+    cout<<"Entre com a Quantidade maxima de Slots por Requisicao [1 <= SR <= "<<Def::getSE()<<"]: ";
+    cin >> aux;
+    Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
 
     cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<<endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
@@ -622,9 +624,8 @@ void Load() {
     cin >> Npontos;
     LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
 
-    cout << "Entre com a potencia de entrada." << endl;
+    cout << "Entre com a potencia de entrada, em dBm." << endl;
     cin>>op;
-    assert(op>0);
     Def::set_Pin(op);
     cout<<"Entre com distancia entre os amplificadores"<<endl;
     cin>>op;

@@ -21,11 +21,11 @@ long double Def::numSlots_Req = 0.0;
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
-long double Def::OSNRin=30.0;
-long double Def::Lsss=3.0;
+long double Def::OSNRin=40.0;
+long double Def::Lsss=5.0;
 long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
-long double Def::lambda = 154459E-11;
+long double Def::lambda = 1540E-9;
 long double Def::Bslot = 1.0;
 long double Def::Famp = General::dB((long double) 5.0);
 
@@ -141,8 +141,7 @@ void Def::setSR(int x) {
 }
 
 void Def::set_Pin(long double p) {
-    assert (p >0);
-    Pin=p;
+    Pin = 1E-3 * General::dB(p); //conversao para Watt
 }
 
 void Def::set_Lsss(long double l){
