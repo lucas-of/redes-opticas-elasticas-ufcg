@@ -30,3 +30,9 @@ HEADERS += \
     Node.h \
     Enlace.h \
     Constantes.h
+
+    install_it.path = $$OUT_PWD
+    install_it.files = Topology.txt Topology2.txt
+
+INSTALLS += \
+    install_it
