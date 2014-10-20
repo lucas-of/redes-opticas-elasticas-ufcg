@@ -186,7 +186,11 @@ void createStructures() {
     int orN, deN;
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
-            Topol>>Topology[orN][deN];
+            if (escTop == PacificBell) {
+                Topol2 >> Topology[orN][deN];
+            } else if (escTop == NSFNet) {
+                Topol>>Topology[orN][deN];
+            }
             cout<<Topology[orN][deN]<<" ";
         }
         cout << endl;
@@ -204,7 +208,11 @@ void createStructures() {
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
             double distancia_temp;
-            Topol>>distancia_temp;
+            if (escTop == PacificBell) {
+                Topol2 >> distancia_temp;
+            } else if (escTop == NSFNet) {
+                Topol>>distancia_temp;
+            }
             if(Topology[i][j] == 1){
                 Caminho[i].push_back(Enlace(&Rede.at(i),&Rede.at(j),distancia_temp));
             } else {
@@ -576,16 +584,23 @@ void Load() {
     int Npontos, aux;
     long double op;
 
+    cout << "Usar a topologia Pacific Bell <" << PacificBell << "> ou NSFNet <" << NSFNet << ">?" << endl;
+    cin>>aux;
+    escTop = (Topologia)aux;
+
     //Adquire o numero de Nos:
-    Topol>>aux;
+    if (escTop == PacificBell) {
+        Topol2 >> aux;
+    } else if (escTop == NSFNet) {
+        Topol>>aux;
+    }
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
-    cout<<"Considera a OSNR?"<<endl<<SIM<<" - Sim"<<endl<<NAO<<" - Nao"<<endl;
+    cout<<"Considera a OSNR? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
     cin>>aux;
     AvaliaOsnr = (Respostas)aux;
     cout << AvaliaOsnr << endl;
-
 
     if (AvaliaOsnr == SIM) {
         cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
@@ -593,7 +608,11 @@ void Load() {
         Def::setBslot(op);
     }
 
-    Topol>>aux;
+    if (escTop == PacificBell) {
+        Topol2 >> aux;
+    } else if (escTop == NSFNet) {
+        Topol>>aux;
+    }
     Def::setSE(aux); //o enlace tem 100GHz de banda
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
 

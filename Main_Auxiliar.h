@@ -21,10 +21,13 @@ ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
 ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
 ofstream ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
 ifstream Topol("Topology.txt");
+ifstream Topol2("Topology2.txt");
 
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
 enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
+enum Respostas{ NAO, SIM };
+enum Topologia { PacificBell , NSFNet };
 
 //Variáveis necessárias em main_EONsimulator.cpp
 bool ExpComp;
@@ -47,5 +50,6 @@ vector<Route*> *AllRoutes;
 vector<Node> Rede;
 vector<Enlace> *Caminho;
 Respostas AvaliaOsnr;
+Topologia escTop;
 
 #endif // MAIN_AUXILIAR_H
