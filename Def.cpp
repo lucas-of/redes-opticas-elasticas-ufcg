@@ -24,10 +24,10 @@ int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
 long double Def::OSNRin=30.0;
-long double Def::Lsss=3.0;
+long double Def::Lsss=5.0;
 long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
-long double Def::lambda = 1528.78E-9;
+long double Def::lambda = 1540E-9;
 long double Def::Bslot = 1.0;
 long double Def::Famp = General::dB((long double) 5.0);
 
@@ -38,6 +38,11 @@ void Def::setBslot(double Bslot) {
 
 long double Def::getlambda() {
     return lambda;
+}
+
+void Def::setOSNR(long double osnr) {
+    assert(osnr >= 0);
+    Def::OSNRin = osnr;
 }
 
 void Def::clearGrauNo() {

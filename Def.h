@@ -75,6 +75,7 @@ class Def {
         static void setNumReqMax(long double);
         static void setSE(int);
         static void setSR(int);
+        static void setOSNR(long double);
 
         static Arquitetura get_Arquitetura();
         static long double get_Pin();

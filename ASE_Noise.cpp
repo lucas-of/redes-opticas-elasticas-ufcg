@@ -32,6 +32,7 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 }
 
 void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed) {
+    cout << "Bloqueado por OSNR!" << endl;
     if(NslotsUsed <= 0) //A conexao foi bloqueada
         Def::numReq_BloqPorOSNR++;
     Def::numSlots_BloqPorOSNR += (NslotsReq - NslotsUsed);
