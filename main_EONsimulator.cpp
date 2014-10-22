@@ -112,7 +112,7 @@ void clearMemory() {
     Conexao *con;
     Event *evtPtr;
     const Route* route;
-    Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute =     Def::netOccupancy = simTime = 0.0;
+    Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute = Def::netOccupancy = simTime = Def::numReq_BloqPorOSNR = Def::numSlots_BloqPorOSNR = 0.0;
     while(firstEvent != NULL) {
         if(firstEvent->conexao != NULL) {
             //Há uma conexao
@@ -817,7 +817,7 @@ void RequestCon(Event* evt) {
 
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
-    double OSNR;
+    long double OSNR;
     for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
         route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
         NslotsUsed = 0;
@@ -851,6 +851,7 @@ void RequestCon(Event* evt) {
                 ScheduleEvent(evt);
                 break;
             } else { //conexao bloqueada por OSNR
+                NslotsUsed = 0;
                 AccountForBlockingOSNR(NslotsReq,NslotsUsed);
             }
         }
