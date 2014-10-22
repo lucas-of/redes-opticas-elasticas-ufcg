@@ -65,7 +65,7 @@ int main() {
     createStructures();
     Dijkstra();
     //Simulacao para varias OSNR
-    laNet = 100;
+    laNet = 60;
     for(long double osnr = OSNRMin; osnr <= OSNRMax; osnr += OSNRPasso) {
         Def::setOSNR(osnr);
         Sim();
@@ -114,7 +114,7 @@ void clearMemory() {
     Conexao *con;
     Event *evtPtr;
     const Route* route;
-    Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute =     Def::netOccupancy = simTime = 0.0;
+    Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute = Def::netOccupancy = simTime = Def::numReq_BloqPorOSNR = Def::numSlots_BloqPorOSNR = 0.0;
     while(firstEvent != NULL) {
         if(firstEvent->conexao != NULL) {
             //Há uma conexao
@@ -1007,7 +1007,7 @@ void Simulate() {
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
     cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
     Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
-    ResulOSNR << (long double) Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
+    ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
 }
 
 int SlotsReq() {
