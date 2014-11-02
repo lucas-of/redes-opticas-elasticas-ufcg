@@ -53,6 +53,7 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 void Dijkstra(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
 void DijkstraAcum(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace como o custo do caminho*/
 void DijkstraFormas(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace e número de nós até o destino como o custo do caminho*/
+void DijkstraSP(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
 void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit*/
 void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
 void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/
@@ -294,6 +295,81 @@ void Dijkstra() {
             for(j = 0; j < Def::getNnodes(); j++)
                 if((Status[j] == 0)&&(Topology[k][j] != 0)&&(CustoVertice[k]+Topology[k][j] < CustoVertice[j])) {
                     CustoVertice[j] = CustoVertice[k]+Topology[k][j];
+                    Precedente[j] = k;
+                }
+        }
+
+        for(deN = 0; deN < Def::getNnodes(); deN++) {
+            path = orN*Def::getNnodes()+deN;
+            AllRoutes[path].clear();
+            if(deN != orN) {
+                PathRev[0] = deN;
+                hops = 0;
+                j = deN;
+                while(j != orN) {
+                    hops = hops+1;
+                    PathRev[hops] = Precedente[j];
+                    j = Precedente[j];
+                }
+                r.clear();
+                for(h = 0; h <= hops; h++)
+                    r.push_back(&Rede.at(PathRev[hops-h]));
+                AllRoutes[path].push_back(new Route(r));
+            }
+        }
+    }
+
+    //Imprimir Rotas:
+    for(orN = 0; orN < Def::getNnodes(); orN++)
+        for(deN = 0; deN < Def::getNnodes(); deN++)
+            if(orN != deN) {
+                cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
+                path = orN*Def::getNnodes()+deN;
+                hops = AllRoutes[path].at(0)->getNhops();
+                cout << hops << " hops: ";
+                if(hops != 0)
+                    for(h = 0; h <= hops; h++)
+                        cout<<AllRoutes[path].at(0)->getNode(h)<<"-";
+            }
+    cout<<endl<<endl;
+    delete []CustoVertice;
+    delete []Precedente;
+    delete []Status;
+    delete []PathRev;
+}
+
+void DijkstraSP() {
+    int orN, deN, VA, i, j, k=0, path, h, hops;
+    long double min;
+    vector<Node*> r;
+    long double *CustoVertice = new long double[Def::getNnodes()];
+    int *Precedente = new int[Def::getNnodes()];
+    int *PathRev = new int[Def::getNnodes()];
+    bool *Status = new bool[Def::getNnodes()];
+
+    //Busca para todos os pares de no a rota mais curta:
+    for(orN = 0; orN < Def::getNnodes(); orN++) {
+        for(i = 0; i < Def::getNnodes(); i++) {
+            if(i != orN)
+                CustoVertice[i] = Def::MAX_DOUBLE;
+            else
+                CustoVertice[i] = 0.0;
+            Precedente[i] = -1;
+            Status[i] = 0;
+        }
+        VA = Def::getNnodes();
+        while(VA > 0) {
+            min = Def::MAX_DOUBLE;
+            for(i = 0; i < Def::getNnodes(); i++)
+                if((Status[i] == 0)&&(CustoVertice[i] < min)) {
+                    min = CustoVertice[i];
+                    k = i;
+                }
+            Status[k] = 1;
+            VA = VA-1;
+            for(j = 0; j < Def::getNnodes(); j++)
+                if((Status[j] == 0)&&(Topology[k][j] != 0)&&(CustoVertice[k]+Caminho[j].at(k).get_comprimento() < CustoVertice[j])) {
+                    CustoVertice[j] = CustoVertice[k]+Caminho[j].at(k).get_comprimento();
                     Precedente[j] = k;
                 }
         }
@@ -621,7 +697,7 @@ void Load() {
     cin >> aux;
     Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
 
-    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<<endl;
+    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<< SP << "Shortest Path"<<endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
     cin >> Alg_Routing;
 
@@ -1005,7 +1081,7 @@ void Simulate() {
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
     cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
     Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
-    ResulOSNR << (long double) Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
+    ResulOSNR << laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
 }
 
 int SlotsReq() {
