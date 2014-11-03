@@ -27,6 +27,7 @@ long double Def::OSNRin=26.5;
 long double Def::Lsss=5.0;
 long double Def::DistA=1.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
+Def::Compressao Def::compressao = Def::COMP1;
 long double Def::lambda = 1540E-9;
 long double Def::Bslot = 1.0;
 long double Def::Famp = General::dB((long double) 5.0);
@@ -34,6 +35,18 @@ long double Def::Famp = General::dB((long double) 5.0);
 void Def::setBslot(double Bslot) {
     assert (Bslot > 0);
     Def::Bslot = Bslot * 1E9;
+}
+
+void Def::setCompressao(Compressao C) {
+    compressao = C;
+}
+
+int Def::get_Compressao() {
+    switch(compressao) {
+        case COMP1: return 1; break;
+        case COMP2: return 2; break;
+        case COMP4: return 4; break;
+    }
 }
 
 long double Def::getlambda() {

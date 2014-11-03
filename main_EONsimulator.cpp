@@ -682,6 +682,9 @@ void Load() {
         cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
         cin >> op;
         Def::setBslot(op);
+
+        cout << "Entre com a relação entre taxa de transf. e num. de slots. 1:1 - "<< Def::COMP1 << " 2:1 - " << Def::COMP2 << " 4:1 - "<< Def::COMP4 << endl;
+        cin >> op;
     }
 
     if (escTop == PacificBell) {
@@ -1096,6 +1099,7 @@ int SlotsReq() {
         if(x < sum)
             break;
     }
+    Lr = ceil(1.0*Lr/Def::get_Compressao()); /*compressao devido ao esquema de modulação*/
     assert(Lr > 0 && Lr <= Def::getSR());
     return Lr;
 }
