@@ -700,7 +700,7 @@ void Load() {
     cin >> aux;
     Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
 
-    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<< SP << "Shortest Path"<<endl;
+    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<< endl << SP << " - Shortest Path"<<endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
     cin >> Alg_Routing;
 
