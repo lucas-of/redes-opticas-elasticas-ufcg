@@ -685,6 +685,7 @@ void Load() {
 
         cout << "Entre com a relação entre taxa de transf. e num. de slots. 1:1 - "<< Def::COMP1 << " 2:1 - " << Def::COMP2 << " 4:1 - "<< Def::COMP4 << endl;
         cin >> op;
+        Def::setCompressao((Def::Compressao) op);
     }
 
     if (escTop == PacificBell) {
