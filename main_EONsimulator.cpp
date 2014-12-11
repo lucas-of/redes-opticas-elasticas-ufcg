@@ -64,7 +64,10 @@ int main() {
     Load();
     cout << "Inicio da simulacao:" << endl;
     createStructures();
-    Dijkstra();
+    if (Alg_Routing == DJK)
+        Dijkstra();
+    else if (Alg_Routing == SP)
+        DijkstraSP();
     //Simulacao para varios trafegos
     for(laNet = LaNetMin; laNet <= LaNetMax; laNet += LaPasso) {
         Sim();
