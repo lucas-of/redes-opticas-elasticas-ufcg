@@ -19,7 +19,7 @@ void Node::calcula_ganho_preamp() {
     if (Def::get_Arquitetura() == Def::SS) {
         gain_preamp = General::dB(Def::get_Lsss());
     } else if (Def::get_Arquitetura() == Def::BS) {
-        gain_preamp = Def::getGrauNo(get_whoami());
+        gain_preamp = Def::getGrauNo(get_whoami())+1;
     }
     calcula_ruido_preamp();
 }

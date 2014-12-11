@@ -887,7 +887,7 @@ void RemoveCon(Event* evt) {
 void RequestCon(Event* evt) {
     int orN, deN, NslotsReq, NslotsUsed, si;
     SDPairReq(orN, deN);
-    deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
+    //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     NslotsReq = SlotsReq();
     Def::numReq++;
     Def::numSlots_Req += NslotsReq;
