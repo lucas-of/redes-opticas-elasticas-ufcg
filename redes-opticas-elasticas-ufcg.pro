@@ -17,7 +17,8 @@ SOURCES += \
 OTHER_FILES += \
     Topology.txt \
     README.md \
-    Topology2.txt
+    Topology2.txt \
+    Topology3.txt
 
 HEADERS += \
     Conexao.h \
@@ -32,7 +33,7 @@ HEADERS += \
     Constantes.h
 
     install_it.path = $$OUT_PWD
-    install_it.files = Topology.txt Topology2.txt
+    install_it.files = Topology.txt Topology2.txt Topology3.txt
 
 INSTALLS += \
     install_it

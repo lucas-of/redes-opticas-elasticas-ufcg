@@ -194,6 +194,8 @@ void createStructures() {
                 Topol2 >> Topology[orN][deN];
             } else if (escTop == NSFNet) {
                 Topol>>Topology[orN][deN];
+            } else if (escTop == PontoaPonto) {
+                Topol3>>Topology[orN][deN];
             }
             cout<<Topology[orN][deN]<<" ";
         }
@@ -216,6 +218,8 @@ void createStructures() {
                 Topol2 >> distancia_temp;
             } else if (escTop == NSFNet) {
                 Topol>>distancia_temp;
+            } else if (escTop == PontoaPonto) {
+                Topol3>>distancia_temp;
             }
             if(Topology[i][j] == 1){
                 Caminho[i].push_back(Enlace(&Rede.at(i),&Rede.at(j),distancia_temp));
@@ -663,7 +667,7 @@ void Load() {
     int Npontos, aux;
     long double op;
 
-    cout << "Usar a topologia Pacific Bell <" << PacificBell << "> ou NSFNet <" << NSFNet << ">?" << endl;
+    cout << "Usar a topologia Pacific Bell <" << PacificBell << "> ou NSFNet <" << NSFNet << "> ou Ponto a Ponto <" << PontoaPonto <<">?" << endl;
     cin>>aux;
     escTop = (Topologia)aux;
 
@@ -672,6 +676,8 @@ void Load() {
         Topol2 >> aux;
     } else if (escTop == NSFNet) {
         Topol>>aux;
+    } else if (escTop == PontoaPonto) {
+        Topol3>>aux;
     }
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
@@ -695,6 +701,8 @@ void Load() {
         Topol2 >> aux;
     } else if (escTop == NSFNet) {
         Topol>>aux;
+    } else if (escTop == PontoaPonto) {
+        Topol3>>aux;
     }
     Def::setSE(aux); //o enlace tem 100GHz de banda
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
