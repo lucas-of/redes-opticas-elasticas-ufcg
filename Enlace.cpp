@@ -25,11 +25,17 @@ void Enlace::calcula_num_amplificadores() {
 }
 
 void Enlace::calcula_ganho_enlace_indiv() {
-    ganho_enlace_indiv = pow(L_DCF*L_FB,1.0/num_amplif);
+    if (num_amplif != 0)
+        ganho_enlace_indiv = pow(L_DCF*L_FB,1.0/num_amplif);
+    else
+        ganho_enlace_indiv = 1;
 }
 
 void Enlace::calcula_ganho_enlace() {
-    ganho_enlace = L_DCF*L_FB;
+    if (num_amplif != 0)
+        ganho_enlace = L_DCF*L_FB;
+    else
+        ganho_enlace = 1;
 }
 
 long double Enlace::get_ganho_enlace() {
@@ -68,4 +74,8 @@ long double Enlace::get_ruido_enlace(int num_slots) {
 
 double Enlace::get_comprimento() {
     return distancia;
+}
+
+long double Enlace::get_perda_enlace() {
+    return L_FB;
 }
