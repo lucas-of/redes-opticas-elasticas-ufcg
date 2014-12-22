@@ -53,8 +53,8 @@ void Enlace::calcula_ruido_enlace() {
 void Enlace::calcula_perdas() {
     long double dDCF = (distancia*Constante::Dcr/Constante::DDCF);
     dDCF = (dDCF > 0 ? dDCF : -dDCF);
-    L_FB = exp(Constante::alphaFB*distancia/4.34);
-    L_DCF = exp(Constante::alphaDCF*dDCF/4.34);
+    L_FB = pow(10,0.1*Constante::alphaFB*distancia);//exp(Constante::alphaFB*distancia/4.34);
+    L_DCF = pow(10,0.1*Constante::alphaDCF*dDCF); //exp(Constante::alphaDCF*dDCF/4.34);
 }
 
 long double Enlace::get_ruido_enlace(int num_slots) {
