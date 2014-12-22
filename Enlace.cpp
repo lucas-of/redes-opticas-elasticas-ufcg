@@ -19,9 +19,8 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 }
 
 void Enlace::calcula_num_amplificadores() {
-    double namp_temp = distancia/Def::get_DistaA();
-    if ( fmod(distancia, Def::get_DistaA()) == 0.0 ) num_amplif = (int) (namp_temp-1);
-    else num_amplif = (int) (namp_temp - fmod(distancia,Def::get_DistaA()));
+    num_amplif = floor(distancia/Def::get_DistaA());
+    if ((int) (distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
     cout << num_amplif;
 }
 
@@ -43,8 +42,12 @@ void Enlace::calcula_ruido_enlace() {
         double freq = Constante::c/Def::getlambda();
         ruido_enlace = Constante::h*freq*Def::get_Bslot()*Def::get_Famp()*0.5;
         long double sum = 0;
-        for (int k = 1; k<= num_amplif ; k++) {
-            sum += pow(ganho_enlace_indiv,num_amplif+1-k)/pow(L_FB*L_DCF, ((num_amplif+1.0-k)/(num_amplif + 1.0)));
+        if (num_amplif != 0) {
+            for (int k = 1; k<= num_amplif ; k++) {
+                sum += pow(ganho_enlace_indiv,num_amplif+1-k)/pow(L_FB*L_DCF, ((num_amplif+1.0-k)/(num_amplif + 1.0)));
+            }
+        } else {
+            sum = 0;
         }
         ruido_enlace *= sum;
     }
