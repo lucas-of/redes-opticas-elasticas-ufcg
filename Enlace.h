@@ -10,6 +10,7 @@ class Enlace {
         Node* get_NodeOrigem(void);
         Node* get_NodeDestino(void);
         long double get_ganho_enlace();
+        long double get_perda_enlace();
         long double get_ruido_enlace(int num_slots);
     private:
         double distancia;

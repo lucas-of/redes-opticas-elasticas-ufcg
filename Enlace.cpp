@@ -20,15 +20,24 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 
 void Enlace::calcula_num_amplificadores() {
     num_amplif = floor(distancia/Def::get_DistaA());
+    if ((int) (distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
+    cout << num_amplif;
 }
 
 void Enlace::calcula_ganho_enlace_indiv() {
-    ganho_enlace_indiv = pow(L_DCF*L_FB,1.0/num_amplif);
+    if (num_amplif != 0)
+        ganho_enlace_indiv = pow(L_DCF*L_FB,1.0/num_amplif);
+    else
+        ganho_enlace_indiv = 1;
 }
 
 void Enlace::calcula_ganho_enlace() {
-    ganho_enlace = L_DCF*L_FB;
+    if (num_amplif != 0)
+        ganho_enlace = L_DCF*L_FB;
+    else
+        ganho_enlace = 1;
 }
+
 
 long double Enlace::get_ganho_enlace() {
     return ganho_enlace;
@@ -40,8 +49,12 @@ void Enlace::calcula_ruido_enlace() {
         double freq = Constante::c/Def::getlambda();
         ruido_enlace = Constante::h*freq*Def::get_Bslot()*Def::get_Famp()*0.5;
         long double sum = 0;
-        for (int k = 1; k<= num_amplif ; k++) {
-            sum += pow(ganho_enlace_indiv,num_amplif+1-k)/pow(L_FB*L_DCF, ((num_amplif+1.0-k)/(num_amplif + 1.0)));
+        if (num_amplif != 0) {
+            for (int k = 1; k<= num_amplif ; k++) {
+                sum += pow(ganho_enlace_indiv,num_amplif+1-k)/pow(L_FB*L_DCF, ((num_amplif+1.0-k)/(num_amplif + 1.0)));
+            }
+        } else {
+            sum = 0;
         }
         ruido_enlace *= sum;
     }
@@ -50,8 +63,8 @@ void Enlace::calcula_ruido_enlace() {
 void Enlace::calcula_perdas() {
     long double dDCF = (distancia*Constante::Dcr/Constante::DDCF);
     dDCF = (dDCF > 0 ? dDCF : -dDCF);
-    L_FB = exp(Constante::alphaFB*distancia/4.34);
-    L_DCF = exp(Constante::alphaDCF*dDCF/4.34);
+    L_FB = pow(10,0.1*Constante::alphaFB*distancia);//exp(Constante::alphaFB*distancia/4.34);
+    L_DCF = pow(10,0.1*Constante::alphaDCF*dDCF); //exp(Constante::alphaDCF*dDCF/4.34);
 }
 
 long double Enlace::get_ruido_enlace(int num_slots) {
@@ -62,4 +75,8 @@ long double Enlace::get_ruido_enlace(int num_slots) {
 
 double Enlace::get_comprimento() {
     return distancia;
+}
+
+long double Enlace::get_perda_enlace() {
+    return L_FB;
 }
