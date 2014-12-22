@@ -19,7 +19,10 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 }
 
 void Enlace::calcula_num_amplificadores() {
-    num_amplif = floor(distancia/Def::get_DistaA());
+    double namp_temp = distancia/Def::get_DistaA();
+    if ( fmod(distancia, Def::get_DistaA()) == 0.0 ) num_amplif = (int) (namp_temp-1);
+    else num_amplif = (int) (namp_temp - fmod(distancia,Def::get_DistaA()));
+    cout << num_amplif;
 }
 
 void Enlace::calcula_ganho_enlace_indiv() {
