@@ -15,10 +15,14 @@ SOURCES += \
     ASE_Noise.cpp
 
 OTHER_FILES += \
-    Topology.txt \
     README.md \
-    Topology2.txt \
-    Topology3.txt
+    TopologyNFS.txt \
+    TopologyPBell.txt \
+    TopologyRed8.txt \
+    TopologyRed4.txt \
+    TopologyNFSMod.txt \
+    TopologyTop1.txt \
+    TopologyTop2.txt
 
 HEADERS += \
     Conexao.h \
@@ -33,7 +37,7 @@ HEADERS += \
     Constantes.h
 
     install_it.path = $$OUT_PWD
-    install_it.files = Topology.txt Topology2.txt Topology3.txt
+    install_it.files = TopologyNFS.txt TopologyPBell.txt TopologyRed8.txt TopologyRed4.txt TopologyNFSMod.txt TopologyTop1.txt TopologyTop2.txt
 
 INSTALLS += \
     install_it

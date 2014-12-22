@@ -190,12 +190,14 @@ void createStructures() {
     int orN, deN;
     for (orN = 0; orN < Def::getNnodes(); orN++) {
         for(deN = 0; deN < Def::getNnodes(); deN++) {
-            if (escTop == PacificBell) {
-                Topol2 >> Topology[orN][deN];
-            } else if (escTop == NSFNet) {
-                Topol>>Topology[orN][deN];
-            } else if (escTop == PontoaPonto) {
-                Topol3>>Topology[orN][deN];
+            switch(escTop) {
+                case PacificBell: Topol2 >> Topology[orN][deN]; break;
+                case NSFNet: Topol>>Topology[orN][deN]; break;
+                case NFSNetMod: Topol5>>Topology[orN][deN]; break;
+                case PontoaPonto8: Topol3>>Topology[orN][deN]; break;
+                case PontoaPonto4: Topol4>>Topology[orN][deN]; break;
+                case Top1: Topol6>>Topology[orN][deN]; break;
+                case Top2: Topol7>>Topology[orN][deN]; break;
             }
             cout<<Topology[orN][deN]<<" ";
         }
@@ -214,12 +216,14 @@ void createStructures() {
     for (int i=0; i < Def::getNnodes(); i++){
         for(int j=0; j < Def::getNnodes(); j++){
             double distancia_temp;
-            if (escTop == PacificBell) {
-                Topol2 >> distancia_temp;
-            } else if (escTop == NSFNet) {
-                Topol>>distancia_temp;
-            } else if (escTop == PontoaPonto) {
-                Topol3>>distancia_temp;
+            switch(escTop) {
+                case PacificBell: Topol2 >> distancia_temp; break;
+                case NSFNet: Topol>>distancia_temp; break;
+                case NFSNetMod: Topol5>>distancia_temp; break;
+                case PontoaPonto8: Topol3>>distancia_temp; break;
+                case PontoaPonto4: Topol4>>distancia_temp; break;
+                case Top1: Topol6>>distancia_temp; break;
+                case Top2: Topol7>>distancia_temp; break;
             }
             if(Topology[i][j] == 1){
                 Caminho[i].push_back(Enlace(&Rede.at(i),&Rede.at(j),distancia_temp));
@@ -667,18 +671,21 @@ void Load() {
     int Npontos, aux;
     long double op;
 
-    cout << "Usar a topologia Pacific Bell <" << PacificBell << "> ou NSFNet <" << NSFNet << "> ou Ponto a Ponto <" << PontoaPonto <<">?" << endl;
+    cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
     cin>>aux;
     escTop = (Topologia)aux;
 
     //Adquire o numero de Nos:
-    if (escTop == PacificBell) {
-        Topol2 >> aux;
-    } else if (escTop == NSFNet) {
-        Topol>>aux;
-    } else if (escTop == PontoaPonto) {
-        Topol3>>aux;
+    switch (escTop) {
+        case PacificBell: Topol2 >> aux; break;
+        case NSFNet: Topol>>aux; break;
+        case NFSNetMod: Topol5>>aux; break;
+        case PontoaPonto4: Topol4>>aux; break;
+        case PontoaPonto8: Topol3>>aux; break;
+        case Top1: Topol6>>aux; break;
+        case Top2: Topol7>>aux; break;
     }
+
     Def::setNnodes(aux);
     cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
@@ -697,12 +704,14 @@ void Load() {
         Def::setCompressao((Def::Compressao) op);
     }
 
-    if (escTop == PacificBell) {
-        Topol2 >> aux;
-    } else if (escTop == NSFNet) {
-        Topol>>aux;
-    } else if (escTop == PontoaPonto) {
-        Topol3>>aux;
+    switch (escTop) {
+        case PacificBell: Topol2 >> aux; break;
+        case NSFNet: Topol>>aux; break;
+        case NFSNetMod: Topol5>>aux; break;
+        case PontoaPonto4: Topol4>>aux; break;
+        case PontoaPonto8: Topol3>>aux; break;
+        case Top1: Topol6>>aux; break;
+        case Top2: Topol7>>aux; break;
     }
     Def::setSE(aux); //o enlace tem 100GHz de banda
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;

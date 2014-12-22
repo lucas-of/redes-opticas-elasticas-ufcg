@@ -20,15 +20,19 @@ ofstream ResulFFOmet_FFOext("ResultFFOmet_FFOext.txt");
 ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
 ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
 ofstream ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
-ifstream Topol("Topology.txt");
-ifstream Topol2("Topology2.txt");
-ifstream Topol3("Topology3.txt");
+ifstream Topol("TopologyNFS.txt");
+ifstream Topol2("TopologyPBell.txt");
+ifstream Topol3("TopologyRed8.txt");
+ifstream Topol4("TopologyRed4.txt");
+ifstream Topol5("TopologyNFSMod.txt");
+ifstream Topol6("TopologyTop1.txt");
+ifstream Topol7("TopologyTop2.txt");
 
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
 enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
-enum Topologia { PacificBell , NSFNet , PontoaPonto};
+enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2};
 
 //Variáveis necessárias em main_EONsimulator.cpp
 bool ExpComp;
