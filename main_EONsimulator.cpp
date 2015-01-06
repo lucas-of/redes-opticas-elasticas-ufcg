@@ -181,8 +181,11 @@ void createStructures() {
     Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
     for (int i=0 ; i < Def::getSE() ; i++) {
         Topology_S[i] = new bool*[Def::getNnodes()];
-        for (int j=0; j < Def::getNnodes() ; j++)
+        for (int j=0; j < Def::getNnodes() ; j++) {
             Topology_S[i][j] = new bool[Def::getNnodes()];
+            for (int k = 0; k < Def::getNnodes(); k++)
+                Topology_S[i][j][k] = false;
+        }
     }
 
     //Carrega topologia de rede a partir do arquivo Topology.txt

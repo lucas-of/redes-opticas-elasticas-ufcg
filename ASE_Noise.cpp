@@ -33,7 +33,6 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
     }
 
     osnr = 10*log10(Potencia/Ruido);
-    cout << "osnr: " << osnr;
     return osnr;
 }
 
