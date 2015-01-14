@@ -53,6 +53,11 @@ long double Def::getlambda() {
     return lambda;
 }
 
+void Def::setOSNR(long double osnr) {
+    assert(osnr >= 0);
+    Def::OSNRin = osnr;
+}
+
 void Def::clearGrauNo() {
     GrauNo.clear();
 }

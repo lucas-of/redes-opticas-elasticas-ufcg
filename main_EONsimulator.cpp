@@ -68,10 +68,20 @@ int main() {
         Dijkstra();
     else if (Alg_Routing == SP)
         DijkstraSP();
-    //Simulacao para varios trafegos
-    for(laNet = LaNetMin; laNet <= LaNetMax; laNet += LaPasso) {
-        Sim();
-        //SimCompFFO(); Simula usando as listas FF otimizadas
+    if (escSim == Sim_PbReq) {
+        for(laNet = LaNetMin; laNet <= LaNetMax; laNet += LaPasso) {
+            Sim();
+            //SimCompFFO(); Simula usando as listas FF otimizadas
+        }
+    } else if (escSim == Sim_OSNR) {
+        //Simulacao para varios trafegos
+        cout << "Insira a carga da rede." << endl;
+        cin >> laNet;
+        for(long double osnr = OSNRMin; osnr <= OSNRMax; osnr += OSNRPasso) {
+            Def::setOSNR(osnr);
+            Sim();
+            //SimCompFFO(); Simula usando as listas FF otimizadas
+        }
     }
 
     delete []Topology;
@@ -671,8 +681,13 @@ void GrauDosNodes() {
 }
 
 void Load() {
+
     int Npontos, aux;
     long double op;
+
+    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">. " << endl;
+    cin >> aux;
+    escSim = (Simulacao)aux;
 
     cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
     cin>>aux;
@@ -748,14 +763,25 @@ void Load() {
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
-    cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
-    cout << "LaNet minimo = ";
-    cin >> LaNetMin; // La = taxa de chegada das conexoes;
-    cout <<"LaNet maximo = ";
-    cin >> LaNetMax;
-    cout<<"#Pontos no grafico = ";
-    cin >> Npontos;
-    LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
+    if (escSim == Sim_OSNR) {
+        cout << "Entre com..." << endl;
+        cout << "OSNR minimo = ";
+        cin >> OSNRMin; // La = taxa de chegada das conexoes;
+        cout <<"OSNR maximo = ";
+        cin >> OSNRMax;
+        cout<<"#Pontos no grafico = ";
+        cin >> Npontos;
+        OSNRPasso = (OSNRMax-OSNRMin)/(Npontos-1);
+    } else if (escSim == Sim_PbReq) {
+        cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
+        cout << "LaNet minimo = ";
+        cin >> LaNetMin; // La = taxa de chegada das conexoes;
+        cout <<"LaNet maximo = ";
+        cin >> LaNetMax;
+        cout<<"#Pontos no grafico = ";
+        cin >> Npontos;
+        LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
+    }
 
     if (AvaliaOsnr==SIM) {
         cout << "Entre com a potencia de entrada, em dBm." << endl;
@@ -920,7 +946,7 @@ void RequestCon(Event* evt) {
 
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
-    long double OSNR;
+    long double OSNR = 0;
     for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
         route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
         NslotsUsed = 0;
@@ -1106,9 +1132,15 @@ void Simulate() {
     }
 
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
-    cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
-    Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
-    ResulOSNR << laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
+    if (escSim == Sim_PbReq) {
+        cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
+        ResulOSNR << laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
+    } else if (escSim == Sim_OSNR) {
+        cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
+        ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
+    }
 }
 
 int SlotsReq() {

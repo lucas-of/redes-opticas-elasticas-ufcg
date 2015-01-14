@@ -81,6 +81,7 @@ class Def {
         static void setCompressao(Compressao);
         static void setSE(int);
         static void setSR(int);
+        static void setOSNR(long double);
 
         static Arquitetura get_Arquitetura();
         static int get_Compressao();
