@@ -21,7 +21,9 @@ long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
 long double Def::PossiveisTaxas[] = { 10E9, 40E9, 100E9, 160E9 }; //em Gbps
-int Def::numPossiveisTaxas = 4;
+const int Def::numPossiveisTaxas = 4;
+long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
+long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
@@ -197,6 +199,10 @@ long double Def::get_Bslot() {
 
 long double Def::get_Famp() {
     return Famp;
+}
+
+int Def::get_numPossiveisTaxas() {
+    return numPossiveisTaxas;
 }
 
 Def::Arquitetura Def::get_Arquitetura() {

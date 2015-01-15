@@ -21,7 +21,7 @@ class Def {
             COMP1 = 1, COMP2 = 2, COMP4 = 4
         }; /*depende do esquema de modulacao usado */
         static long double PossiveisTaxas[];
-        static int numPossiveisTaxas;
+        const static int numPossiveisTaxas;
 
     private:
         static vector<int> GrauNo; //O grau de cada no
@@ -56,6 +56,8 @@ class Def {
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
         static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
+        static long double numReq_Taxa[];
+        static long double numReqBloq_Taxa[];
 
         static void clearGrauNo();
         static long double get_Bslot();
@@ -94,5 +96,6 @@ class Def {
         static long double get_Famp();
         static long double get_DDCF();
         static long double get_Dcr();
+        static int get_numPossiveisTaxas();
 };
 #endif

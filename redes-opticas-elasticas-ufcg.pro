@@ -12,7 +12,8 @@ SOURCES += \
     Route.cpp \
     Node.cpp \
     Enlace.cpp \
-    ASE_Noise.cpp
+    ASE_Noise.cpp \
+    Metricas.cpp
 
 OTHER_FILES += \
     README.md \

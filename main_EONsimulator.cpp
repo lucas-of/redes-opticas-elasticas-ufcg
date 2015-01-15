@@ -17,11 +17,12 @@
 #include "Node.h"
 #include "Enlace.h"
 #include "ASE_Noise.cpp"
+#include "Metricas.cpp"
 
 using namespace std;
 
 //Protótipos de Funções
-void AccountForBlocking(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
+void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
@@ -45,7 +46,8 @@ void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do ins
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
-int SlotsReq(); /*gera um número aleatório, sob uma distribuição uniforme, que representará o número de slots que a requisição solicitará.*/
+int SlotsReq(int Ran); /*coverte a taxa em um número de slots.*/
+int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
@@ -95,9 +97,11 @@ int main() {
     return 0;
 }
 
-void AccountForBlocking(int NslotsReq, int NslotsUsed) {
-    if(NslotsUsed <= 0) //A conexao foi bloqueada
+void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {
+    if(NslotsUsed <= 0) { //A conexao foi bloqueada
         Def::numReq_Bloq++;
+        Def::numReqBloq_Taxa[nTaxa]++;
+    }
     Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
 }
 
@@ -930,11 +934,14 @@ void RemoveCon(Event* evt) {
 }
 
 void RequestCon(Event* evt) {
-    int orN, deN, NslotsReq, NslotsUsed, si;
+    int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
-    NslotsReq = SlotsReq();
+    nTaxa = TaxaReq();
+    NslotsReq = SlotsReq(nTaxa);
+
     Def::numReq++;
+    Def::numReq_Taxa[nTaxa]++;
     Def::numSlots_Req += NslotsReq;
 
     if(Alg_Routing == DJK_Formas)
@@ -985,7 +992,7 @@ void RequestCon(Event* evt) {
     }
 
     //Verifica quantas conexoes e quantos slots foram bloqueados
-    AccountForBlocking(NslotsReq, NslotsUsed);
+    AccountForBlocking(NslotsReq, NslotsUsed, nTaxa);
     //Define o novo evento de chegada de requisicao
     long double IAT = General::exponential(laNet); //Inter-arrival time
     setReqEvent(evt, simTime + IAT);
@@ -1131,17 +1138,22 @@ void Simulate() {
 
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
     if (escSim == Sim_PbReq) {
-        cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbAc= " << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\tPbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        cout << "nu0= " << laNet << "   PbReq= " << ProbBloqueio() << "   PbAc= " << ProbAceitacao() << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
         Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
         ResulOSNR << laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
     } else if (escSim == Sim_OSNR) {
-        cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbAc= " << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\tPbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << ProbBloqueio() << "   PbAc= " << ProbAceitacao() << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
         Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
         ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
     }
+
+    {
+        ProbBloqueioTaxa();
+        ProbAceitacaoTaxa();
+    }
 }
 
-int SlotsReq() {
+int SlotsReq(int Ran) {
     /*double sum=0.0, x;
     int Lr;
     for(Lr = 1; Lr <= Def::getSR(); Lr++)
@@ -1156,11 +1168,15 @@ int SlotsReq() {
     Lr = ceil(1.0*Lr/Def::get_Compressao()); //compressao devido ao esquema de modulação
     assert(Lr > 0 && Lr <= Def::getSR());
     return Lr;*/
-    int Ran = floor( General::uniforme(0.0,Def::numPossiveisTaxas) );
+    assert(Ran < Def::get_numPossiveisTaxas());
     long double Taxa = Def::PossiveisTaxas[Ran];
     int Lr = ceil(Taxa/(Def::get_Compressao()*Constante::TaxaPorSlot));
     assert(Lr > 0 && Lr <= Def::getSR());
     return Lr;
+}
+
+int TaxaReq() {
+    return floor( General::uniforme(0.0,Def::get_numPossiveisTaxas()) );
 }
 
 int sumOccupation(int s) {

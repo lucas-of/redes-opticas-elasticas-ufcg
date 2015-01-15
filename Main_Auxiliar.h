@@ -16,6 +16,8 @@ ofstream Resul("Result.txt");
 ofstream Metrica("Metrica.txt");
 ofstream ResulOSNR("ResulOSNR.txt");
 ofstream Resul2("Result2.txt");
+ofstream ResulProbBloqTaxa("ProbBloqTaxa.txt");
+ofstream ResulProbAceitTaxa("ProbAceitTaxa.txt");
 ofstream ResulFFOmet_FFOext("ResultFFOmet_FFOext.txt");
 ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
 ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
