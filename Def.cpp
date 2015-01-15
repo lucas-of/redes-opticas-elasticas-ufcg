@@ -20,6 +20,8 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
+long double Def::PossiveisTaxas[] = { 10E9, 40E9, 100E9, 160E9 }; //em Gbps
+int Def::numPossiveisTaxas = 4;
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
@@ -42,11 +44,7 @@ void Def::setCompressao(Compressao C) {
 }
 
 int Def::get_Compressao() {
-    switch(compressao) {
-        case COMP1: return 1; break;
-        case COMP2: return 2; break;
-        case COMP4: return 4; break;
-    }
+    return Def::compressao;
 }
 
 long double Def::getlambda() {

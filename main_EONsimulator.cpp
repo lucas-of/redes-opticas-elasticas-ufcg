@@ -717,7 +717,7 @@ void Load() {
         cin >> op;
         Def::setBslot(op);
 
-        cout << "Entre com a relação entre taxa de transf. e num. de slots. 1:1 - "<< Def::COMP1 << " 2:1 - " << Def::COMP2 << " 4:1 - "<< Def::COMP4 << endl;
+        cout << "Entre com a compressão devido ao esquema de modulação." << endl << "\t1:1 <"<< Def::COMP1 << ">\n\t2:1 <" << Def::COMP2 << ">\n\t4:1 <"<< Def::COMP4 << ">" << endl;
         cin >> op;
         Def::setCompressao((Def::Compressao) op);
     }
@@ -735,9 +735,7 @@ void Load() {
     cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
 
     //Outras entradas para o simulador
-    cout<<"Entre com a Quantidade maxima de Slots por Requisicao [1 <= SR <= "<<Def::getSE()<<"]: ";
-    cin >> aux;
-    Def::setSR(aux); //Uma requisicao nao podera pedir mais que aux slots
+    Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
     cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<< endl << SP << " - Shortest Path"<<endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
@@ -1133,18 +1131,18 @@ void Simulate() {
 
     cout <<"Simulation Time= " << simTime << "  numReq=" << Def::numReq << endl;
     if (escSim == Sim_PbReq) {
-        cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
-        Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
+        cout << "nu0= " << laNet << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbAc= " << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\tPbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        Resul << laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
         ResulOSNR << laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
     } else if (escSim == Sim_OSNR) {
-        cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
+        cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << (long double) Def::numReq_Bloq/Def::numReq << "   PbAc= " << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\tPbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
         Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
         ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
     }
 }
 
 int SlotsReq() {
-    double sum=0.0, x;
+    /*double sum=0.0, x;
     int Lr;
     for(Lr = 1; Lr <= Def::getSR(); Lr++)
         sum += Def::getLaNet(Lr);
@@ -1155,7 +1153,12 @@ int SlotsReq() {
         if(x < sum)
             break;
     }
-    Lr = ceil(1.0*Lr/Def::get_Compressao()); /*compressao devido ao esquema de modulação*/
+    Lr = ceil(1.0*Lr/Def::get_Compressao()); //compressao devido ao esquema de modulação
+    assert(Lr > 0 && Lr <= Def::getSR());
+    return Lr;*/
+    int Ran = floor( General::uniforme(0.0,Def::numPossiveisTaxas) );
+    long double Taxa = Def::PossiveisTaxas[Ran];
+    int Lr = ceil(Taxa/(Def::get_Compressao()*Constante::TaxaPorSlot));
     assert(Lr > 0 && Lr <= Def::getSR());
     return Lr;
 }

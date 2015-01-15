@@ -18,8 +18,10 @@ class Def {
             BS, SS
         }; /* Broadcast-and-Select ou Switch-and-Select*/
         enum Compressao {
-            COMP1, COMP2, COMP4
+            COMP1 = 1, COMP2 = 2, COMP4 = 4
         }; /*depende do esquema de modulacao usado */
+        static long double PossiveisTaxas[];
+        static int numPossiveisTaxas;
 
     private:
         static vector<int> GrauNo; //O grau de cada no

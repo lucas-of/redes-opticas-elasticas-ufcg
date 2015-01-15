@@ -8,6 +8,7 @@ namespace Constante {
     static long double DDCF = -99.77;
     static long double c = 300000000;
     static long double h = 6.63E-34;
+    static long double TaxaPorSlot = 10E9; // 1 slot ~ 10Gbps
 }
 
 #endif // CONSTANTES_H
