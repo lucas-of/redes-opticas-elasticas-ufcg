@@ -741,11 +741,11 @@ void Load() {
     //Outras entradas para o simulador
     Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-    cout << DJK<<" - DJK \n"<<DJK_Formas<<" - DJK_Formas \n"<< DJK_Acum<<" - DijkstraAcumulado "<< endl << SP << " - Shortest Path"<<endl;
+    cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path"<<endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
     cin >> Alg_Routing;
 
-    cout<<RD<<" - Random \n"<<FF<<" - FirstFit \n"<<MU<<" - Most Used \n"<<FFO<<" - FirstFitOpt "<<endl;
+    cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
     cout << "Entre com o Algoritmo de Alocacao: ";
     cin >> Alg_Aloc;
 
@@ -977,12 +977,14 @@ void RequestCon(Event* evt) {
                 Def::numHopsPerRoute += route->getNhops();
                 Def::netOccupancy += NslotsUsed*route->getNhops();
                 //Cria uma nova conexao
-                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + General::exponential(mu));
+                long double Tempo = General::exponential(mu);
+                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo);
                 //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
                 Event *evt = new Event;
                 evt->conexao = newConexao;
                 DefineNextEventOfCon(evt);
                 ScheduleEvent(evt);
+                Def::tempoTotal_Taxa[nTaxa] += Tempo;
                 break;
             } else { //conexao bloqueada por OSNR
                 NslotsUsed = 0;
@@ -1150,6 +1152,7 @@ void Simulate() {
     {
         ProbBloqueioTaxa();
         ProbAceitacaoTaxa();
+        calcTaxaMedia();
     }
 }
 

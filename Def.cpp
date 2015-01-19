@@ -24,6 +24,7 @@ long double Def::PossiveisTaxas[] = { 10E9, 40E9, 100E9, 160E9 }; //em Gbps
 const int Def::numPossiveisTaxas = 4;
 long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
+long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;

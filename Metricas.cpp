@@ -11,13 +11,23 @@ long double ProbAceitacao() {
 
 void ProbBloqueioTaxa() {
     for (int i = 0; i < Def::get_numPossiveisTaxas(); i++ ) {
-        ResulProbBloqTaxa << Def::PossiveisTaxas[i] << " " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
-        cout << Def::PossiveisTaxas[i] << "Gbps\tProb Bloq = " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+        ResulProbBloqTaxa << laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+        cout << Def::PossiveisTaxas[i]/pow(10,9) << "Gbps\tProb Bloq = " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
     }
 }
 
 void ProbAceitacaoTaxa() {
     for (int i = 0; i < Def::get_numPossiveisTaxas(); i++ ) {
-        ResulProbAceitTaxa << Def::PossiveisTaxas[i] << " " << 1.0 - Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+        ResulProbAceitTaxa << laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << 1.0 - Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
     }
+}
+
+void calcTaxaMedia() {
+    long double TaxaMedia = 0;
+    for (int i = 0; i < Def::get_numPossiveisTaxas(); i++) {
+        TaxaMedia += Def::PossiveisTaxas[i] * Def::tempoTotal_Taxa[i];
+    }
+    TaxaMedia /= simTime;
+    cout << "Taxa Media de transmissão é " << TaxaMedia/pow(10,9) << " Gbps" << endl;
+    ResulTaxaMedia << laNet << "\t" << TaxaMedia << endl;
 }

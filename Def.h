@@ -58,6 +58,7 @@ class Def {
         static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
         static long double numReq_Taxa[];
         static long double numReqBloq_Taxa[];
+        static long double tempoTotal_Taxa[];
 
         static void clearGrauNo();
         static long double get_Bslot();

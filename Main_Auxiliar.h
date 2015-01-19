@@ -18,6 +18,7 @@ ofstream ResulOSNR("ResulOSNR.txt");
 ofstream Resul2("Result2.txt");
 ofstream ResulProbBloqTaxa("ProbBloqTaxa.txt");
 ofstream ResulProbAceitTaxa("ProbAceitTaxa.txt");
+ofstream ResulTaxaMedia("TaxaMedia.txt");
 ofstream ResulFFOmet_FFOext("ResultFFOmet_FFOext.txt");
 ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
 ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
@@ -34,7 +35,7 @@ ifstream Topol7("TopologyTop2.txt");
 enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
-enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2};
+enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
 enum Simulacao { Sim_PbReq, Sim_OSNR };
 
 //Variáveis necessárias em main_EONsimulator.cpp
