@@ -45,14 +45,14 @@ void Enlace::calcula_ruido_enlace() {
     if (num_amplif == 0) ruido_enlace = 0;
     else {
         double freq = Constante::c/Def::getlambda();
-        ruido_enlace = Constante::h*freq*Def::get_Bslot()*Def::get_Famp()*0.5;
+
+        ruido_enlace = 0.5*Def::get_Famp()*Constante::h*freq*Def::get_Bslot();
+        ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif)));
+        ruido_enlace /= pow(L_FB*L_DCF, 1.0/(num_amplif + 1.0));
+
         long double sum = 0;
-        if (num_amplif != 0) {
-            for (int k = 1; k<= num_amplif ; k++) {
-                sum += pow(ganho_enlace_indiv,num_amplif+1-k)/pow(L_FB*L_DCF, ((num_amplif+1.0-k)/(num_amplif + 1.0)));
-            }
-        } else {
-            sum = 0;
+        for (int k = 1; k <= num_amplif; k++) {
+            sum += pow(L_FB*L_DCF, (k - 1.0)/(num_amplif * (num_amplif + 1.0)));
         }
         ruido_enlace *= sum;
     }

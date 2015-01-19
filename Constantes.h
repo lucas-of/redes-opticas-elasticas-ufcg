@@ -3,11 +3,11 @@
 
 namespace Constante {
     static long double alphaDCF = 0; //dB/km
-    static long double alphaFB = 0.2; //dB/km
+    static long double alphaFB = 0.22; //dB/km
     static long double Dcr = -0.75;
     static long double DDCF = -99.77;
-    static long double c = 300000000;
-    static long double h = 6.63E-34;
+    static long double c = 299792458;
+    static long double h = 6.62606957E-34;
     static long double TaxaPorSlot = 10E9; // 1 slot ~ 10Gbps
 }
 

@@ -32,8 +32,8 @@ long double Def::Lsss=5.0;
 long double Def::DistA=75.0;
 Def::Arquitetura Def::arquitetura=Def::BS;
 Def::Compressao Def::compressao = Def::COMP1;
-long double Def::lambda = 1540E-9;
-long double Def::Bslot = 1.0;
+long double Def::lambda = 1550E-9;
+long double Def::Bslot = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 void Def::setBslot(double Bslot) {
