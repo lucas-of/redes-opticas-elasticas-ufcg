@@ -46,7 +46,7 @@ void Enlace::calcula_ruido_enlace() {
     else {
         double freq = Constante::c/Def::getlambda();
 
-        ruido_enlace = 0.5*Def::get_Famp()*Constante::h*freq*Def::get_Bslot();
+        ruido_enlace = Def::get_Famp()*Constante::h*freq*Def::get_Bslot();
         ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif)));
         ruido_enlace /= pow(L_FB*L_DCF, 1.0/(num_amplif + 1.0));
 
@@ -68,7 +68,7 @@ void Enlace::calcula_perdas() {
 long double Enlace::get_ruido_enlace(int num_slots) {
     assert (num_slots > 0);
     assert (num_slots <= Def::getSE());
-    return num_slots*ruido_enlace;
+    return ruido_enlace;
 }
 
 double Enlace::get_comprimento() {
