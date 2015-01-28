@@ -37,7 +37,6 @@ class Def {
         static long double Lsss;//Lsssm perdas nos dispositivos
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
-        static Compressao compressao;//compressão devido a esquema de modulação
         static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
         static long double Bref;//largura de linha de referencia
@@ -88,13 +87,11 @@ class Def {
         static void setLaUniform(double); //tráfego uniforme entre enlaces
         static void setLimiarOSNR(double);
         static void setNumReqMax(long double);
-        static void setCompressao(Compressao);
         static void setSE(int);
         static void setSR(int);
         static void setOSNR(long double);
 
         static Arquitetura get_Arquitetura();
-        static int get_Compressao();
         static long double get_Pin();
         static long double get_Pref();
         static long double get_OSRNin();

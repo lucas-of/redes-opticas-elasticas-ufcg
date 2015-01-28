@@ -723,10 +723,6 @@ void Load() {
         Def::setBslot(op);
 
         Def::setBref(12.5);
-
-        cout << "Entre com a compressão devido ao esquema de modulação." << endl << "\t1:1 <"<< Def::COMP1 << ">\n\t2:1 <" << Def::COMP2 << ">\n\t4:1 <"<< Def::COMP4 << ">" << endl;
-        cin >> op;
-        Def::setCompressao((Def::Compressao) op);
     }
 
     switch (escTop) {
@@ -1179,7 +1175,7 @@ int SlotsReq(int Ran) {
     return Lr;*/
     assert(Ran < Def::get_numPossiveisTaxas());
     long double Taxa = Def::PossiveisTaxas[Ran];
-    int Lr = ceil(Taxa/(Def::get_Compressao()*Constante::TaxaPorSlot));
+    int Lr = ceil(Taxa/Constante::TaxaPorSlot);
     assert(Lr > 0 && Lr <= Def::getSR());
     return Lr;
 }
