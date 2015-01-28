@@ -40,6 +40,7 @@ class Def {
         static Compressao compressao;//compressão devido a esquema de modulação
         static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
+        static long double Bref;//largura de linha de referencia
         static long double Famp;//fator do ruido amplificador
         static long double Dcr; //relacionado a dispersao cromatica
         static long double DDCF; //coeficiente de dispersao
@@ -63,6 +64,7 @@ class Def {
 
         static void clearGrauNo();
         static long double get_Bslot();
+        static long double get_Bref();
         static int getGrauNo(int);
         static long double getlambda(void);
         static double getLaNet(int);
@@ -79,6 +81,7 @@ class Def {
         static void set_Pref(long double);
 
         static void setBslot(double);
+        static void setBref(double);
         static void setGrauNo(int Grau);
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots

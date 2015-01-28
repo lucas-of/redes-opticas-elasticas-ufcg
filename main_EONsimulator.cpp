@@ -36,6 +36,7 @@ void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão
 void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
 void GrauDosNodes(void); /*Calcula o grau dos nós*/
+long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -720,6 +721,8 @@ void Load() {
         cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
         cin >> op;
         Def::setBslot(op);
+
+        Def::setBref(12.5);
 
         cout << "Entre com a compressão devido ao esquema de modulação." << endl << "\t1:1 <"<< Def::COMP1 << ">\n\t2:1 <" << Def::COMP2 << ">\n\t4:1 <"<< Def::COMP4 << ">" << endl;
         cin >> op;

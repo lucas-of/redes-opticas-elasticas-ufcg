@@ -1,4 +1,5 @@
 #include "Def.h"
+#include "Main_Auxiliar.h"
 
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
     long double Potencia = Def::get_Pin();
@@ -40,4 +41,19 @@ void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed) {
     if(NslotsUsed <= 0) //A conexao foi bloqueada
         Def::numReq_BloqPorOSNR++;
     Def::numSlots_BloqPorOSNR += (NslotsReq - NslotsUsed);
+}
+
+long double get_snrb(EsquemaDeModulacao Esq) {
+    switch (Esq) {
+        case _BPSK:
+            return 0;
+        case _4QAM:
+            return 6.8;
+        case _16QAM:
+            return 10.5;
+        case _64QAM:
+            return 14.8;
+        default:
+            return 0;
+    }
 }

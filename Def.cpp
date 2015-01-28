@@ -36,11 +36,17 @@ Def::Arquitetura Def::arquitetura=Def::BS;
 Def::Compressao Def::compressao = Def::COMP1;
 long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
+long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 void Def::setBslot(double Bslot) {
     assert (Bslot > 0);
     Def::Bslot = Bslot * 1E9;
+}
+
+void Def::setBref(double Bref) {
+    assert (Bref > 0);
+    Def::Bref = Bref * 1E9;
 }
 
 void Def::setCompressao(Compressao C) {
