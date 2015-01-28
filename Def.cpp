@@ -28,6 +28,7 @@ long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
+long double Def::Pref=1.0;
 long double Def::OSNRin=30.0;
 long double Def::Lsss=5.0;
 long double Def::DistA=75.0;
@@ -208,4 +209,12 @@ int Def::get_numPossiveisTaxas() {
 
 Def::Arquitetura Def::get_Arquitetura() {
     return arquitetura;
+}
+
+long double Def::get_Pref() {
+    return Pref;
+}
+
+void Def::set_Pref(long double P) {
+    Pref = 1E-3*General::dB(P);
 }

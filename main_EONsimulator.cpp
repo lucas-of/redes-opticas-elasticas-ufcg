@@ -789,6 +789,9 @@ void Load() {
         cout << "Entre com a potencia de entrada, em dBm." << endl;
         cin>>op;
         Def::set_Pin(op);
+        cout << "Entre com a potencia de referencia da fibra, em dBm." << endl;
+        cin>>op;
+        Def::set_Pref(op);
         cout<<"Entre com distancia entre os amplificadores"<<endl;
         cin>>op;
         Def::set_DistaA(op);

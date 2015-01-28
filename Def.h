@@ -32,6 +32,7 @@ class Def {
         static int SR; //SR é o número máximo de slots requisitados
 
         static long double Pin;//Pin potencia de entrada
+        static long double Pref;//Pref potencia de referencia
         static long double OSNRin;//OSNRin OSNR de entrada
         static long double Lsss;//Lsssm perdas nos dispositivos
         static long double DistA;//DistA distancia entre os amplificadores de linha
@@ -75,6 +76,7 @@ class Def {
         static void set_DistaA(long double);
         static void set_Lsss(long double);
         static void set_Pin(long double);
+        static void set_Pref(long double);
 
         static void setBslot(double);
         static void setGrauNo(int Grau);
@@ -91,6 +93,7 @@ class Def {
         static Arquitetura get_Arquitetura();
         static int get_Compressao();
         static long double get_Pin();
+        static long double get_Pref();
         static long double get_OSRNin();
         static long double get_Lsss();
         static long double get_DistaA();
