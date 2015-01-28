@@ -17,9 +17,6 @@ class Def {
         enum Arquitetura {
             BS, SS
         }; /* Broadcast-and-Select ou Switch-and-Select*/
-        enum Compressao {
-            COMP1 = 1, COMP2 = 2, COMP4 = 4
-        }; /*depende do esquema de modulacao usado */
         static long double PossiveisTaxas[];
         const static int numPossiveisTaxas;
 

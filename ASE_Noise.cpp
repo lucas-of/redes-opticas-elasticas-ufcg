@@ -1,5 +1,5 @@
 #include "Def.h"
-#include "Main_Auxiliar.h"
+#include "Conexao.h"
 
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
     long double Potencia = Def::get_Pin();

@@ -37,7 +37,6 @@ enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
 enum Simulacao { Sim_PbReq, Sim_OSNR };
-enum EsquemaDeModulacao { _BPSK = 2, _4QAM = 4, _16QAM = 16, _64QAM = 64 };
 
 //Variáveis necessárias em main_EONsimulator.cpp
 bool ExpComp;
