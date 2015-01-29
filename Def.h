@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <vector>
 
+enum EsquemaDeModulacao { _BPSK = 2, _4QAM = 4, _16QAM = 16, _64QAM = 64 };
+
 using namespace std;
 
 typedef long double TIME;
@@ -40,9 +42,9 @@ class Def {
         static long double Famp;//fator do ruido amplificador
         static long double Dcr; //relacionado a dispersao cromatica
         static long double DDCF; //coeficiente de dispersao
+        static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
     public:
-        static long double limiarOSNR; //limiar de OSNR para estabelecimento de conexão
         static double MAX_DOUBLE; //limites - maior DOUBLE possível
         static int MAX_INT; //limites - maior INT possível
         static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
@@ -51,6 +53,7 @@ class Def {
         static long double numReq; //número de requisições
         static long double numReq_Bloq; //número de requisições bloqueadas
         static long double numReq_BloqPorOSNR; //número de requisições bloqueadas por OSNR
+        static const int numEsquemasDeModulacao;
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
         static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
@@ -64,7 +67,7 @@ class Def {
         static int getGrauNo(int);
         static long double getlambda(void);
         static double getLaNet(int);
-        static double getlimiarOSNR();
+        static double getlimiarOSNR(EsquemaDeModulacao, long double);
         static int getNnodes();
         static long double getNumReqMax();
         static void setNnodes(int);
@@ -82,7 +85,6 @@ class Def {
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots
         static void setLaUniform(double); //tráfego uniforme entre enlaces
-        static void setLimiarOSNR(double);
         static void setNumReqMax(long double);
         static void setSE(int);
         static void setSR(int);

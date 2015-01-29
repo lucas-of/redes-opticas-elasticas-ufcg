@@ -7,6 +7,7 @@
 #include "Event.h"
 #include "Node.h"
 #include "Enlace.h"
+#include "Conexao.h"
 #include "Constantes.h"
 
 using namespace std;

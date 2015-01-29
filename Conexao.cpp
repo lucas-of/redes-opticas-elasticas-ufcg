@@ -1,8 +1,7 @@
 #include "Conexao.h"
 
-const int Conexao::numEsquemasDeModulacao = 4;
 
-Conexao::Conexao(Route* r, int si, int sf, TIME tD, EsquemaDeModulacao Esq) : route(r), Si(si), Sf(sf), tDesc(tD), Esquema(Esq) {}
+Conexao::Conexao(Route* r, int si, int sf, TIME tD) : route(r), Si(si), Sf(sf), tDesc(tD) {}
 
 const int Conexao::getFirstSlot() {
     return Si;
@@ -30,6 +29,3 @@ void Conexao::incLastSlot(int x) {
     Sf += x;
 }
 
-const int Conexao::getEsquemaDeModulacao() {
-    return Esquema;
-}

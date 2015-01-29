@@ -10,8 +10,8 @@ double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes = 0;
-long double Def::limiarOSNR = 0.0;
 long double Def::netOccupancy = 0.0;
+const int Def::numEsquemasDeModulacao = 3;
 long double Def::numHopsPerRoute = 0.0;
 long double Def::numReq = 0.0;
 long double Def::numReq_Bloq = 0.0;
@@ -71,12 +71,30 @@ double Def::getLaNet(int Lr) {
     return LaNet.at(Lr);
 }
 
-double Def::getlimiarOSNR() {
-    return limiarOSNR;
+double Def::getlimiarOSNR(EsquemaDeModulacao Esquema, long double TaxaDeBit) {
+    //cout << (0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref()) << endl;
+    return (0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref());
+}
+
+long double Def::get_Bref() {
+    return Bref;
 }
 
 int Def::getSE() {
     return SE;
+}
+
+long double Def::get_snrb(EsquemaDeModulacao Esq) {
+    switch (Esq) {
+        case _4QAM:
+            return 6.8;
+        case _16QAM:
+            return 10.5;
+        case _64QAM:
+            return 14.8;
+        default:
+            return 0;
+    }
 }
 
 int Def::getSR() {
@@ -134,11 +152,6 @@ void Def::setLaUniform(double la) {
     for(int Lr = 1; Lr <= SR; Lr++)
         LaNet.push_back((double)la/SR);
     setLaCheck(la); //Checa
-}
-
-void Def::setLimiarOSNR(double OSNR) {
-    assert (OSNR >= 0);
-    limiarOSNR = OSNR;
 }
 
 void Def::setNnodes(int x) {

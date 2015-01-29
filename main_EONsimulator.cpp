@@ -36,7 +36,6 @@ void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão
 void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
 void GrauDosNodes(void); /*Calcula o grau dos nós*/
-long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -48,7 +47,7 @@ EsquemaDeModulacao escolheEsquema(); /*Escolhe o esquema de modulacao que sera u
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
-int SlotsReq(int Ran); /*coverte a taxa em um número de slots.*/
+int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
@@ -291,6 +290,7 @@ void DefineNextEventOfCon (Event* evt) {
     }
     evt->time = evtTime;
     evt->type = evtType;
+    evt->Esquema = escolheEsquema();
 }
 
 void Dijkstra() {
@@ -604,15 +604,13 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
 }
 
 EsquemaDeModulacao escolheEsquema() {
-    int Ran = floor(General::uniforme(0,Conexao::numEsquemasDeModulacao));
+    int Ran = floor(General::uniforme(0,Def::numEsquemasDeModulacao));
     switch (Ran) {
         case 0:
-            return _BPSK;
-        case 1:
             return _4QAM;
-        case 2:
+        case 1:
             return _16QAM;
-        case 3:
+        case 2:
             return _64QAM;
     }
 }
@@ -768,13 +766,6 @@ void Load() {
         FFlists = new vector<int>*[Def::getSR()+1];
         for(int i = 0; i < Def::getSR()+1; i++)
             FFlists[i] = new vector<int>(0);
-    }
-
-    if (AvaliaOsnr==SIM) {
-        double OSNR;
-        cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
-        cin >> OSNR;
-        Def::setLimiarOSNR(OSNR);
     }
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
@@ -955,7 +946,7 @@ void RequestCon(Event* evt) {
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     nTaxa = TaxaReq();
-    NslotsReq = SlotsReq(nTaxa);
+    NslotsReq = SlotsReq(nTaxa, evt);
 
     Def::numReq++;
     Def::numReq_Taxa[nTaxa]++;
@@ -978,7 +969,7 @@ void RequestCon(Event* evt) {
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
             if (AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route,NslotsUsed);
-            if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
+            if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
             //Inserir a conexao na rede
                 int L_or, L_de;
                 for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -995,7 +986,7 @@ void RequestCon(Event* evt) {
                 Def::netOccupancy += NslotsUsed*route->getNhops();
                 //Cria uma nova conexao
                 long double Tempo = General::exponential(mu);
-                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo, escolheEsquema());
+                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo);
                 //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
                 Event *evt = new Event;
                 evt->conexao = newConexao;
@@ -1053,6 +1044,7 @@ void setReqEvent(Event* evt, TIME t) {
     evt->type = Req;
     evt->nextEvent = NULL;
     evt->conexao = NULL;
+    evt->Esquema = escolheEsquema();
 }
 
 void Sim() {
@@ -1173,26 +1165,8 @@ void Simulate() {
     }
 }
 
-int SlotsReq(int Ran) {
-    /*double sum=0.0, x;
-    int Lr;
-    for(Lr = 1; Lr <= Def::getSR(); Lr++)
-        sum += Def::getLaNet(Lr);
-    x = General::uniforme(0.0,sum);
-    sum = 0.0;
-    for(Lr = 1; Lr <= Def::getSR(); Lr++) {
-        sum += Def::getLaNet(Lr);
-        if(x < sum)
-            break;
-    }
-    Lr = ceil(1.0*Lr/Def::get_Compressao()); //compressao devido ao esquema de modulação
-    assert(Lr > 0 && Lr <= Def::getSR());
-    return Lr;*/
-    assert(Ran < Def::get_numPossiveisTaxas());
-    long double Taxa = Def::PossiveisTaxas[Ran];
-    int Lr = ceil(Taxa/Constante::TaxaPorSlot);
-    assert(Lr > 0 && Lr <= Def::getSR());
-    return Lr;
+int SlotsReq(int Ran, Event *evt) {
+    return ceil(Def::PossiveisTaxas[Ran]/(2*log2(evt->Esquema)*Def::get_Bslot()));
 }
 
 int TaxaReq() {
