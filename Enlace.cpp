@@ -23,10 +23,7 @@ void Enlace::calcula_num_amplificadores() {
 }
 
 void Enlace::calcula_ganho_enlace() {
-    if (num_amplif != 0)
-        ganho_enlace = L_DCF*L_FB;
-    else
-        ganho_enlace = 1;
+    ganho_enlace = General::dB(1.0*num_amplif*General::lin(L_DCF)*General::lin(L_FB)/(num_amplif + 1.0));
 }
 
 long double Enlace::get_ganho_enlace() {
@@ -45,15 +42,13 @@ void Enlace::calcula_ruido_enlace() {
 }
 
 void Enlace::calcula_perdas() {
-    long double dDCF = (distancia*Constante::Dcr/Constante::DDCF);
+    long double dDCF = 0;
     dDCF = (dDCF > 0 ? dDCF : -dDCF);
     L_FB = pow(10,0.1*Constante::alphaFB*distancia);//exp(Constante::alphaFB*distancia/4.34);
     L_DCF = pow(10,0.1*Constante::alphaDCF*dDCF); //exp(Constante::alphaDCF*dDCF/4.34);
 }
 
-long double Enlace::get_ruido_enlace(int num_slots) {
-    assert (num_slots > 0);
-    assert (num_slots <= Def::getSE());
+long double Enlace::get_ruido_enlace(int) {
     return ruido_enlace;
 }
 
@@ -62,5 +57,5 @@ double Enlace::get_comprimento() {
 }
 
 long double Enlace::get_perda_enlace() {
-    return L_FB;
+    return L_FB*L_DCF;
 }

@@ -24,7 +24,7 @@ void Node::calcula_ganho_preamp() {
 }
 
 void Node::calcula_ganho_pot() {
-    gain_pot = General::dB( General::lin(Def::get_Pref(), 1E-3L) - potencia_tx + Def::get_Lsss());
+    gain_pot = General::dB( General::lin(Def::get_Pref()/1E-3L) - potencia_tx + Def::get_Lsss());
     calcula_ruido_pot();
 }
 
