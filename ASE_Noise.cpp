@@ -8,9 +8,9 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 
     for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
         if (i!=0) {
-            Potencia *= Rede.at(Rota->getNode(i)).get_gain_preamp();
-            Ruido *= Rede.at(Rota->getNode(i)).get_gain_preamp();
-            Ruido += Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed); //Perdas nos amplificadores de potência
+            Potencia *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_preamplif();
+            Ruido *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_preamplif();
+            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_preamplif(); //Perdas nos amplificadores de potência
             //cout << "Adicionar Ruido PREAMP do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed) << endl;
             Potencia *= Rede.at(Rota->getNode(i)).get_loss();
             Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (demux)
