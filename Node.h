@@ -9,6 +9,7 @@ class Node {
         long double ruido_preamp;
         long double gain_pot;
         long double ruido_pot;
+        long double potencia_tx;
         void calcula_ganho_preamp();
         void calcula_ruido_preamp();
         void calcula_ganho_pot();
@@ -21,6 +22,7 @@ class Node {
         long double get_ruido_preamp(int);
         long double get_gain_pot();
         long double get_ruido_pot(int);
+        void set_potenciatx(long double);
 };
 
 #endif //NODE_H
