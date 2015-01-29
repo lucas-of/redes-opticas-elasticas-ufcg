@@ -31,12 +31,12 @@ void Node::calcula_ganho_pot() {
 
 void Node::calcula_ruido_preamp() {
     long double freq = Constante::c/Def::getlambda();
-    ruido_preamp = Def::get_Famp()*(gain_preamp-1.0)*Constante::h*freq*Def::get_Bslot();
+    ruido_preamp = Def::get_Famp()*(gain_preamp-1.0)*Constante::h*freq*Def::get_Bref();
 }
 
 void Node::calcula_ruido_pot() {
     long double freq = Constante::c/Def::getlambda();
-    ruido_pot = Def::get_Famp()*(gain_pot-1.0)*Constante::h*freq*Def::get_Bslot();
+    ruido_pot = Def::get_Famp()*(gain_pot-1.0)*Constante::h*freq*Def::get_Bref();
 }
 
 long double Node::get_gain_preamp() {
@@ -57,8 +57,6 @@ long double Node::get_gain_pot() {
     return gain_pot;
 }
 
-long double Node::get_ruido_pot(int nslots) {
-    assert (nslots > 0);
-    assert (nslots <= Def::getSE());
+long double Node::get_ruido_pot(int) {
     return ruido_pot;
 }

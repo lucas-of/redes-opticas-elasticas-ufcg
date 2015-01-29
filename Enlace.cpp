@@ -12,7 +12,6 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
     calcula_perdas();
     if (NOrig != NULL) { //se nao e o no "infinito"
         calcula_num_amplificadores();
-        calcula_ganho_enlace_indiv();
         calcula_ganho_enlace();
         calcula_ruido_enlace();
     }
@@ -21,13 +20,6 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 void Enlace::calcula_num_amplificadores() {
     num_amplif = floor(distancia/Def::get_DistaA());
     if ((int) (distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
-}
-
-void Enlace::calcula_ganho_enlace_indiv() {
-    if (num_amplif != 0)
-        ganho_enlace_indiv = pow(L_DCF*L_FB,1.0/num_amplif);
-    else
-        ganho_enlace_indiv = 1;
 }
 
 void Enlace::calcula_ganho_enlace() {
@@ -46,15 +38,9 @@ void Enlace::calcula_ruido_enlace() {
     else {
         double freq = Constante::c/Def::getlambda();
 
-        ruido_enlace = Def::get_Famp()*Constante::h*freq*Def::get_Bslot();
-        ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif)));
+        ruido_enlace = num_amplif*Def::get_Famp()*Constante::h*freq*Def::get_Bref();
+        ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif+1.0)));
         ruido_enlace /= pow(L_FB*L_DCF, 1.0/(num_amplif + 1.0));
-
-        long double sum = 0;
-        for (int k = 1; k <= num_amplif; k++) {
-            sum += pow(L_FB*L_DCF, (k - 1.0)/(num_amplif * (num_amplif + 1.0)));
-        }
-        ruido_enlace *= sum;
     }
 }
 

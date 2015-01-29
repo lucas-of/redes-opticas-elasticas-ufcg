@@ -23,7 +23,6 @@ class Enlace {
         long double L_DCF;
         void calcula_perdas();
         void calcula_ganho_enlace();
-        void calcula_ganho_enlace_indiv();
         void calcula_ruido_enlace();
         void calcula_num_amplificadores();
 };
