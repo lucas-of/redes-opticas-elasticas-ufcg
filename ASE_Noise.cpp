@@ -8,10 +8,9 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
 
     for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
         if (i!=0) {
-            Potencia *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_preamplif();
-            Ruido *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_preamplif();
-            Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_preamplif(); //Perdas nos amplificadores de potência
-            //cout << "Adicionar Ruido PREAMP do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_preamp(NSlotsUsed) << endl;
+            Potencia *= Caminho[Rota->getNode(i-1)].at(Rota->getNode(i)).get_ganho_preamplif();
+            Ruido *= Caminho[Rota->getNode(i-1)].at(Rota->getNode(i)).get_ganho_preamplif();
+            Ruido += Caminho[Rota->getNode(i-1)].at(Rota->getNode(i)).get_ruido_preamplif(); //Perdas nos amplificadores de potência
             Potencia *= Rede.at(Rota->getNode(i)).get_loss();
             Ruido *= Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (demux)
         }
@@ -24,14 +23,14 @@ long double AvaliarOSNR(const Route *Rota, int NSlotsUsed) {
             Potencia *= Rede.at(Rota->getNode(i)).get_gain_pot();
             Ruido *= Rede.at(Rota->getNode(i)).get_gain_pot();
             Ruido += Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed); //Perdas nos preamplificadores
-            //cout << "Adicionar Ruido POT do Node " << Rota->getNode(i) << " valendo " << Rede.at(Rota->getNode(i)).get_ruido_pot(NSlotsUsed) << endl;
+
 
             Potencia /= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_perda_enlace();
             Ruido /= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_perda_enlace();
             Potencia *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_enlace();
             Ruido *= Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_enlace();
             Ruido += Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed); //perda no enlace
-            //cout << "Adicionar Ruido do ENLACE entre " << Rota->getNode(i) << " e " << Rota->getNode(i+1) << ", com " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_comprimento() << " valendo  " << Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NSlotsUsed) << endl;
+
         }
     }
 

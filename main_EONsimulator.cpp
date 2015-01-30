@@ -984,20 +984,22 @@ void RequestCon(Event* evt) {
 
                 Def::numHopsPerRoute += route->getNhops();
                 Def::netOccupancy += NslotsUsed*route->getNhops();
-                //Cria uma nova conexao
-                long double Tempo = General::exponential(mu);
-                Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo);
-                //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
-                Event *evt = new Event;
-                evt->conexao = newConexao;
-                DefineNextEventOfCon(evt);
-                ScheduleEvent(evt);
-                Def::tempoTotal_Taxa[nTaxa] += Tempo;
-                break;
             } else { //conexao bloqueada por OSNR
                 NslotsUsed = 0;
                 AccountForBlockingOSNR(NslotsReq,NslotsUsed);
             }
+
+            //Cria uma nova conexao
+            long double Tempo = General::exponential(mu);
+            Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo);
+            //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
+            Event *evt = new Event;
+            evt->conexao = newConexao;
+            DefineNextEventOfCon(evt);
+            ScheduleEvent(evt);
+            Def::tempoTotal_Taxa[nTaxa] += Tempo;
+            break;
+
         }
     }
 

@@ -18,7 +18,7 @@ class General { //classe Geral, serve a diversos usos. usa template e metodos st
         template <class T> static void printAnsiVector(vector<T>&); //imprime um vetor de T
         template <class T> static void setVector(T* V, int size, T value); //inicializa vetor de comrpimento size com value
         template <class T> static long double dB(T x) { return pow(10,0.1*x); }
-        template <class T> static long double lin(T x) { return 10*(log10(x)); };
+        template <class T> static long double lin(T x) { return 10.0*(log10(x)); };
         static long double uniforme(long double xmin, long double xmax); //gera valor regido por dist. unif. entre xmin e xmax
 };
 

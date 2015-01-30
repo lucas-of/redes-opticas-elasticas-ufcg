@@ -20,11 +20,11 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 
 void Enlace::calcula_num_amplificadores() {
     num_amplif = floor(distancia/Def::get_DistaA());
-    if ((int) (distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
+    if (ceil(distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
 }
 
 void Enlace::calcula_ganho_enlace() {
-    ganho_enlace = General::dB(1.0*num_amplif*General::lin(L_DCF)*General::lin(L_FB)/(num_amplif + 1.0));
+    ganho_enlace = General::dB(1.0*num_amplif*(General::lin(L_DCF)+General::lin(L_FB))/(num_amplif + 1.0));
 }
 
 long double Enlace::get_ganho_enlace() {
