@@ -42,6 +42,7 @@ class Def {
         static long double Famp;//fator do ruido amplificador
         static long double Dcr; //relacionado a dispersao cromatica
         static long double DDCF; //coeficiente de dispersao
+        static long double freq; //frequencia
         static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
     public:
@@ -97,6 +98,7 @@ class Def {
         static long double get_Lsss();
         static long double get_DistaA();
         static long double get_Famp();
+        static long double get_freq();
         static long double get_DDCF();
         static long double get_Dcr();
         static int get_numPossiveisTaxas();

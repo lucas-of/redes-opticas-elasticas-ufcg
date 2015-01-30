@@ -19,7 +19,7 @@ void Node::calcula_ganho_pot() {
 }
 
 void Node::calcula_ruido_pot() {
-    long double freq = Constante::c/Def::getlambda();
+    long double freq = Def::get_freq();
     ruido_pot = Def::get_Famp()*(gain_pot-1.0)*Constante::h*freq*Def::get_Bref();
 }
 

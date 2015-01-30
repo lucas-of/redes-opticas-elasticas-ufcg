@@ -32,6 +32,7 @@ long double Def::Pref=1.0;
 long double Def::OSNRin=30.0;
 long double Def::Lsss=5.0;
 long double Def::DistA=75.0;
+long double Def::freq = 193.4E12;
 Def::Arquitetura Def::arquitetura=Def::BS;
 long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
@@ -227,4 +228,8 @@ long double Def::get_Pref() {
 
 void Def::set_Pref(long double P) {
     Pref = 1E-3*General::dB(P);
+}
+
+long double Def::get_freq() {
+    return freq;
 }

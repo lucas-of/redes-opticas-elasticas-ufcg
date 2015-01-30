@@ -34,7 +34,7 @@ long double Enlace::get_ganho_enlace() {
 void Enlace::calcula_ruido_enlace() {
     if (num_amplif == 0) ruido_enlace = 0;
     else {
-        double freq = Constante::c/Def::getlambda();
+        double freq = Def::get_freq();
 
         ruido_enlace = num_amplif*Def::get_Famp()*Constante::h*freq*Def::get_Bref();
         ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif+1.0)));
@@ -70,7 +70,7 @@ long double Enlace::get_ruido_preamplif() {
 }
 
 void Enlace::calcula_preamplif() {
-    long double freq = Constante::c/Def::getlambda();
+    long double freq = Def::get_freq();
 
     if (Def::get_Arquitetura() == Def::SS) {
         ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + Def::get_Lsss());
