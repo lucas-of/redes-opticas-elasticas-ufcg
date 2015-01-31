@@ -73,8 +73,7 @@ double Def::getLaNet(int Lr) {
 }
 
 double Def::getlimiarOSNR(EsquemaDeModulacao Esquema, long double TaxaDeBit) {
-    //cout << (0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref()) << endl;
-    return (0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref());
+    return General::lin(0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref());
 }
 
 long double Def::get_Bref() {
@@ -88,11 +87,11 @@ int Def::getSE() {
 long double Def::get_snrb(EsquemaDeModulacao Esq) {
     switch (Esq) {
         case _4QAM:
-            return 6.8;
+            return General::dB(6.8);
         case _16QAM:
-            return 10.5;
+            return General::dB(10.5);
         case _64QAM:
-            return 14.8;
+            return General::dB(14.8);
         default:
             return 0;
     }
