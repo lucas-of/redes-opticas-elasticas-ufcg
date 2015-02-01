@@ -151,6 +151,12 @@ void clearMemory() {
         delete evtPtr;
     }
 
+    for (int i = 0; i<Def::get_numPossiveisTaxas(); i++) {
+        Def::numReqBloq_Taxa[i] = 0;
+        Def::numReq_Taxa[i] = 0;
+        Def::tempoTotal_Taxa[i] = 0;
+    }
+
     //Checar se limpeza foi realizada corretamente
     for(int orN = 0; orN < Def::getNnodes(); orN++)
         for(int deN = 0; deN < Def::getNnodes(); deN++)
