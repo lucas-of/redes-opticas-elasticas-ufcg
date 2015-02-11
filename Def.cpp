@@ -10,8 +10,8 @@ double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes = 0;
-long double Def::limiarOSNR = 0.0;
 long double Def::netOccupancy = 0.0;
+const int Def::numEsquemasDeModulacao = 3;
 long double Def::numHopsPerRoute = 0.0;
 long double Def::numReq = 0.0;
 long double Def::numReq_Bloq = 0.0;
@@ -20,21 +20,23 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
-long double Def::PossiveisTaxas[] = { 10E9, 40E9, 100E9, 160E9 }; //em Gbps
-const int Def::numPossiveisTaxas = 4;
+long double Def::PossiveisTaxas[] = { 25E9, 50E9, 100E9 }; //em Gbps
+const int Def::numPossiveisTaxas = 3;
 long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
+long double Def::Pref=1.0;
 long double Def::OSNRin=30.0;
 long double Def::Lsss=5.0;
 long double Def::DistA=75.0;
+long double Def::freq = 193.4E12;
 Def::Arquitetura Def::arquitetura=Def::BS;
-Def::Compressao Def::compressao = Def::COMP1;
 long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
+long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 void Def::setBslot(double Bslot) {
@@ -42,12 +44,9 @@ void Def::setBslot(double Bslot) {
     Def::Bslot = Bslot * 1E9;
 }
 
-void Def::setCompressao(Compressao C) {
-    compressao = C;
-}
-
-int Def::get_Compressao() {
-    return Def::compressao;
+void Def::setBref(double Bref) {
+    assert (Bref > 0);
+    Def::Bref = Bref * 1E9;
 }
 
 long double Def::getlambda() {
@@ -73,12 +72,29 @@ double Def::getLaNet(int Lr) {
     return LaNet.at(Lr);
 }
 
-double Def::getlimiarOSNR() {
-    return limiarOSNR;
+double Def::getlimiarOSNR(EsquemaDeModulacao Esquema, long double TaxaDeBit) {
+    return General::lin(0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref());
+}
+
+long double Def::get_Bref() {
+    return Bref;
 }
 
 int Def::getSE() {
     return SE;
+}
+
+long double Def::get_snrb(EsquemaDeModulacao Esq) {
+    switch (Esq) {
+        case _4QAM:
+            return General::dB(6.8);
+        case _16QAM:
+            return General::dB(10.5);
+        case _64QAM:
+            return General::dB(14.8);
+        default:
+            return 0;
+    }
 }
 
 int Def::getSR() {
@@ -136,11 +152,6 @@ void Def::setLaUniform(double la) {
     for(int Lr = 1; Lr <= SR; Lr++)
         LaNet.push_back((double)la/SR);
     setLaCheck(la); //Checa
-}
-
-void Def::setLimiarOSNR(double OSNR) {
-    assert (OSNR >= 0);
-    limiarOSNR = OSNR;
 }
 
 void Def::setNnodes(int x) {
@@ -208,4 +219,16 @@ int Def::get_numPossiveisTaxas() {
 
 Def::Arquitetura Def::get_Arquitetura() {
     return arquitetura;
+}
+
+long double Def::get_Pref() {
+    return Pref;
+}
+
+void Def::set_Pref(long double P) {
+    Pref = 1E-3*General::dB(P);
+}
+
+long double Def::get_freq() {
+    return freq;
 }

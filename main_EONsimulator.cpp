@@ -43,10 +43,11 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
+EsquemaDeModulacao escolheEsquema(); /*Escolhe o esquema de modulacao que sera usado*/
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
-int SlotsReq(int Ran); /*coverte a taxa em um número de slots.*/
+int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
@@ -148,6 +149,12 @@ void clearMemory() {
         evtPtr = firstEvent;
         firstEvent = firstEvent->nextEvent;
         delete evtPtr;
+    }
+
+    for (int i = 0; i<Def::get_numPossiveisTaxas(); i++) {
+        Def::numReqBloq_Taxa[i] = 0;
+        Def::numReq_Taxa[i] = 0;
+        Def::tempoTotal_Taxa[i] = 0;
     }
 
     //Checar se limpeza foi realizada corretamente
@@ -289,6 +296,7 @@ void DefineNextEventOfCon (Event* evt) {
     }
     evt->time = evtTime;
     evt->type = evtType;
+    evt->Esquema = escolheEsquema();
 }
 
 void Dijkstra() {
@@ -601,6 +609,18 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
     delete []DispLink;
 }
 
+EsquemaDeModulacao escolheEsquema() {
+    int Ran = floor(General::uniforme(0,Def::numEsquemasDeModulacao));
+    switch (Ran) {
+        case 0:
+            return _4QAM;
+        case 1:
+            return _16QAM;
+        case 2:
+            return _64QAM;
+    }
+}
+
 void ExpandCon(Event* evt) {
     if (ExpComp) {
         Conexao *con = evt->conexao;
@@ -721,9 +741,7 @@ void Load() {
         cin >> op;
         Def::setBslot(op);
 
-        cout << "Entre com a compressão devido ao esquema de modulação." << endl << "\t1:1 <"<< Def::COMP1 << ">\n\t2:1 <" << Def::COMP2 << ">\n\t4:1 <"<< Def::COMP4 << ">" << endl;
-        cin >> op;
-        Def::setCompressao((Def::Compressao) op);
+        Def::setBref(12.5);
     }
 
     switch (escTop) {
@@ -756,13 +774,6 @@ void Load() {
             FFlists[i] = new vector<int>(0);
     }
 
-    if (AvaliaOsnr==SIM) {
-        double OSNR;
-        cout << "Entre com o limiar de OSNR para o qual a conexao e estabelecida: " << endl;
-        cin >> OSNR;
-        Def::setLimiarOSNR(OSNR);
-    }
-
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
     if (escSim == Sim_OSNR) {
@@ -789,6 +800,9 @@ void Load() {
         cout << "Entre com a potencia de entrada, em dBm." << endl;
         cin>>op;
         Def::set_Pin(op);
+        cout << "Entre com a potencia de referencia da fibra, em dBm." << endl;
+        cin>>op;
+        Def::set_Pref(op);
         cout<<"Entre com distancia entre os amplificadores"<<endl;
         cin>>op;
         Def::set_DistaA(op);
@@ -938,7 +952,7 @@ void RequestCon(Event* evt) {
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     nTaxa = TaxaReq();
-    NslotsReq = SlotsReq(nTaxa);
+    NslotsReq = SlotsReq(nTaxa, evt);
 
     Def::numReq++;
     Def::numReq_Taxa[nTaxa]++;
@@ -961,7 +975,7 @@ void RequestCon(Event* evt) {
         if(NslotsUsed > 0) { //A conexao foi aceita
             assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
             if (AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route,NslotsUsed);
-            if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR()) { //aceita a conexao
+            if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
             //Inserir a conexao na rede
                 int L_or, L_de;
                 for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -976,6 +990,7 @@ void RequestCon(Event* evt) {
 
                 Def::numHopsPerRoute += route->getNhops();
                 Def::netOccupancy += NslotsUsed*route->getNhops();
+
                 //Cria uma nova conexao
                 long double Tempo = General::exponential(mu);
                 Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, simTime + Tempo);
@@ -1036,6 +1051,7 @@ void setReqEvent(Event* evt, TIME t) {
     evt->type = Req;
     evt->nextEvent = NULL;
     evt->conexao = NULL;
+    evt->Esquema = escolheEsquema();
 }
 
 void Sim() {
@@ -1146,7 +1162,7 @@ void Simulate() {
     } else if (escSim == Sim_OSNR) {
         cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << ProbBloqueio() << "   PbAc= " << ProbAceitacao() << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
         Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
-        ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numSlots_Bloq << endl;
+        ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
     }
 
     {
@@ -1156,26 +1172,8 @@ void Simulate() {
     }
 }
 
-int SlotsReq(int Ran) {
-    /*double sum=0.0, x;
-    int Lr;
-    for(Lr = 1; Lr <= Def::getSR(); Lr++)
-        sum += Def::getLaNet(Lr);
-    x = General::uniforme(0.0,sum);
-    sum = 0.0;
-    for(Lr = 1; Lr <= Def::getSR(); Lr++) {
-        sum += Def::getLaNet(Lr);
-        if(x < sum)
-            break;
-    }
-    Lr = ceil(1.0*Lr/Def::get_Compressao()); //compressao devido ao esquema de modulação
-    assert(Lr > 0 && Lr <= Def::getSR());
-    return Lr;*/
-    assert(Ran < Def::get_numPossiveisTaxas());
-    long double Taxa = Def::PossiveisTaxas[Ran];
-    int Lr = ceil(Taxa/(Def::get_Compressao()*Constante::TaxaPorSlot));
-    assert(Lr > 0 && Lr <= Def::getSR());
-    return Lr;
+int SlotsReq(int Ran, Event *evt) {
+    return ceil(Def::PossiveisTaxas[Ran]/(2*log2(evt->Esquema)*Def::get_Bslot()));
 }
 
 int TaxaReq() {

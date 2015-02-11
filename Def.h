@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <vector>
 
+enum EsquemaDeModulacao { _BPSK = 2, _4QAM = 4, _16QAM = 16, _64QAM = 64 };
+
 using namespace std;
 
 typedef long double TIME;
@@ -17,9 +19,6 @@ class Def {
         enum Arquitetura {
             BS, SS
         }; /* Broadcast-and-Select ou Switch-and-Select*/
-        enum Compressao {
-            COMP1 = 1, COMP2 = 2, COMP4 = 4
-        }; /*depende do esquema de modulacao usado */
         static long double PossiveisTaxas[];
         const static int numPossiveisTaxas;
 
@@ -32,19 +31,21 @@ class Def {
         static int SR; //SR é o número máximo de slots requisitados
 
         static long double Pin;//Pin potencia de entrada
+        static long double Pref;//Pref potencia de referencia
         static long double OSNRin;//OSNRin OSNR de entrada
         static long double Lsss;//Lsssm perdas nos dispositivos
         static long double DistA;//DistA distancia entre os amplificadores de linha
         static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
-        static Compressao compressao;//compressão devido a esquema de modulação
         static long double lambda;//comprimento de onda (em metros)
         static long double Bslot;//largura de banda do slot
+        static long double Bref;//largura de linha de referencia
         static long double Famp;//fator do ruido amplificador
         static long double Dcr; //relacionado a dispersao cromatica
         static long double DDCF; //coeficiente de dispersao
+        static long double freq; //frequencia
+        static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
     public:
-        static long double limiarOSNR; //limiar de OSNR para estabelecimento de conexão
         static double MAX_DOUBLE; //limites - maior DOUBLE possível
         static int MAX_INT; //limites - maior INT possível
         static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
@@ -53,6 +54,7 @@ class Def {
         static long double numReq; //número de requisições
         static long double numReq_Bloq; //número de requisições bloqueadas
         static long double numReq_BloqPorOSNR; //número de requisições bloqueadas por OSNR
+        static const int numEsquemasDeModulacao;
         static long double numSlots_Bloq; //número de slots bloqueados
         static long double numSlots_Req; //número de slots requisitados
         static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
@@ -62,10 +64,11 @@ class Def {
 
         static void clearGrauNo();
         static long double get_Bslot();
+        static long double get_Bref();
         static int getGrauNo(int);
         static long double getlambda(void);
         static double getLaNet(int);
-        static double getlimiarOSNR();
+        static double getlimiarOSNR(EsquemaDeModulacao, long double);
         static int getNnodes();
         static long double getNumReqMax();
         static void setNnodes(int);
@@ -75,26 +78,27 @@ class Def {
         static void set_DistaA(long double);
         static void set_Lsss(long double);
         static void set_Pin(long double);
+        static void set_Pref(long double);
 
         static void setBslot(double);
+        static void setBref(double);
         static void setGrauNo(int Grau);
         static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
         static void setLaRandom(double); //tráfego aleatório entre slots
         static void setLaUniform(double); //tráfego uniforme entre enlaces
-        static void setLimiarOSNR(double);
         static void setNumReqMax(long double);
-        static void setCompressao(Compressao);
         static void setSE(int);
         static void setSR(int);
         static void setOSNR(long double);
 
         static Arquitetura get_Arquitetura();
-        static int get_Compressao();
         static long double get_Pin();
+        static long double get_Pref();
         static long double get_OSRNin();
         static long double get_Lsss();
         static long double get_DistaA();
         static long double get_Famp();
+        static long double get_freq();
         static long double get_DDCF();
         static long double get_Dcr();
         static int get_numPossiveisTaxas();
