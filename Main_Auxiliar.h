@@ -37,7 +37,7 @@ enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
-enum Simulacao { Sim_PbReq, Sim_OSNR };
+enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp };
 
 //Variáveis necessárias em main_EONsimulator.cpp
 bool ExpComp;
@@ -54,9 +54,13 @@ long double OSNRPasso;
 long double LaNetMin;
 long double LaNetMax;
 long double LaPasso;
+long double DAmpMin;
+long double DAmpMax;
+long double DAmpPasso;
 long double mu;
 long double muC;
 long double **Topology;
+long double **MinimasDistancias;
 TIME simTime;
 vector<int> **FFlists = NULL;
 vector<Route*> *AllRoutes;

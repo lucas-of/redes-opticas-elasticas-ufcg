@@ -80,3 +80,14 @@ void Enlace::calcula_preamplif() {
 
     ruido_preamplif = Def::get_Famp()*(ganho_preamplif - 1.0)*Constante::h*freq*Def::get_Bref();
 }
+
+void Enlace::recalcular() {
+    calcula_perdas();
+    if (Origem != NULL) { //se nao e o no "infinito"
+        calcula_num_amplificadores();
+        calcula_ganho_enlace();
+        calcula_ruido_enlace();
+        calcula_preamplif();
+    }
+
+}

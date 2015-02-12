@@ -37,6 +37,7 @@ void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível p
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
 void GrauDosNodes(void); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
+void RefreshNoise(); /*atualiza os ruídos dos enlaces*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
@@ -47,6 +48,7 @@ EsquemaDeModulacao escolheEsquema(); /*Escolhe o esquema de modulacao que sera u
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
+void Simulate_dAMP(); /*Análogo de Simulate(), mas para variações na distância entre os amplificadores*/
 int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
@@ -84,6 +86,13 @@ int main() {
             Def::setOSNR(osnr);
             Sim();
             //SimCompFFO(); Simula usando as listas FF otimizadas
+        }
+    } else if (escSim == Sim_DAmp) {
+        DijkstraSP();
+        for (long double dAmplif = DAmpMin; dAmplif <= DAmpMax; dAmplif += DAmpPasso) {
+            Def::set_DistaA(dAmplif);
+            RefreshNoise();
+            Simulate_dAMP();
         }
     }
 
@@ -383,6 +392,9 @@ void DijkstraSP() {
     int *PathRev = new int[Def::getNnodes()];
     bool *Status = new bool[Def::getNnodes()];
 
+    MinimasDistancias = new long double*[Def::getNnodes()];
+    for (i = 0; i < Def::getNnodes(); i++) MinimasDistancias[i] = new long double[Def::getNnodes()];
+
     //Busca para todos os pares de no a rota mais curta:
     for(orN = 0; orN < Def::getNnodes(); orN++) {
         for(i = 0; i < Def::getNnodes(); i++) {
@@ -409,6 +421,8 @@ void DijkstraSP() {
                     Precedente[j] = k;
                 }
         }
+
+        for (j = 0; j< Def::getNnodes(); j++) MinimasDistancias[orN][j] = CustoVertice[j];
 
         for(deN = 0; deN < Def::getNnodes(); deN++) {
             path = orN*Def::getNnodes()+deN;
@@ -709,7 +723,7 @@ void Load() {
     int Npontos, aux;
     long double op;
 
-    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">. " << endl;
+    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">." << endl;
     cin >> aux;
     escSim = (Simulacao)aux;
 
@@ -794,6 +808,15 @@ void Load() {
         cout<<"#Pontos no grafico = ";
         cin >> Npontos;
         LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
+    } else if (escSim == Sim_DAmp) {
+        cout << "Entre com..." << endl;
+        cout << "Distancia minima entre Amplf. de Linha = ";
+        cin >> DAmpMin;
+        cout <<"Distancia maxima entre Amplf. de Linha = ";
+        cin >> DAmpMax;
+        cout<<"#Pontos no grafico = ";
+        cin >> Npontos;
+        DAmpPasso = (DAmpMax-DAmpMin)/(Npontos-1);
     }
 
     if (AvaliaOsnr==SIM) {
@@ -803,9 +826,11 @@ void Load() {
         cout << "Entre com a potencia de referencia da fibra, em dBm." << endl;
         cin>>op;
         Def::set_Pref(op);
-        cout<<"Entre com distancia entre os amplificadores"<<endl;
-        cin>>op;
-        Def::set_DistaA(op);
+        if (escSim != Sim_DAmp) {
+            cout<<"Entre com distancia entre os amplificadores"<<endl;
+            cin>>op;
+            Def::set_DistaA(op);
+        }
         cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
         cin>>aux;
         if (aux == 1)
@@ -825,9 +850,11 @@ void Load() {
     }
 
     long double nR;
-    cout<<"Entre com o numero maximo de requisicoes que o programa vai rodar antes de terminar: ";
-    cin>> nR;
-    Def::setNumReqMax(nR);
+    if (escSim != Sim_DAmp) {
+        cout<<"Entre com o numero maximo de requisicoes que o programa vai rodar antes de terminar: ";
+        cin>> nR;
+        Def::setNumReqMax(nR);
+    }
 
     for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
         Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
@@ -927,6 +954,14 @@ void Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
     delete []vetAloc;
 }
 
+void RefreshNoise() {
+    for (int i = 0; i< Def::getNnodes(); i++ ) {
+        for (int j = 0; j < Def::getNnodes(); j++ ) {
+            Caminho[i].at(j).recalcular();
+        }
+    }
+}
+
 bool ReleaseSlot(const Route* route, int s) {
     int L_or, L_de;
     for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -952,6 +987,9 @@ void RequestCon(Event* evt) {
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     nTaxa = TaxaReq();
+    if (escSim == Sim_DAmp) {
+        nTaxa = Def::get_numPossiveisTaxas() - 1;
+    }
     NslotsReq = SlotsReq(nTaxa, evt);
 
     Def::numReq++;
@@ -1052,6 +1090,9 @@ void setReqEvent(Event* evt, TIME t) {
     evt->nextEvent = NULL;
     evt->conexao = NULL;
     evt->Esquema = escolheEsquema();
+    if (escSim == Sim_DAmp) {
+        evt->Esquema = _64QAM;
+    }
 }
 
 void Sim() {
@@ -1170,6 +1211,21 @@ void Simulate() {
         ProbAceitacaoTaxa();
         calcTaxaMedia();
     }
+}
+
+void Simulate_dAMP() {
+    long double Max = MinimasDistancias[0][0];
+    int orN, deN;
+    for (int i = 0; i < Def::getNnodes(); i++) {
+        for (int j = 0; j < Def::getNnodes(); j++) {
+            if (Max < MinimasDistancias[i][j]) {
+                Max = MinimasDistancias[i][j];
+                orN = i;
+                deN = j;
+            }
+        }
+    } //Encontra a maior entre as menores distancias
+    cout << "dAmp = " << Def::get_DistaA() << "km, OSNR = " << AvaliarOSNR( AllRoutes[orN*Def::getNnodes() + deN].at(0) , 1 ) << "dB" << endl; //primeira rota
 }
 
 int SlotsReq(int Ran, Event *evt) {

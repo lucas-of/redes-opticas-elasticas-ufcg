@@ -14,6 +14,7 @@ class Enlace {
         long double get_ruido_preamplif();
         long double get_perda_enlace();
         long double get_ruido_enlace(int num_slots);
+        void recalcular();
     private:
         double distancia;
         Node *Origem, *Destino;
