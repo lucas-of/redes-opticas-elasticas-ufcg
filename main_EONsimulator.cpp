@@ -89,10 +89,14 @@ int main() {
         }
     } else if (escSim == Sim_DAmp) {
         DijkstraSP();
-        for (long double dAmplif = DAmpMin; dAmplif <= DAmpMax; dAmplif += DAmpPasso) {
-            Def::set_DistaA(dAmplif);
-            RefreshNoise();
-            Simulate_dAMP();
+        cout << "Limiar: " << Def::getlimiarOSNR(_4QAM, 100E9) << "dB" << endl;
+        for(long double osnr = OSNRMin; osnr <= OSNRMax; osnr += OSNRPasso) {
+            Def::setOSNR(osnr);
+            for (long double dAmplif = DAmpMin; dAmplif <= DAmpMax; dAmplif += DAmpPasso) {
+                Def::set_DistaA(dAmplif);
+                RefreshNoise();
+                Simulate_dAMP();
+            }
         }
     }
 
@@ -455,6 +459,7 @@ void DijkstraSP() {
                 if(hops != 0)
                     for(h = 0; h <= hops; h++)
                         cout<<AllRoutes[path].at(0)->getNode(h)<<"-";
+                    cout << " (" << MinimasDistancias[orN][deN] << "km)";
             }
     cout<<endl<<endl;
     delete []CustoVertice;
@@ -750,13 +755,10 @@ void Load() {
     AvaliaOsnr = (Respostas)aux;
     cout << AvaliaOsnr << endl;
 
-    if (AvaliaOsnr == SIM) {
-        cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
-        cin >> op;
-        Def::setBslot(op);
-
-        Def::setBref(12.5);
-    }
+    cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
+    cin >> op;
+    Def::setBslot(op);
+    Def::setBref(12.5);
 
     switch (escTop) {
         case PacificBell: Topol2 >> aux; break;
@@ -790,7 +792,7 @@ void Load() {
 
     cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
     cin >> mu; //mu = taxa de desativacao das conexoes;
-    if (escSim == Sim_OSNR) {
+    if (escSim == Sim_OSNR || escSim == Sim_DAmp) {
         cout << "Entre com..." << endl;
         cout << "OSNR minimo = ";
         cin >> OSNRMin; // La = taxa de chegada das conexoes;
@@ -799,7 +801,8 @@ void Load() {
         cout<<"#Pontos no grafico = ";
         cin >> Npontos;
         OSNRPasso = (OSNRMax-OSNRMin)/(Npontos-1);
-    } else if (escSim == Sim_PbReq) {
+    }
+    if (escSim == Sim_PbReq) {
         cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
         cout << "LaNet minimo = ";
         cin >> LaNetMin; // La = taxa de chegada das conexoes;
@@ -808,7 +811,8 @@ void Load() {
         cout<<"#Pontos no grafico = ";
         cin >> Npontos;
         LaPasso = (LaNetMax-LaNetMin)/(Npontos-1);
-    } else if (escSim == Sim_DAmp) {
+    }
+    if (escSim == Sim_DAmp) {
         cout << "Entre com..." << endl;
         cout << "Distancia minima entre Amplf. de Linha = ";
         cin >> DAmpMin;
@@ -1091,7 +1095,7 @@ void setReqEvent(Event* evt, TIME t) {
     evt->conexao = NULL;
     evt->Esquema = escolheEsquema();
     if (escSim == Sim_DAmp) {
-        evt->Esquema = _64QAM;
+        evt->Esquema = _4QAM;
     }
 }
 
@@ -1214,7 +1218,9 @@ void Simulate() {
 }
 
 void Simulate_dAMP() {
-    long double Max = MinimasDistancias[0][0];
+    Event *evt = new Event;
+    setReqEvent(evt,0);
+    long double Max = MinimasDistancias[0][0], OSNRout;
     int orN, deN;
     for (int i = 0; i < Def::getNnodes(); i++) {
         for (int j = 0; j < Def::getNnodes(); j++) {
@@ -1225,7 +1231,13 @@ void Simulate_dAMP() {
             }
         }
     } //Encontra a maior entre as menores distancias
-    cout << "dAmp = " << Def::get_DistaA() << "km, OSNR = " << AvaliarOSNR( AllRoutes[orN*Def::getNnodes() + deN].at(0) , 1 ) << "dB" << endl; //primeira rota
+    OSNRout = AvaliarOSNR( AllRoutes[orN*Def::getNnodes() + deN].at(0) , 1 );
+    cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
+    if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) ) {
+        ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
+    } else {
+        ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
+    }
 }
 
 int SlotsReq(int Ran, Event *evt) {

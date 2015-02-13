@@ -24,6 +24,8 @@ ofstream ResulFFOmet_FFOext("ResultFFOmet_FFOext.txt");
 ofstream ResulFFOext_FFOmet("ResultFFOext_FFOmet.txt");
 ofstream ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
 ofstream ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
+ofstream ResultDAmpMaiorQueLimiar("DAmpMaiorQueLimiar.txt");
+ofstream ResultDAmpMenorQueLimiar("DAmpMenorQueLimiar.txt");
 ifstream Topol("TopologyNFS.txt");
 ifstream Topol2("TopologyPBell.txt");
 ifstream Topol3("TopologyRed8.txt");
