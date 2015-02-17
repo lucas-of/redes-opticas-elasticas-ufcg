@@ -35,7 +35,7 @@ ifstream Topol6("TopologyTop1.txt");
 ifstream Topol7("TopologyTop2.txt");
 
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
-enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/};
+enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };

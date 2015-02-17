@@ -59,6 +59,7 @@ void Dijkstra(); /*Implementa o algoritmo de roteamento de Dijkstra para achar r
 void DijkstraAcum(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace como o custo do caminho*/
 void DijkstraFormas(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace e número de nós até o destino como o custo do caminho*/
 void DijkstraSP(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
+void DijkstraSPeFormas(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento Dijkstra com Shortest Path e Formas.*/
 void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit*/
 void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
 void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/
@@ -310,6 +311,7 @@ void DefineNextEventOfCon (Event* evt) {
     evt->time = evtTime;
     evt->type = evtType;
     evt->Esquema = escolheEsquema();
+    evt->Esquema = _4QAM;
 }
 
 void Dijkstra() {
@@ -640,6 +642,87 @@ EsquemaDeModulacao escolheEsquema() {
     }
 }
 
+void DijkstraSPeFormas(const int orN, const int deN, const int L) {
+    //L e a largura de banda (em numero de slots) da requisicao
+    assert(orN != deN);
+    int VA, i, j, k=0, path, h, hops;
+    long double min;
+    bool *DispLink = new bool[Def::getSE()];
+    long double *CustoVertice = new long double[Def::getNnodes()];
+    long double custoLink;
+    int *Precedente = new int[Def::getNnodes()];
+    int *PathRev = new int[Def::getNnodes()];
+    bool *Status = new bool[Def::getNnodes()];
+    long double MaiorComprimentoEnlace = 0;
+    long double alpha = 0.5;
+    //Busca para todos os pares de no a rota mais curta:
+    for(i = 0; i < Def::getNnodes(); i++) {
+        if(i != orN)
+            CustoVertice[i] = Def::MAX_DOUBLE;
+        else
+            CustoVertice[i] = 0.0;
+        Precedente[i] = -1;
+        Status[i] = 0;
+    }
+    //Busca Maior Enlace
+    for (i = 0; i < Def::getNnodes(); i++) {
+        for (int j = i+1; j < Def::getNnodes(); j++) {
+            if (Topology[i][j] == 0) continue;
+            if (Caminho[i].at(j).get_comprimento() > MaiorComprimentoEnlace)
+                MaiorComprimentoEnlace = Caminho[i].at(j).get_comprimento();
+        }
+    }
+    VA = Def::getNnodes();
+    while(VA > 0) {
+        //Procura o vertice de menor custo
+        min = Def::MAX_DOUBLE;
+        for(i = 0; i < Def::getNnodes(); i++)
+            if((Status[i] == 0)&&(CustoVertice[i] < min)) {
+                min = CustoVertice[i];
+                k = i;
+            }
+        Status[k] = 1; //k e o vertice de menor custo;
+        VA = VA-1;
+        //Verifica se precisa atualizar ou nao os vizinhos de k
+        for(j = 0; j < Def::getNnodes(); j++)
+            if((Status[j] == 0)&&(Topology[k][j] != 0)) {
+                //O no j e nao marcado e vizinho do no k
+                //Calcula O vetor de disponibilidade do enlace entre k e j
+                for(int s = 0; s < Def::getSE(); s++)
+                    DispLink[s] = !Topology_S[s][k][j];
+                custoLink = alpha*Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alpha)*Heuristics::calculateCostLink(DispLink, L);
+                if(CustoVertice[k] + custoLink < CustoVertice[j]) {
+                    CustoVertice[j] = CustoVertice[k] + custoLink;
+                    Precedente[j] = k;
+                }
+            }
+    }
+
+    //Formar a rota:
+    path = orN*Def::getNnodes()+deN;
+    AllRoutes[path].clear();
+    PathRev[0] = deN;
+    hops = 0;
+    j = deN;
+    while(j != orN) {
+        hops = hops+1;
+        PathRev[hops] = Precedente[j];
+        j = Precedente[j];
+    }
+    vector<Node*> r;
+    r.clear();
+    for(h = 0; h <= hops; h++)
+        r.push_back(&Rede.at(PathRev[hops-h]));
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
+    AllRoutes[path].push_back(new Route(r));
+
+    delete []CustoVertice;
+    delete []Precedente;
+    delete []Status;
+    delete []PathRev;
+    delete []DispLink;
+}
+
 void ExpandCon(Event* evt) {
     if (ExpComp) {
         Conexao *con = evt->conexao;
@@ -775,7 +858,7 @@ void Load() {
     //Outras entradas para o simulador
     Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-    cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path"<<endl;
+    cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas" << endl;
     cout << "Entre com o Algoritmo de Roteamento: ";
     cin >> Alg_Routing;
 
@@ -991,6 +1074,7 @@ void RequestCon(Event* evt) {
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     nTaxa = TaxaReq();
+    nTaxa = 2;
     if (escSim == Sim_DAmp) {
         nTaxa = Def::get_numPossiveisTaxas() - 1;
     }
@@ -1004,6 +1088,8 @@ void RequestCon(Event* evt) {
         DijkstraFormas(orN, deN, NslotsReq);
     if(Alg_Routing == DJK_Acum)
         DijkstraAcum(orN, deN, NslotsReq);
+    if(Alg_Routing == DJK_SPeFormas)
+        DijkstraSPeFormas(orN,deN,NslotsReq);
 
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
@@ -1094,6 +1180,7 @@ void setReqEvent(Event* evt, TIME t) {
     evt->nextEvent = NULL;
     evt->conexao = NULL;
     evt->Esquema = escolheEsquema();
+    evt->Esquema = _4QAM;
     if (escSim == Sim_DAmp) {
         evt->Esquema = _4QAM;
     }
