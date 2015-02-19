@@ -20,8 +20,8 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
-long double Def::PossiveisTaxas[] = { 25E9, 50E9, 100E9 }; //em Gbps
-const int Def::numPossiveisTaxas = 3;
+const int Def::numPossiveisTaxas = 100;
+long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {0}; //em Gbps
 long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
@@ -38,6 +38,11 @@ long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
 long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
+
+void Def::setPossiveisTaxas() {
+    for (int i = 1; i <= Def::numPossiveisTaxas; i++)
+        Def::PossiveisTaxas[i-1] = i*1E9;
+}
 
 void Def::setBslot(double Bslot) {
     assert (Bslot > 0);

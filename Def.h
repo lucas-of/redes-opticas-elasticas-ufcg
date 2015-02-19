@@ -63,6 +63,7 @@ class Def {
         static long double tempoTotal_Taxa[];
 
         static void clearGrauNo();
+        static void setPossiveisTaxas();
         static long double get_Bslot();
         static long double get_Bref();
         static int getGrauNo(int);

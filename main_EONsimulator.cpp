@@ -311,7 +311,6 @@ void DefineNextEventOfCon (Event* evt) {
     evt->time = evtTime;
     evt->type = evtType;
     evt->Esquema = escolheEsquema();
-    evt->Esquema = _4QAM;
 }
 
 void Dijkstra() {
@@ -807,6 +806,7 @@ void GrauDosNodes() {
 }
 
 void Load() {
+    Def::setPossiveisTaxas();
 
     int Npontos, aux;
     long double op;
@@ -1074,7 +1074,6 @@ void RequestCon(Event* evt) {
     SDPairReq(orN, deN);
     //deN = (orN + Def::getNnodes()/2)%Def::getNnodes(); //Nos antipodas no anel
     nTaxa = TaxaReq();
-    nTaxa = 2;
     if (escSim == Sim_DAmp) {
         nTaxa = Def::get_numPossiveisTaxas() - 1;
     }
@@ -1180,7 +1179,6 @@ void setReqEvent(Event* evt, TIME t) {
     evt->nextEvent = NULL;
     evt->conexao = NULL;
     evt->Esquema = escolheEsquema();
-    evt->Esquema = _4QAM;
     if (escSim == Sim_DAmp) {
         evt->Esquema = _4QAM;
     }

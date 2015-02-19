@@ -12,7 +12,7 @@ long double ProbAceitacao() {
 void ProbBloqueioTaxa() {
     for (int i = 0; i < Def::get_numPossiveisTaxas(); i++ ) {
         ResulProbBloqTaxa << laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
-        cout << Def::PossiveisTaxas[i]/pow(10,9) << "Gbps\tProb Bloq = " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+        //cout << Def::PossiveisTaxas[i]/pow(10,9) << "Gbps\tProb Bloq = " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
     }
 }
 
