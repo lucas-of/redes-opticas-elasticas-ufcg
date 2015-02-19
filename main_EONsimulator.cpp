@@ -44,7 +44,6 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
-EsquemaDeModulacao escolheEsquema(); /*Escolhe o esquema de modulacao que sera usado*/
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
@@ -310,7 +309,6 @@ void DefineNextEventOfCon (Event* evt) {
     }
     evt->time = evtTime;
     evt->type = evtType;
-    evt->Esquema = escolheEsquema();
 }
 
 void Dijkstra() {
@@ -627,18 +625,6 @@ void DijkstraFormas(const int orN, const int deN, const int L) {
     delete []Status;
     delete []PathRev;
     delete []DispLink;
-}
-
-EsquemaDeModulacao escolheEsquema() {
-    int Ran = floor(General::uniforme(0,Def::numEsquemasDeModulacao));
-    switch (Ran) {
-        case 0:
-            return _4QAM;
-        case 1:
-            return _16QAM;
-        case 2:
-            return _64QAM;
-    }
 }
 
 void DijkstraSPeFormas(const int orN, const int deN, const int L) {
@@ -1178,7 +1164,6 @@ void setReqEvent(Event* evt, TIME t) {
     evt->type = Req;
     evt->nextEvent = NULL;
     evt->conexao = NULL;
-    evt->Esquema = escolheEsquema();
     if (escSim == Sim_DAmp) {
         evt->Esquema = _4QAM;
     }
