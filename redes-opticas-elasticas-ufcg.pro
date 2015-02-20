@@ -13,7 +13,8 @@ SOURCES += \
     Node.cpp \
     Enlace.cpp \
     ASE_Noise.cpp \
-    Metricas.cpp
+    Metricas.cpp \
+    RWA.cpp
 
 OTHER_FILES += \
     README.md \
@@ -35,7 +36,8 @@ HEADERS += \
     Event.h \
     Node.h \
     Enlace.h \
-    Constantes.h
+    Constantes.h \
+    RWA.h
 
     install_it.path = $$OUT_PWD
     install_it.files = TopologyNFS.txt TopologyPBell.txt TopologyRed8.txt TopologyRed4.txt TopologyNFSMod.txt TopologyTop1.txt TopologyTop2.txt
