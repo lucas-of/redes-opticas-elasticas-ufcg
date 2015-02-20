@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <vector>
 
-enum EsquemaDeModulacao { _BPSK = 2, _4QAM = 4, _16QAM = 16, _64QAM = 64 };
+enum EsquemaDeModulacao { _4QAM = 4, _16QAM = 16, _64QAM = 64 };
+const int numEsquemasDeModulacao = 3;
 
 using namespace std;
 
@@ -63,6 +64,7 @@ class Def {
         static long double tempoTotal_Taxa[];
 
         static void clearGrauNo();
+        static void setPossiveisTaxas();
         static long double get_Bslot();
         static long double get_Bref();
         static int getGrauNo(int);
