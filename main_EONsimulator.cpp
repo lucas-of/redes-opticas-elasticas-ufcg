@@ -1063,13 +1063,6 @@ void RequestCon(Event* evt) {
         nTaxa = Def::get_numPossiveisTaxas() - 1;
     }
 
-    if(Alg_Routing == DJK_Formas)
-        DijkstraFormas(orN, deN, NslotsReq);
-    if(Alg_Routing == DJK_Acum)
-        DijkstraAcum(orN, deN, NslotsReq);
-    if(Alg_Routing == DJK_SPeFormas)
-        DijkstraSPeFormas(orN,deN,NslotsReq);
-
     //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
     Route *route;
     long double OSNR = 0;
@@ -1079,8 +1072,16 @@ void RequestCon(Event* evt) {
 
     EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
     for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
-        NslotsReq = SlotsReq(nTaxa, evt);
         evt->Esquema = Esquemas[Esq];
+        NslotsReq = SlotsReq(nTaxa, evt);
+
+        if(Alg_Routing == DJK_Formas)
+            DijkstraFormas(orN, deN, NslotsReq);
+        if(Alg_Routing == DJK_Acum)
+            DijkstraAcum(orN, deN, NslotsReq);
+        if(Alg_Routing == DJK_SPeFormas)
+            DijkstraSPeFormas(orN,deN,NslotsReq);
+
         for(unsigned int i = 0; i < AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
             route = AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
             NslotsUsed = 0;
@@ -1091,7 +1092,6 @@ void RequestCon(Event* evt) {
                 assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
                 if (AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route,NslotsUsed);
                 if (AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
-                    cout << "Conexao aceita com " << evt->Esquema << endl;
                 //Inserir a conexao na rede
                     int L_or, L_de;
                     for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -1120,10 +1120,7 @@ void RequestCon(Event* evt) {
                 } else { //conexao bloqueada por OSNR
                     NslotsUsed = 0;
                     if (Esq == numEsquemasDeModulacao - 1) {
-                        cout << "Conexao Bloqueada de vez" << endl;
                         AccountForBlockingOSNR(NslotsReq,NslotsUsed);
-                    } else {
-                        cout << "Conexao Bloqueada com " << evt->Esquema << endl;
                     }
                 }
             }
