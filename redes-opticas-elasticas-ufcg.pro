@@ -3,7 +3,7 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += \ 
+SOURCES += \
     Conexao.cpp \
     Def.cpp \
     General.cpp \
@@ -14,7 +14,9 @@ SOURCES += \
     Enlace.cpp \
     ASE_Noise.cpp \
     Metricas.cpp \
-    RWA.cpp
+    RWA.cpp \
+    PSR.cpp \
+    Main_Auxiliar.cpp
 
 OTHER_FILES += \
     README.md \
@@ -37,7 +39,8 @@ HEADERS += \
     Node.h \
     Enlace.h \
     Constantes.h \
-    RWA.h
+    RWA.h \
+    PSR.h
 
     install_it.path = $$OUT_PWD
     install_it.files = TopologyNFS.txt TopologyPBell.txt TopologyRed8.txt TopologyRed4.txt TopologyNFSMod.txt TopologyTop1.txt TopologyTop2.txt
