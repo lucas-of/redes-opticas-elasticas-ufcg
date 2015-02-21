@@ -1,4 +1,5 @@
 #include "PSR.h"
+#include "Main_Auxiliar.h"
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::DisponibilidadeNormalizada, **PSR::ComprimentosNormalizados;
 long double PSR::MaiorEnlace;
@@ -33,28 +34,32 @@ long double PSR::get_coeficiente(int i, int j) {
 	return Coeficientes[i][j];
 }
 
-long double PSR::procurarMaiorEnlace(vector<Enlace> *Caminhos) {
+long double PSR::procurarMaiorEnlace() {
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
 
-			if (Caminhos[i].at(j).get_NodeOrigem() == NULL) continue;
-			if (MaiorEnlace < Caminhos[i].at(j).get_comprimento()) MaiorEnlace = Caminhos[i].at(j).get_comprimento();
+			if (MAux::Caminho[i].at(j).get_NodeOrigem() == NULL) continue;
+			if (MaiorEnlace < MAux::Caminho[i].at(j).get_comprimento()) MaiorEnlace = MAux::Caminho[i].at(j).get_comprimento();
 		}
 	}
 	return MaiorEnlace;
 }
 
-void PSR::Normalizacao(vector<Enlace> *Caminhos, bool ***Topology_S) {
-	procurarMaiorEnlace(Caminhos);
+void PSR::Normalizacao() {
+	bool Disp[Def::getSE()];
+	procurarMaiorEnlace();
 
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-			if (Caminhos[i].at(j).get_NodeOrigem() == NULL) {
+			if (MAux::Topology[i][j] == 0) {
 				ComprimentosNormalizados[i][j] = Def::MAX_LONGDOUBLE;
 				DisponibilidadeNormalizada[i][j] = Def::MAX_LONGDOUBLE;
 				continue;
 			}
-			ComprimentosNormalizados[i][j] = Caminhos[i].at(j).get_comprimento() / MaiorEnlace;
+			ComprimentosNormalizados[i][j] = MAux::Caminho[i].at(j).get_comprimento() / MaiorEnlace;
+			for (int Slot = 0; Slot < Def::getSE(); Slot++)
+				Disp[Slot] = !MAux::Topology_S[Slot][i][j];
+			DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
 		}
 	}
 

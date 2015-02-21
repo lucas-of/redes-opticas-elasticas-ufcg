@@ -10,6 +10,7 @@
 #include <vector>
 #include "Main_Auxiliar.h"
 #include "RWA.h"
+#include "PSR.h"
 #include "Conexao.h"
 #include "Def.h"
 #include "General.h"

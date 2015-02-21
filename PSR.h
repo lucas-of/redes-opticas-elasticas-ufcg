@@ -14,8 +14,8 @@ class PSR {
 		PSR(int);
 		~PSR();
 		const static int get_N();
-		static long double procurarMaiorEnlace(vector<Enlace> *);
-		static void executar_PSR(vector<Route*> *AllRoutes, vector<Enlace> *Caminho, bool ***Topology_S);
+		static long double procurarMaiorEnlace();
+		static void executar_PSR();
 	private:
 		static int N; //ponto de truncamento
 		static long double **Coeficientes;
@@ -23,7 +23,7 @@ class PSR {
 		static long double **ComprimentosNormalizados, **DisponibilidadeNormalizada;
 
 		static long double get_coeficiente(int, int);
-		static void Normalizacao(vector<Enlace> *Caminho, bool ***Topology_S);
+		static void Normalizacao();
 };
 
 #endif // PSR_H
