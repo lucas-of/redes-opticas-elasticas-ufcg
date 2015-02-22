@@ -2,7 +2,11 @@
 #include "Main_Auxiliar.h"
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::DisponibilidadeNormalizada, **PSR::ComprimentosNormalizados;
+Particula *PSR::PSO_populacao, *Melhor = NULL;
 long double PSR::MaiorEnlace;
+int PSR::PSO_P, PSR::PSO_G;
+long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi;
+
 
 PSR::PSR(int NewN) {
 	assert(NewN > 0);
@@ -62,5 +66,39 @@ void PSR::Normalizacao() {
 			DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
 		}
 	}
+}
 
+void PSR::PSO_configurar() {
+	PSO_P = 50;
+	PSO_G = 500;
+	PSO_c1 = 2.05;
+	PSO_c2 = 2.05;
+
+	long double phi = PSO_c1 + PSO_c2;
+	PSO_chi = 2.0/(2 - phi - sqrt(phi*phi - 4*phi));
+
+	PSO_populacao = new Particula[PSO_P];
+	for (int i = 0; i < PSO_P; i++) {
+		PSO_populacao[i].x = new long double*[N];
+		PSO_populacao[i].v = new long double*[N];
+		for (int j = 0; j < N; j++) {
+			PSO_populacao[i].x[j] = new long double[N];
+			PSO_populacao[i].v[j] = new long double[N];
+		}
+	}
+}
+
+void PSR::PSO() {
+	PSO_configurar();
+	PSO_iniciarPopulacao();
+}
+
+void PSR::PSO_iniciarPopulacao() {
+	for (int i = 0; i < PSO_P; i++) {
+		for (int j = 0; j < N; j++) {
+			PSO_populacao[i].v[j] = {0}; //velocidade inicialmente nula
+			for (int k = 0; k < N; k++)
+				PSO_populacao[i].x[j][k] = General::uniforme(0,1);
+		}
+	}
 }
