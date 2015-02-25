@@ -15,7 +15,7 @@ enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
-enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp };
+enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots };
 
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
