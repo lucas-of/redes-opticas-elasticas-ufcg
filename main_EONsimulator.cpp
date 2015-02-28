@@ -367,7 +367,7 @@ void Load() {
 	//Outras entradas para o simulador
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-	cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas" << endl;
+	cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado" << endl;
 	cout << "Entre com o Algoritmo de Roteamento: ";
 	cin >> MAux::Alg_Routing;
 
@@ -510,6 +510,8 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
+		if(MAux::Alg_Routing == LOR_Modificado)
+			RWA::LORModificado(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
