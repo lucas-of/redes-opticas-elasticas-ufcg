@@ -1,6 +1,7 @@
 #include "Enlace.h"
 #include "math.h"
 #include "Def.h"
+#include "PSR.h"
 #include "assert.h"
 #include "Constantes.h"
 
@@ -97,9 +98,17 @@ long double Enlace::get_peso() {
 	return peso;
 }
 
-void Enlace::set_peso(long double NPeso) {
-	assert(NPeso > 0);
-	peso = NPeso;
+void Enlace::recalcular_peso(long double **Coeficientes) {
+    assert (distancia != 0);
+    assert (Origem != NULL);
+    PSR::atualizaDisponibilidade();
+    peso = 0;
+    for (int i = 0; i < PSR::get_N(); i++) {
+        for (int j = 0; j < PSR::get_N(); j++) {
+
+            peso += Coeficientes[i][j]*PSR::ComprimentosNormalizados[i][j]*PSR::DisponibilidadeNormalizada[i][j];
+        }
+    }
 }
 
 Node* Enlace::get_NodeOrigem() {

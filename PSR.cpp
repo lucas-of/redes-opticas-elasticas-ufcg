@@ -3,13 +3,12 @@
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::DisponibilidadeNormalizada, **PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao, *Melhor = NULL;
-long double PSR::MaiorEnlace;
+long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi;
 
-
 PSR::PSR(int NewN) {
-	assert(NewN > 0);
+    assert(NewN > 0);
 	MaiorEnlace = 0;
 	N = NewN;
 
@@ -22,6 +21,7 @@ PSR::PSR(int NewN) {
 		DisponibilidadeNormalizada[i] = new long double[Def::getNnodes()];
 		ComprimentosNormalizados[i] = new long double[Def::getNnodes()];
 	}
+    Normalizacao();
 }
 
 PSR::~PSR() {
@@ -101,4 +101,29 @@ void PSR::PSO_iniciarPopulacao() {
 				PSO_populacao[i].x[j][k] = General::uniforme(0,1);
 		}
 	}
+}
+
+void PSR::PSO_atualizaCustoEnlaces(Particula P) {
+    for (int i = 0; i < Def::getNnodes(); i++) {
+        for (int j = 0; j < Def::getNnodes(); j++) {
+            if (MAux::Topology[i][j] == 1)
+                MAux::Caminho[i].at(j).recalcular_peso(P.x);
+        }
+    }
+}
+
+long double PSR::get_MaiorEnlace() {
+    if (MaiorEnlace==-1) procurarMaiorEnlace();
+    return MaiorEnlace;
+}
+
+void PSR::atualizaDisponibilidade() {
+    bool Disp[Def::getSE()];
+    for (int i = 0; i < Def::getNnodes(); i++) {
+        for (int j = 0; j < Def::getNnodes(); j++) {
+            for (int Slot = 0; Slot < Def::getSE(); Slot++)
+                Disp[Slot] = !MAux::Topology_S[Slot][i][j];
+            DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
+        }
+    }
 }

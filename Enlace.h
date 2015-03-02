@@ -16,7 +16,7 @@ class Enlace {
 		long double get_perda_enlace();
 		long double get_ruido_enlace(int num_slots);
 		void recalcular();
-		void set_peso(long double);
+        void recalcular_peso(long double **Coeficientes);
 	private:
 		double distancia;
 		long double peso;
