@@ -45,6 +45,9 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
+void SimPbReq(); /*Simulação para Probabilidade de Bloqueio*/
+void SimOSNR(); /*Simulação para OSNR*/
+void SimNSlots();
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
@@ -61,32 +64,14 @@ int main() {
 		RWA::Dijkstra();
 	else if (MAux::Alg_Routing == SP)
 		RWA::DijkstraSP();
-	if (MAux::escSim == Sim_PbReq) {
-		for(MAux::laNet = MAux::LaNetMin; MAux::laNet <= MAux::LaNetMax; MAux::laNet += MAux::LaPasso) {
-			Sim();
-			//SimCompFFO(); Simula usando as listas FF otimizadas
-		}
-	} else if (MAux::escSim == Sim_OSNR) {
-		//Simulacao para varios trafegos
-		cout << "Insira a carga da rede." << endl;
-		cin >> MAux::laNet;
-		for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
-			Def::setOSNR(osnr);
-			Sim();
-			//SimCompFFO(); Simula usando as listas FF otimizadas
-		}
-	} else if (MAux::escSim == Sim_DAmp) {
-		RWA::DijkstraSP();
-		cout << "Limiar: " << Def::getlimiarOSNR(_4QAM, 100E9) << "dB" << endl;
-		for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
-			Def::setOSNR(osnr);
-			for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
-				Def::set_DistaA(dAmplif);
-				RefreshNoise();
-				Simulate_dAMP();
-			}
-		}
-	}
+	if (MAux::escSim == Sim_PbReq)
+		SimPbReq();
+	else if (MAux::escSim == Sim_OSNR)
+		SimOSNR();
+	else if (MAux::escSim == Sim_DAmp)
+		Simulate_dAMP();
+	else if (MAux::escSim == Sim_NSlots)
+		SimNSlots();
 
 	delete []MAux::Topology;
 	delete []MAux::Topology_S;
@@ -335,7 +320,7 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
@@ -382,7 +367,7 @@ void Load() {
 	//Outras entradas para o simulador
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-	cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas" << endl;
+	cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado" << endl;
 	cout << "Entre com o Algoritmo de Roteamento: ";
 	cin >> MAux::Alg_Routing;
 
@@ -503,7 +488,7 @@ void RequestCon(Event* evt) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
-	if (MAux::escSim == Sim_DAmp) {
+	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		nTaxa = Def::get_numPossiveisTaxas() - 1;
 	}
 
@@ -525,6 +510,8 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
+		if(MAux::Alg_Routing == LOR_Modificado)
+			RWA::LORModificado(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -616,10 +603,54 @@ void setReqEvent(Event* evt, TIME t) {
 	evt->type = Req;
 	evt->nextEvent = NULL;
 	evt->conexao = NULL;
-	if (MAux::escSim == Sim_DAmp) {
+	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		evt->Esquema = _4QAM;
 	}
 }
+
+void SimPbReq() {
+	for(MAux::laNet = MAux::LaNetMin; MAux::laNet <= MAux::LaNetMax; MAux::laNet += MAux::LaPasso) {
+		Sim();
+		//SimCompFFO(); Simula usando as listas FF otimizadas
+	}
+}
+
+void SimOSNR() {
+	//Simulacao para varios trafegos
+	cout << "Insira a carga da rede." << endl;
+	cin >> MAux::laNet;
+	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
+		Def::setOSNR(osnr);
+		Sim();
+		//SimCompFFO(); Simula usando as listas FF otimizadas
+	}
+}
+
+void SimNSlots() {
+	int SlotsMin, SlotsMax, SlotsPasso;
+	cout << "Insira a carga da rede." << endl;
+	cin >> MAux::laNet;
+	cout << "Insira o número mínimo de slots por enlace" << endl;
+	cin >> SlotsMin;
+	SlotsPasso = SlotsMin;
+	cout << "Insira o número máximo de slots por enlace" << endl;
+	cin >> SlotsMax;
+	for (int Slots = SlotsMin; Slots <= SlotsMax; Slots+=SlotsMin) {
+		delete []MAux::Topology_S;
+		Def::setSE(Slots);
+		MAux::Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
+		for (int i=0 ; i < Def::getSE() ; i++) {
+			MAux::Topology_S[i] = new bool*[Def::getNnodes()];
+			for (int j=0; j < Def::getNnodes() ; j++) {
+				MAux::Topology_S[i][j] = new bool[Def::getNnodes()];
+				for (int k = 0; k < Def::getNnodes(); k++)
+					MAux::Topology_S[i][j][k] = false;
+			}
+		}
+		Simulate();
+	}
+}
+
 
 void Sim() {
 	//Indica como o trafego e distribuido entre s = 1, 2, ..., SE
@@ -722,14 +753,22 @@ void Simulate() {
 	}
 
 	cout <<"Simulation Time= " << MAux::simTime << "  numReq=" << Def::numReq << endl;
+
 	if (MAux::escSim == Sim_PbReq) {
 		cout << "nu0= " << MAux::laNet << "   PbReq= " << ProbBloqueio() << "   PbAc= " << ProbAceitacao() << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
 		MAux::Resul << MAux::laNet << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) (1.0 - Def::numReq_Bloq/Def::numReq) << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
 		MAux::ResulOSNR << MAux::laNet << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
-	} else if (MAux::escSim == Sim_OSNR) {
+	}
+
+	else if (MAux::escSim == Sim_OSNR) {
 		cout << "OSNR = " << Def::get_OSRNin() << "   PbReq= " << ProbBloqueio() << "   PbAc= " << ProbAceitacao() << "   PbSlots= " << (long double) Def::numSlots_Bloq/Def::numSlots_Req << " HopsMed= " << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << " netOcc= " << (long double) Def::netOccupancy << endl;
 		MAux::Resul << Def::get_OSRNin() << "\t" << (long double) Def::numReq_Bloq/Def::numReq << "\t" << (long double) Def::numSlots_Bloq/Def::numSlots_Req << "\t" << (long double) Def::numHopsPerRoute/(Def::numReq-Def::numReq_Bloq) << "\t" << Def::netOccupancy << endl;
 		MAux::ResulOSNR << Def::get_OSRNin() << "\t" << Def::numReq_BloqPorOSNR/Def::numReq_Bloq << endl;
+	}
+
+	else if (MAux::escSim == Sim_NSlots) {
+		cout << "NSlots = " << Def::getSE() << "\t PbReq Fis = " << Def::numReq_BloqPorOSNR/Def::numReq << "\t PbReq Rede = " << (1.0 - Def::numReq_BloqPorOSNR/Def::numReq_Bloq)*Def::numReq_Bloq/Def::numReq << endl;
+		MAux::Resul << Def::getSE() << "\t" << Def::numReq_BloqPorOSNR/Def::numReq << "\t" << (1.0 - Def::numReq_BloqPorOSNR/Def::numReq_Bloq)*Def::numReq_Bloq/Def::numReq << endl;
 	}
 
 	{
@@ -740,25 +779,34 @@ void Simulate() {
 }
 
 void Simulate_dAMP() {
-	Event *evt = new Event;
-	setReqEvent(evt,0);
-	long double Max = MAux::MinimasDistancias[0][0], OSNRout;
-	int orN, deN;
-	for (int i = 0; i < Def::getNnodes(); i++) {
-		for (int j = 0; j < Def::getNnodes(); j++) {
-			if (Max < MAux::MinimasDistancias[i][j]) {
-				Max = MAux::MinimasDistancias[i][j];
-				orN = i;
-				deN = j;
+	RWA::DijkstraSP();
+	cout << "Limiar: " << Def::getlimiarOSNR(_4QAM, 100E9) << "dB" << endl;
+	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
+		Def::setOSNR(osnr);
+		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
+			Def::set_DistaA(dAmplif);
+			RefreshNoise();
+			Event *evt = new Event;
+			setReqEvent(evt,0);
+			long double Max = MAux::MinimasDistancias[0][0], OSNRout;
+			int orN, deN;
+			for (int i = 0; i < Def::getNnodes(); i++) {
+				for (int j = 0; j < Def::getNnodes(); j++) {
+					if (Max < MAux::MinimasDistancias[i][j]) {
+						Max = MAux::MinimasDistancias[i][j];
+						orN = i;
+						deN = j;
+					}
+				}
+			} //Encontra a maior entre as menores distancias
+			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , 1 );
+			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
+			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) ) {
+				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
+			} else {
+				MAux::ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
 			}
 		}
-	} //Encontra a maior entre as menores distancias
-	OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , 1 );
-	cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
-	if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) ) {
-		MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
-	} else {
-		MAux::ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
 	}
 }
 
