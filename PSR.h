@@ -16,7 +16,7 @@ struct Particula {
 
 class PSR {
 	public:
-		PSR(int);
+        PSR(int);
 		~PSR();
 		const static int get_N();
 		static void executar_PSR();
@@ -42,8 +42,8 @@ class PSR {
         static void PSO();
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
-        static void PSO_atualizaCustoEnlaces(Particula P);
-
+        static void PSO_atualizaCustoEnlaces(Particula *P);
+        static long double PSO_simulaRede(Particula *P);
 };
 
 #endif // PSR_H

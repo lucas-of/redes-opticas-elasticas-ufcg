@@ -2,10 +2,15 @@
 #include "Main_Auxiliar.h"
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::DisponibilidadeNormalizada, **PSR::ComprimentosNormalizados;
-Particula *PSR::PSO_populacao, *Melhor = NULL;
+Particula *PSR::PSO_populacao, *PSR::Melhor = NULL;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi;
+
+void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
+void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
+void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
+void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 
 PSR::PSR(int NewN) {
     assert(NewN > 0);
@@ -89,8 +94,21 @@ void PSR::PSO_configurar() {
 }
 
 void PSR::PSO() {
-	PSO_configurar();
+    long double PbReq, MelhorPbReq = 1;
+
+    PSO_configurar();
 	PSO_iniciarPopulacao();
+
+    for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
+        cout << "PSO - Repeticao " << Repeticao << "." << endl;
+        for (int Part = 0; Part < PSO_P; Part++) {
+            PbReq = PSO_simulaRede(PSO_populacao + Part);
+            if (PbReq < MelhorPbReq) {
+                MelhorPbReq = PbReq;
+                Melhor = PSO_populacao + Part;
+            }
+        }
+    }
 }
 
 void PSR::PSO_iniciarPopulacao() {
@@ -103,11 +121,11 @@ void PSR::PSO_iniciarPopulacao() {
 	}
 }
 
-void PSR::PSO_atualizaCustoEnlaces(Particula P) {
+void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
     for (int i = 0; i < Def::getNnodes(); i++) {
         for (int j = 0; j < Def::getNnodes(); j++) {
             if (MAux::Topology[i][j] == 1)
-                MAux::Caminho[i].at(j).recalcular_peso(P.x);
+                MAux::Caminho[i].at(j).recalcular_peso(P->x);
         }
     }
 }
@@ -124,6 +142,22 @@ void PSR::atualizaDisponibilidade() {
             for (int Slot = 0; Slot < Def::getSE(); Slot++)
                 Disp[Slot] = !MAux::Topology_S[Slot][i][j];
             DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
+        }
+    }
+}
+
+long double PSR::PSO_simulaRede(Particula *P) {
+    clearMemory();
+    MAux::firstEvent = new Event;
+    setReqEvent(MAux::firstEvent, MAux::simTime);
+    while(Def::numReq < Def::getNumReqMax()) {
+        Event *curEvent = MAux::firstEvent;
+        MAux::firstEvent = MAux::firstEvent->nextEvent;
+        MAux::simTime = curEvent->time;
+        if(curEvent->type == Req) {
+            RequestCon(curEvent);
+        } else if(curEvent->type == Desc) {
+            RemoveCon(curEvent);
         }
     }
 }

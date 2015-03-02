@@ -169,6 +169,84 @@ void RWA::DijkstraSP() {
 	delete []PathRev;
 }
 
+void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
+    //L e a largura de banda (em numero de slots) da requisicao
+    assert(orN != deN);
+    int VA, i, j, k=0, path, h, hops;
+    long double min;
+    bool *DispLink = new bool[Def::getSE()];
+    long double *CustoVertice = new long double[Def::getNnodes()];
+    int *Precedente = new int[Def::getNnodes()];
+    int *PathRev = new int[Def::getNnodes()];
+    bool *Status = new bool[Def::getNnodes()];
+    long double MaiorComprimentoEnlace = 0;
+    //Busca para todos os pares de no a rota mais curta:
+    for(i = 0; i < Def::getNnodes(); i++) {
+        if(i != orN)
+            CustoVertice[i] = Def::MAX_DOUBLE;
+        else
+            CustoVertice[i] = 0.0;
+        Precedente[i] = -1;
+        Status[i] = 0;
+    }
+    //Busca Maior Enlace
+    for (i = 0; i < Def::getNnodes(); i++) {
+        for (int j = i+1; j < Def::getNnodes(); j++) {
+            if (MAux::Topology[i][j] == 0) continue;
+            if (MAux::Caminho[i].at(j).get_peso() > MaiorComprimentoEnlace)
+                MaiorComprimentoEnlace = MAux::Caminho[i].at(j).get_peso();
+        }
+    }
+    VA = Def::getNnodes();
+    while(VA > 0) {
+        //Procura o vertice de menor custo
+        min = Def::MAX_DOUBLE;
+        for(i = 0; i < Def::getNnodes(); i++)
+            if((Status[i] == 0)&&(CustoVertice[i] < min)) {
+                min = CustoVertice[i];
+                k = i;
+            }
+        Status[k] = 1; //k e o vertice de menor custo;
+        VA = VA-1;
+        //Verifica se precisa atualizar ou nao os vizinhos de k
+        for(j = 0; j < Def::getNnodes(); j++)
+            if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)) {
+                //O no j e nao marcado e vizinho do no k
+                //Calcula O vetor de disponibilidade do enlace entre k e j
+                for(int s = 0; s < Def::getSE(); s++)
+                    DispLink[s] = !MAux::Topology_S[s][k][j];
+                if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso() < CustoVertice[j]) {
+                    CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso();
+                    Precedente[j] = k;
+                }
+            }
+    }
+
+    //Formar a rota:
+    path = orN*Def::getNnodes()+deN;
+    MAux::AllRoutes[path].clear();
+    PathRev[0] = deN;
+    hops = 0;
+    j = deN;
+    while(j != orN) {
+        hops = hops+1;
+        PathRev[hops] = Precedente[j];
+        j = Precedente[j];
+    }
+    vector<Node*> r;
+    r.clear();
+    for(h = 0; h <= hops; h++)
+        r.push_back(&MAux::Rede.at(PathRev[hops-h]));
+    assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
+    MAux::AllRoutes[path].push_back(new Route(r));
+
+    delete []CustoVertice;
+    delete []Precedente;
+    delete []Status;
+    delete []PathRev;
+    delete []DispLink;
+}
+
 void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(deN != orN);
