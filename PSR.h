@@ -16,13 +16,13 @@ struct Particula {
 
 class PSR {
 	public:
-        PSR(int);
+		PSR(int);
 		~PSR();
 		const static int get_N();
 		static void executar_PSR();
-        static long double get_MaiorEnlace();
-        static void atualizaDisponibilidade();
-        static long double **ComprimentosNormalizados, **DisponibilidadeNormalizada;
+		static long double get_MaiorEnlace();
+		static void atualizaDisponibilidade();
+		static long double **ComprimentosNormalizados, **DisponibilidadeNormalizada;
 	private:
 		static int N; //ponto de truncamento
 		static long double **Coeficientes;
@@ -37,13 +37,14 @@ class PSR {
 
 		static long double get_coeficiente(int, int);
 		static void Normalizacao();
-        static long double procurarMaiorEnlace();
+		static long double procurarMaiorEnlace();
 
-        static void PSO();
+		static void PSO();
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
-        static void PSO_atualizaCustoEnlaces(Particula *P);
-        static long double PSO_simulaRede(Particula *P);
+		static void PSO_atualizaCustoEnlaces(Particula *P);
+		static long double PSO_simulaRede(Particula *P);
+		static void PSO_atualizaVelocidades(Particula *P);
 };
 
 #endif // PSR_H

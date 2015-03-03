@@ -13,7 +13,7 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 
 PSR::PSR(int NewN) {
-    assert(NewN > 0);
+	assert(NewN > 0);
 	MaiorEnlace = 0;
 	N = NewN;
 
@@ -26,7 +26,7 @@ PSR::PSR(int NewN) {
 		DisponibilidadeNormalizada[i] = new long double[Def::getNnodes()];
 		ComprimentosNormalizados[i] = new long double[Def::getNnodes()];
 	}
-    Normalizacao();
+	Normalizacao();
 }
 
 PSR::~PSR() {
@@ -94,21 +94,23 @@ void PSR::PSO_configurar() {
 }
 
 void PSR::PSO() {
-    long double PbReq, MelhorPbReq = 1;
+	long double PbReq, MelhorPbReq = 1;
 
-    PSO_configurar();
+	PSO_configurar();
 	PSO_iniciarPopulacao();
 
-    for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
-        cout << "PSO - Repeticao " << Repeticao << "." << endl;
-        for (int Part = 0; Part < PSO_P; Part++) {
-            PbReq = PSO_simulaRede(PSO_populacao + Part);
-            if (PbReq < MelhorPbReq) {
-                MelhorPbReq = PbReq;
-                Melhor = PSO_populacao + Part;
-            }
-        }
-    }
+	for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
+		cout << "PSO - Repeticao " << Repeticao << "." << endl;
+		for (int Part = 0; Part < PSO_P; Part++) {
+			PbReq = PSO_simulaRede(PSO_populacao + Part);
+			cout << "Particula " << Part << " PbReq " << PbReq << endl;
+			if (PbReq < MelhorPbReq) {
+				MelhorPbReq = PbReq;
+				Melhor = PSO_populacao + Part;
+				cout << "achou melhor na Particula " << Part << endl;
+			}
+		}
+	}
 }
 
 void PSR::PSO_iniciarPopulacao() {
@@ -122,42 +124,49 @@ void PSR::PSO_iniciarPopulacao() {
 }
 
 void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
-    for (int i = 0; i < Def::getNnodes(); i++) {
-        for (int j = 0; j < Def::getNnodes(); j++) {
-            if (MAux::Topology[i][j] == 1)
-                MAux::Caminho[i].at(j).recalcular_peso(P->x);
-        }
-    }
+	for (int i = 0; i < Def::getNnodes(); i++) {
+		for (int j = 0; j < Def::getNnodes(); j++) {
+			if (MAux::Topology[i][j] == 1)
+				MAux::Caminho[i].at(j).recalcular_peso(P->x);
+		}
+	}
 }
 
 long double PSR::get_MaiorEnlace() {
-    if (MaiorEnlace==-1) procurarMaiorEnlace();
-    return MaiorEnlace;
+	if (MaiorEnlace==-1) procurarMaiorEnlace();
+	return MaiorEnlace;
 }
 
 void PSR::atualizaDisponibilidade() {
-    bool Disp[Def::getSE()];
-    for (int i = 0; i < Def::getNnodes(); i++) {
-        for (int j = 0; j < Def::getNnodes(); j++) {
-            for (int Slot = 0; Slot < Def::getSE(); Slot++)
-                Disp[Slot] = !MAux::Topology_S[Slot][i][j];
-            DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
-        }
-    }
+	bool Disp[Def::getSE()];
+	for (int i = 0; i < Def::getNnodes(); i++) {
+		for (int j = 0; j < Def::getNnodes(); j++) {
+			for (int Slot = 0; Slot < Def::getSE(); Slot++)
+				Disp[Slot] = !MAux::Topology_S[Slot][i][j];
+			DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
+		}
+	}
 }
 
 long double PSR::PSO_simulaRede(Particula *P) {
-    clearMemory();
-    MAux::firstEvent = new Event;
-    setReqEvent(MAux::firstEvent, MAux::simTime);
-    while(Def::numReq < Def::getNumReqMax()) {
-        Event *curEvent = MAux::firstEvent;
-        MAux::firstEvent = MAux::firstEvent->nextEvent;
-        MAux::simTime = curEvent->time;
-        if(curEvent->type == Req) {
-            RequestCon(curEvent);
-        } else if(curEvent->type == Desc) {
-            RemoveCon(curEvent);
-        }
-    }
+	PSO_atualizaCustoEnlaces(P);
+	clearMemory();
+	MAux::firstEvent = new Event;
+	setReqEvent(MAux::firstEvent, MAux::simTime);
+	while(Def::numReq < Def::getNumReqMax()) {
+		Event *curEvent = MAux::firstEvent;
+		MAux::firstEvent = MAux::firstEvent->nextEvent;
+		MAux::simTime = curEvent->time;
+		if(curEvent->type == Req) {
+			RequestCon(curEvent);
+		} else if(curEvent->type == Desc) {
+			RemoveCon(curEvent);
+		}
+	}
+	long double PbReq = Def::numReq_Bloq/Def::numReq;
+	return PbReq;
+}
+
+void PSR::executar_PSR() {
+	PSO();
 }

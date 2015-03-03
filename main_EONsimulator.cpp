@@ -60,7 +60,7 @@ int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
 	createStructures();
-    if (MAux::Alg_Routing == DJK)
+	if (MAux::Alg_Routing == DJK)
 		RWA::Dijkstra();
 	else if (MAux::Alg_Routing == SP)
 		RWA::DijkstraSP();
@@ -72,9 +72,10 @@ int main() {
 		Simulate_dAMP();
 	else if (MAux::escSim == Sim_NSlots)
 		SimNSlots();
-    else if (MAux::escSim == Sim_TreinoPSR) {
-        PSR(5);
-    }
+	else if (MAux::escSim == Sim_TreinoPSR) {
+		PSR(5);
+		PSR::executar_PSR();
+	}
 
 	delete []MAux::Topology;
 	delete []MAux::Topology_S;
@@ -323,7 +324,7 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tTreino do PSR <" << Sim_TreinoPSR << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tTreino do PSR <" << Sim_TreinoPSR << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
@@ -370,9 +371,11 @@ void Load() {
 	//Outras entradas para o simulador
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-	cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado" << endl;
-	cout << "Entre com o Algoritmo de Roteamento: ";
-	cin >> MAux::Alg_Routing;
+	if (MAux::escSim != Sim_TreinoPSR) {
+		cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado" << endl;
+		cout << "Entre com o Algoritmo de Roteamento: ";
+		cin >> MAux::Alg_Routing;
+	}
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
 	cout << "Entre com o Algoritmo de Alocacao: ";
@@ -407,11 +410,11 @@ void Load() {
 		cin >> Npontos;
 		MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
 	}
-    if (MAux::escSim == Sim_TreinoPSR) {
-        cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
-        cout << "LaNet = ";
-        cin >> MAux::laNet; // La = taxa de chegada das conexoes;
-    }
+	if (MAux::escSim == Sim_TreinoPSR) {
+		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
+		cout << "LaNet = ";
+		cin >> MAux::laNet; // La = taxa de chegada das conexoes;
+	}
 	if (MAux::escSim == Sim_DAmp) {
 		cout << "Entre com..." << endl;
 		cout << "Distancia minima entre Amplf. de Linha = ";
@@ -520,8 +523,8 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
-        if(MAux::escSim == Sim_TreinoPSR)
-            RWA::DijkstraPSR(orN, deN, NslotsReq);
+		if(MAux::escSim == Sim_TreinoPSR)
+			RWA::DijkstraPSR(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN

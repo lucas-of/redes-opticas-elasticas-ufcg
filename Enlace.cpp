@@ -95,20 +95,19 @@ void Enlace::recalcular() {
 }
 
 long double Enlace::get_peso() {
-    PSR::atualizaDisponibilidade();
-    peso = 0;
-    for (int i = 0; i < PSR::get_N(); i++) {
-        for (int j = 0; j < PSR::get_N(); j++) {
-            peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[i][j], i)*pow(PSR::DisponibilidadeNormalizada[i][j],j);
-        }
-    }
+	peso = 0;
+	for (int i = 0; i < PSR::get_N(); i++) {
+		for (int j = 0; j < PSR::get_N(); j++) {
+			peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[Origem->get_whoami()][Destino->get_whoami()], i)*pow(PSR::DisponibilidadeNormalizada[Origem->get_whoami()][Destino->get_whoami()],j);
+		}
+	}
 	return peso;
 }
 
 void Enlace::recalcular_peso(long double **Coef) {
-    assert (distancia != 0);
-    assert (Origem != NULL);
-    Coeficientes = Coef;
+	assert (distancia != 0);
+	assert (Origem != NULL);
+	Coeficientes = Coef;
 }
 
 Node* Enlace::get_NodeOrigem() {
