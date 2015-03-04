@@ -21,8 +21,7 @@ class PSR {
 		const static int get_N();
 		static void executar_PSR();
 		static long double get_MaiorEnlace();
-		static void atualizaDisponibilidade();
-		static long double **ComprimentosNormalizados, **DisponibilidadeNormalizada;
+        static long double **ComprimentosNormalizados;
 	private:
 		static int N; //ponto de truncamento
 		static long double **Coeficientes;
@@ -30,6 +29,7 @@ class PSR {
 
 		static int PSO_P; //numero de partículas
 		static int PSO_G; //numero de iterações
+        static long double PSO_MelhorPbReq;
 		static long double PSO_c1;
 		static long double PSO_c2; //parâmetros das velocidades
 		static long double PSO_chi; //fator de constrição
@@ -42,8 +42,8 @@ class PSR {
 		static void PSO();
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
-		static void PSO_atualizaCustoEnlaces(Particula *P);
-		static long double PSO_simulaRede(Particula *P);
+        static void PSO_atualizaCustoEnlaces(Particula *P);
+        static long double PSO_simulaRede(Particula *P);
 		static void PSO_atualizaVelocidades(Particula *P);
 };
 

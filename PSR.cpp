@@ -5,7 +5,7 @@ long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao, *PSR::Melhor = NULL;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
-long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi;
+long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -87,7 +87,7 @@ void PSR::PSO_configurar() {
 }
 
 void PSR::PSO() {
-	long double PbReq, MelhorPbReq = 1;
+    long double PbReq;
 
 	PSO_configurar();
 	PSO_iniciarPopulacao();
@@ -97,12 +97,13 @@ void PSR::PSO() {
 		for (int Part = 0; Part < PSO_P; Part++) {
 			PbReq = PSO_simulaRede(PSO_populacao + Part);
 			cout << "Particula " << Part << " PbReq " << PbReq << endl;
-			if (PbReq < MelhorPbReq) {
-				MelhorPbReq = PbReq;
+            if (PbReq < PSR::PSO_MelhorPbReq) {
+                PSR::PSO_MelhorPbReq = PbReq;
 				Melhor = PSO_populacao + Part;
 				cout << "achou melhor na Particula " << Part << endl;
 			}
 		}
+        PSO_atualizaVelocidades(Melhor);
 	}
 }
 
@@ -151,4 +152,19 @@ long double PSR::PSO_simulaRede(Particula *P) {
 
 void PSR::executar_PSR() {
 	PSO();
+}
+
+void PSR::PSO_atualizaVelocidades(Particula *Melhor) {
+    Particula *P;
+    long double eps1, eps2;
+    for (int i = 0; i < PSO_P; i++) {
+        for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+                P = PSO_populacao + i;
+                eps1 = General::uniforme(0,1);
+                eps2 = General::uniforme(0,1);
+                P->v[j][k] = PSO_chi * ( P->v[j][k] + PSO_c1*eps1*( Melhor->x[j][k] - P->x[j][k] ) + PSO_c2*eps2*(  ) )
+            }
+        }
+    }
 }
