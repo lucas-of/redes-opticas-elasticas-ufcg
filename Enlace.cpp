@@ -96,9 +96,14 @@ void Enlace::recalcular() {
 
 long double Enlace::get_peso() {
 	peso = 0;
+    long double Disponibilidade;
+    bool Disp[Def::getSE()];
+    for (int Slot = 0; Slot < Def::getSE(); Slot++)
+        Disp[Slot] = !MAux::Topology_S[Slot][Origem->get_whoami()][Destino->get_whoami()];
+    Disponibilidade = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
 	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[Origem->get_whoami()][Destino->get_whoami()], i)*pow(PSR::DisponibilidadeNormalizada[Origem->get_whoami()][Destino->get_whoami()],j);
+            peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[Origem->get_whoami()][Destino->get_whoami()], i)*pow(Disponibilidade,j);
 		}
 	}
 	return peso;

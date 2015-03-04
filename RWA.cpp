@@ -180,7 +180,6 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 	int *Precedente = new int[Def::getNnodes()];
 	int *PathRev = new int[Def::getNnodes()];
 	bool *Status = new bool[Def::getNnodes()];
-	PSR::atualizaDisponibilidade();
 	//Busca para todos os pares de no a rota mais curta:
 	for(i = 0; i < Def::getNnodes(); i++) {
 		if(i != orN)

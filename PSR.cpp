@@ -1,7 +1,7 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 int PSR::N;
-long double **PSR::Coeficientes, **PSR::DisponibilidadeNormalizada, **PSR::ComprimentosNormalizados;
+long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao, *PSR::Melhor = NULL;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
@@ -20,10 +20,8 @@ PSR::PSR(int NewN) {
 	Coeficientes = new long double*[PSR::get_N()];
 	for (int i = 0; i < N; i++) Coeficientes[i] = new long double[PSR::get_N()];
 
-	DisponibilidadeNormalizada = new long double*[Def::getNnodes()];
 	ComprimentosNormalizados = new long double*[Def::getNnodes()];
 	for (int i = 0; i < Def::getNnodes(); i++) {
-		DisponibilidadeNormalizada[i] = new long double[Def::getNnodes()];
 		ComprimentosNormalizados[i] = new long double[Def::getNnodes()];
 	}
 	Normalizacao();
@@ -55,20 +53,15 @@ long double PSR::procurarMaiorEnlace() {
 }
 
 void PSR::Normalizacao() {
-	bool Disp[Def::getSE()];
 	procurarMaiorEnlace();
 
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
 			if (MAux::Topology[i][j] == 0) {
 				ComprimentosNormalizados[i][j] = Def::MAX_LONGDOUBLE;
-				DisponibilidadeNormalizada[i][j] = Def::MAX_LONGDOUBLE;
 				continue;
 			}
 			ComprimentosNormalizados[i][j] = MAux::Caminho[i].at(j).get_comprimento() / MaiorEnlace;
-			for (int Slot = 0; Slot < Def::getSE(); Slot++)
-				Disp[Slot] = !MAux::Topology_S[Slot][i][j];
-			DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
 		}
 	}
 }
@@ -135,17 +128,6 @@ void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
 long double PSR::get_MaiorEnlace() {
 	if (MaiorEnlace==-1) procurarMaiorEnlace();
 	return MaiorEnlace;
-}
-
-void PSR::atualizaDisponibilidade() {
-	bool Disp[Def::getSE()];
-	for (int i = 0; i < Def::getNnodes(); i++) {
-		for (int j = 0; j < Def::getNnodes(); j++) {
-			for (int Slot = 0; Slot < Def::getSE(); Slot++)
-				Disp[Slot] = !MAux::Topology_S[Slot][i][j];
-			DisponibilidadeNormalizada[i][j] = Heuristics::calcNumFormAloc( 1, Disp ) / Def::getSE();
-		}
-	}
 }
 
 long double PSR::PSO_simulaRede(Particula *P) {
