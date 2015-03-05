@@ -2,10 +2,11 @@
 #include "Main_Auxiliar.h"
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
-Particula *PSR::PSO_populacao, *PSR::Melhor = NULL;
+Particula *PSR::PSO_populacao, PSR::Melhor;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
+ofstream PSR::PSO_Coeficientes("PSOCoeficientes.txt");
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -68,7 +69,7 @@ void PSR::Normalizacao() {
 
 void PSR::PSO_configurar() {
 	PSO_P = 50;
-	PSO_G = 500;
+	PSO_G = 50;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
@@ -77,6 +78,11 @@ void PSR::PSO_configurar() {
 
 	PSO_populacao = new Particula[PSO_P];
 	for (int i = 0; i < PSO_P; i++) {
+		if (i!=0) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
+		else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
+		if(i!=PSO_P-1) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
+		else PSO_populacao[i].Vizinha2 = PSO_populacao;
+
 		PSO_populacao[i].x = new long double*[N];
 		PSO_populacao[i].v = new long double*[N];
 		PSO_populacao[i].p = new long double*[N];
@@ -101,8 +107,8 @@ void PSR::PSO() {
 			cout << "Particula " << Part << " PbReq " << PbReq << endl;
 			if (PbReq < PSR::PSO_MelhorPbReq) {
 				PSR::PSO_MelhorPbReq = PbReq;
-				Melhor = PSO_populacao + Part;
-				cout << "achou melhor na Particula " << Part << endl;
+				Melhor = PSO_populacao[Part];
+				cout << "Achou melhor na Particula " << Part << endl;
 			}
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
@@ -159,18 +165,35 @@ long double PSR::PSO_simulaRede(Particula *P) {
 
 void PSR::executar_PSR() {
 	PSO();
+	PSO_ImprimeCoeficientes();
 }
 
 void PSR::PSO_atualizaVelocidades() {
+	Particula *Fitter;
 	long double eps1, eps2;
 	for (int i = 0; i < PSO_P; i++) {
+		if (PSO_populacao[i].Vizinha1->melhorInd < PSO_populacao[i].Vizinha2->melhorInd)
+			Fitter = PSO_populacao[i].Vizinha2;
+		else
+			Fitter = PSO_populacao[i].Vizinha1;
+
 		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				eps1 = General::uniforme(0,1);
 				eps2 = General::uniforme(0,1);
-				PSO_populacao[i].v[j][k] = PSO_chi * ( PSO_populacao[i].v[j][k] + PSO_c1*eps1*( PSO_populacao[i].p[j][k] - PSO_populacao[i].x[j][k] ) + PSO_c2*eps2*( Melhor->p[j][k] - PSO_populacao[i].x[j][k] ) );
+				PSO_populacao[i].v[j][k] = PSO_chi * ( PSO_populacao[i].v[j][k] + PSO_c1*eps1*( PSO_populacao[i].p[j][k] - PSO_populacao[i].x[j][k] ) + PSO_c2*eps2*( Fitter->p[j][k] - PSO_populacao[i].x[j][k] ) );
 				PSO_populacao[i].x[j][k] += PSO_populacao[i].v[j][k];
 			}
 		}
 	}
+}
+
+void PSR::PSO_ImprimeCoeficientes() {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			PSO_Coeficientes << Melhor.x[i][j] << "\t";
+		}
+		PSO_Coeficientes << endl;
+	}
+	PSO_Coeficientes << endl << Melhor.melhorInd << endl;
 }

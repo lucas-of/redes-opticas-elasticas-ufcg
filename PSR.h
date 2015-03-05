@@ -14,6 +14,7 @@ struct Particula {
 		long double **v;
 		long double **p;
 		long double melhorInd = 1;
+		Particula *Vizinha1, *Vizinha2;
 };
 
 class PSR {
@@ -35,7 +36,8 @@ class PSR {
 		static long double PSO_c1;
 		static long double PSO_c2; //parâmetros das velocidades
 		static long double PSO_chi; //fator de constrição
-		static Particula *PSO_populacao, *Melhor;
+		static Particula *PSO_populacao, Melhor;
+		static ofstream PSO_Coeficientes;
 
 		static long double get_coeficiente(int, int);
 		static void Normalizacao();
@@ -47,6 +49,7 @@ class PSR {
 		static void PSO_atualizaCustoEnlaces(Particula *P);
 		static long double PSO_simulaRede(Particula *P);
 		static void PSO_atualizaVelocidades();
+		static void PSO_ImprimeCoeficientes();
 };
 
 #endif // PSR_H
