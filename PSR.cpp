@@ -79,15 +79,17 @@ void PSR::PSO_configurar() {
 	for (int i = 0; i < PSO_P; i++) {
 		PSO_populacao[i].x = new long double*[N];
 		PSO_populacao[i].v = new long double*[N];
+		PSO_populacao[i].p = new long double*[N];
 		for (int j = 0; j < N; j++) {
 			PSO_populacao[i].x[j] = new long double[N];
 			PSO_populacao[i].v[j] = new long double[N];
+			PSO_populacao[i].p[j] = new long double[N];
 		}
 	}
 }
 
 void PSR::PSO() {
-    long double PbReq;
+	long double PbReq;
 
 	PSO_configurar();
 	PSO_iniciarPopulacao();
@@ -97,22 +99,27 @@ void PSR::PSO() {
 		for (int Part = 0; Part < PSO_P; Part++) {
 			PbReq = PSO_simulaRede(PSO_populacao + Part);
 			cout << "Particula " << Part << " PbReq " << PbReq << endl;
-            if (PbReq < PSR::PSO_MelhorPbReq) {
-                PSR::PSO_MelhorPbReq = PbReq;
+			if (PbReq < PSR::PSO_MelhorPbReq) {
+				PSR::PSO_MelhorPbReq = PbReq;
 				Melhor = PSO_populacao + Part;
 				cout << "achou melhor na Particula " << Part << endl;
 			}
+			if (PbReq < (PSO_populacao + Part)->melhorInd) {
+				(PSO_populacao + Part)->melhorInd = PbReq;
+				(PSO_populacao + Part)->p = (PSO_populacao + Part)->x;
+			}
 		}
-        PSO_atualizaVelocidades(Melhor);
+		PSO_atualizaVelocidades();
 	}
 }
 
 void PSR::PSO_iniciarPopulacao() {
 	for (int i = 0; i < PSO_P; i++) {
 		for (int j = 0; j < N; j++) {
-			PSO_populacao[i].v[j] = {0}; //velocidade inicialmente nula
-			for (int k = 0; k < N; k++)
+			for (int k = 0; k < N; k++) {
+				PSO_populacao[i].v[j][k] = 0;
 				PSO_populacao[i].x[j][k] = General::uniforme(0,1);
+			}
 		}
 	}
 }
@@ -154,17 +161,16 @@ void PSR::executar_PSR() {
 	PSO();
 }
 
-void PSR::PSO_atualizaVelocidades(Particula *Melhor) {
-    Particula *P;
-    long double eps1, eps2;
-    for (int i = 0; i < PSO_P; i++) {
-        for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-                P = PSO_populacao + i;
-                eps1 = General::uniforme(0,1);
-                eps2 = General::uniforme(0,1);
-                P->v[j][k] = PSO_chi * ( P->v[j][k] + PSO_c1*eps1*( Melhor->x[j][k] - P->x[j][k] ) + PSO_c2*eps2*(  ) )
-            }
-        }
-    }
+void PSR::PSO_atualizaVelocidades() {
+	long double eps1, eps2;
+	for (int i = 0; i < PSO_P; i++) {
+		for (int j = 0; j < N; j++) {
+			for (int k = 0; k < N; k++) {
+				eps1 = General::uniforme(0,1);
+				eps2 = General::uniforme(0,1);
+				PSO_populacao[i].v[j][k] = PSO_chi * ( PSO_populacao[i].v[j][k] + PSO_c1*eps1*( PSO_populacao[i].p[j][k] - PSO_populacao[i].x[j][k] ) + PSO_c2*eps2*( Melhor->p[j][k] - PSO_populacao[i].x[j][k] ) );
+				PSO_populacao[i].x[j][k] += PSO_populacao[i].v[j][k];
+			}
+		}
+	}
 }
