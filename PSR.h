@@ -25,6 +25,8 @@ class PSR {
 		static void executar_PSR();
 		static long double get_MaiorEnlace();
 		static long double **ComprimentosNormalizados;
+		static ifstream PSO_Coeficientes_R;
+
 	private:
 		static int N; //ponto de truncamento
 		static long double **Coeficientes;
@@ -37,7 +39,7 @@ class PSR {
 		static long double PSO_c2; //parâmetros das velocidades
 		static long double PSO_chi; //fator de constrição
 		static Particula *PSO_populacao, Melhor;
-		static ofstream PSO_Coeficientes;
+		static ofstream PSO_Coeficientes_W;
 
 		static long double get_coeficiente(int, int);
 		static void Normalizacao();

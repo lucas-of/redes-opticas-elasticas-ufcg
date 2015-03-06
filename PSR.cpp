@@ -6,7 +6,8 @@ Particula *PSR::PSO_populacao, PSR::Melhor;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
-ofstream PSR::PSO_Coeficientes("PSOCoeficientes.txt");
+ofstream PSR::PSO_Coeficientes_W("PSOCoeficientes.txt");
+ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -189,11 +190,12 @@ void PSR::PSO_atualizaVelocidades() {
 }
 
 void PSR::PSO_ImprimeCoeficientes() {
+	PSO_Coeficientes_W << N << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			PSO_Coeficientes << Melhor.x[i][j] << "\t";
+			PSO_Coeficientes_W << Melhor.x[i][j] << "\t";
 		}
-		PSO_Coeficientes << endl;
+		PSO_Coeficientes_W << endl;
 	}
-	PSO_Coeficientes << endl << Melhor.melhorInd << endl;
+	PSO_Coeficientes_W << endl << Melhor.melhorInd << endl;
 }

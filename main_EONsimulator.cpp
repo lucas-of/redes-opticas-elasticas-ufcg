@@ -29,6 +29,7 @@ void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações ne
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
+void CarregaCoeficientes();
 void CompressCon(Event*); /*Diminui a quantidade de slots reservados para a conexão. Pode ser configurada para retirar sempre o slot da direita ou o da esquerda ou o da direita, escolhido aleatoriamente. Lembrar de conferir isto.*/
 void CompressRandom(Conexao *con); /*Comprime conexão, removendo slot da esquerda ou da direita*/
 void CompressRight(Conexao *con); /*Comprime conexão, removendo o slot da direita*/
@@ -75,6 +76,9 @@ int main() {
 	else if (MAux::escSim == Sim_TreinoPSR) {
 		PSR(5);
 		PSR::executar_PSR();
+	} else if (MAux::escSim == Sim_PSR) {
+		CarregaCoeficientes();
+		SimPbReq();
 	}
 
 	delete []MAux::Topology;
@@ -94,6 +98,28 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {
 		Def::numReqBloq_Taxa[nTaxa]++;
 	}
 	Def::numSlots_Bloq += (NslotsReq - NslotsUsed);
+}
+
+void CarregaCoeficientes() {
+	int N;
+	long double aux;
+	PSR::PSO_Coeficientes_R >> N;
+
+	long double **Coeficientes;
+	Coeficientes = new long double*[N];
+	for (int i = 0; i < N; i++) Coeficientes[i] = new long double[N];
+
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			PSR::PSO_Coeficientes_R >> Coeficientes[i][j];
+		}
+	}
+
+	for (int i = 0; i < Def::getNnodes(); i++) {
+		for (int j = 0; j < Def::getNnodes(); j++) {
+			MAux::Caminho[i].at(j).recalcular_peso(Coeficientes);
+		}
+	}
 }
 
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
@@ -324,7 +350,7 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tTreino do PSR <" << Sim_TreinoPSR << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tPSR <" << Sim_PSR << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
@@ -524,6 +550,8 @@ void RequestCon(Event* evt) {
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
 		if(MAux::escSim == Sim_TreinoPSR)
+			RWA::DijkstraPSR(orN, deN, NslotsReq);
+		if(MAux::escSim == Sim_PSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
