@@ -38,6 +38,10 @@ class PSR {
 		static long double PSO_c1;
 		static long double PSO_c2; //parâmetros das velocidades
 		static long double PSO_chi; //fator de constrição
+        static long double PSO_Vmax;
+        static long double PSO_Vmin; //velocidade maxima e minima
+        static long double PSO_Xmax;
+        static long double PSO_Xmin; //posicao maxima e minima
 		static Particula *PSO_populacao;
 		static ofstream PSO_Coeficientes_W;
 

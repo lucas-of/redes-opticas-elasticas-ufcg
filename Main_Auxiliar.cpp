@@ -41,6 +41,7 @@ long double MAux::DAmpPasso;
 long double MAux::mu;
 long double MAux::muC;
 long double **MAux::Topology;
+long double **MAux::Coeficientes;
 long double **MAux::MinimasDistancias;
 TIME MAux::simTime;
 vector<int> **MAux::FFlists = NULL;

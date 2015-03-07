@@ -99,9 +99,9 @@ long double Enlace::get_peso() {
 	long double Disponibilidade;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!MAux::Topology_S[Slot][Origem->get_whoami()][Destino->get_whoami()]) SlotsDispon++;
-	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
-	for (int i = 0; i < PSR::get_N(); i++) {
+        if (!MAux::Topology_S[Slot][Origem->get_whoami()][Destino->get_whoami()]) SlotsDispon++;
+    Disponibilidade = SlotsDispon/(1.0*Def::getSE());
+    for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
 			peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[Origem->get_whoami()][Destino->get_whoami()], i)*pow(Disponibilidade,j);
 		}

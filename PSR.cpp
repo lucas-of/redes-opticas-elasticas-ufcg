@@ -3,10 +3,9 @@
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
-long double PSR::MaiorEnlace = -1;
+long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
-ofstream PSR::PSO_Coeficientes_W("PSOCoeficientes.txt");
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -69,8 +68,8 @@ void PSR::Normalizacao() {
 }
 
 void PSR::PSO_configurar() {
-	PSO_P = 50;
-	PSO_G = 50;
+    PSO_P = 50;
+    PSO_G = 500;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
@@ -160,7 +159,7 @@ long double PSR::PSO_simulaRede(Particula *P) {
 		} else if(curEvent->type == Desc) {
 			RemoveCon(curEvent);
 		}
-	}
+    }
 	long double PbReq = Def::numReq_Bloq/Def::numReq;
 	return PbReq;
 }
@@ -175,22 +174,27 @@ void PSR::PSO_atualizaVelocidades() {
 	long double eps1, eps2;
 	for (int i = 0; i < PSO_P; i++) {
 		if (PSO_populacao[i].Vizinha1->melhorInd < PSO_populacao[i].Vizinha2->melhorInd)
-			Fitter = PSO_populacao[i].Vizinha2;
+            Fitter = PSO_populacao[i].Vizinha1;
 		else
-			Fitter = PSO_populacao[i].Vizinha1;
+            Fitter = PSO_populacao[i].Vizinha2;
 
 		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				eps1 = General::uniforme(0,1);
 				eps2 = General::uniforme(0,1);
 				PSO_populacao[i].v[j][k] = PSO_chi * ( PSO_populacao[i].v[j][k] + PSO_c1*eps1*( PSO_populacao[i].p[j][k] - PSO_populacao[i].x[j][k] ) + PSO_c2*eps2*( Fitter->p[j][k] - PSO_populacao[i].x[j][k] ) );
+                if (PSO_populacao[i].v[j][k] > PSO_Vmax) PSO_populacao[i].v[j][k] = PSO_Vmax;
+                if (PSO_populacao[i].v[j][k] < PSO_Vmin) PSO_populacao[i].v[j][k] = PSO_Vmin;
 				PSO_populacao[i].x[j][k] += PSO_populacao[i].v[j][k];
+                if (PSO_populacao[i].x[j][k] > PSO_Xmax) PSO_populacao[i].x[j][k] = PSO_Xmax;
+                if (PSO_populacao[i].x[j][k] < PSO_Xmin) PSO_populacao[i].x[j][k] = PSO_Xmin;
 			}
 		}
 	}
 }
 
 void PSR::PSO_ImprimeCoeficientes() {
+    ofstream PSO_Coeficientes_W("PSOCoeficientes.txt");
 	PSO_Coeficientes_W << N << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {

@@ -62,6 +62,7 @@ class MAux {
 		static long double DAmpPasso;
 		static long double mu;
 		static long double muC;
+        static long double **Coeficientes;
 		static long double **Topology;
 		static long double **MinimasDistancias;
 		static TIME simTime;

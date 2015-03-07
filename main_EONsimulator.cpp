@@ -98,23 +98,22 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {
 }
 
 void CarregaCoeficientes() {
-	int N;
-	long double aux;
+    int N;
 	PSR::PSO_Coeficientes_R >> N;
+    PSR PSR_Auxiliar(N);
 
-	long double **Coeficientes;
-	Coeficientes = new long double*[N];
-	for (int i = 0; i < N; i++) Coeficientes[i] = new long double[N];
+    MAux::Coeficientes = new long double*[N];
+    for (int i = 0; i < N; i++) MAux::Coeficientes[i] = new long double[N];
 
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			PSR::PSO_Coeficientes_R >> Coeficientes[i][j];
+            PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i][j];
 		}
 	}
 
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-			MAux::Caminho[i].at(j).recalcular_peso(Coeficientes);
+            MAux::Caminho[i].at(j).recalcular_peso(MAux::Coeficientes);
 		}
 	}
 }
@@ -524,7 +523,6 @@ void RequestCon(Event* evt) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
-	nTaxa = 40;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		nTaxa = Def::get_numPossiveisTaxas() - 1;
 	}
@@ -549,7 +547,7 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
-		if(MAux::Alg_Routing == PSO)
+        if(MAux::Alg_Routing == PSO)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
