@@ -2,7 +2,7 @@
 #include "Main_Auxiliar.h"
 int PSR::N;
 long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
-Particula *PSR::PSO_populacao, PSR::Melhor;
+Particula *PSR::PSO_populacao;
 long double PSR::MaiorEnlace = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
@@ -75,7 +75,7 @@ void PSR::PSO_configurar() {
 	PSO_c2 = 2.05;
 
 	long double phi = PSO_c1 + PSO_c2;
-	PSO_chi = 2.0/(2 - phi - sqrt(phi*phi - 4*phi));
+	PSO_chi = -2.0/(2 - phi - sqrt(phi*phi - 4*phi));
 
 	PSO_populacao = new Particula[PSO_P];
 	for (int i = 0; i < PSO_P; i++) {
@@ -105,16 +105,17 @@ void PSR::PSO() {
 		cout << "PSO - Repeticao " << Repeticao << "." << endl;
 		for (int Part = 0; Part < PSO_P; Part++) {
 			PbReq = PSO_simulaRede(PSO_populacao + Part);
-			cout << "Particula " << Part << " PbReq " << PbReq << endl;
-			if (PbReq < PSR::PSO_MelhorPbReq) {
-				PSR::PSO_MelhorPbReq = PbReq;
-				Melhor = PSO_populacao[Part];
-				cout << "Achou melhor na Particula " << Part << endl;
-			}
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
 				(PSO_populacao + Part)->p = (PSO_populacao + Part)->x;
 			}
+			if (PbReq < PSR::PSO_MelhorPbReq) {
+				PSR::PSO_MelhorPbReq = PbReq;
+				for (int i = 0; i < N; i++)
+					for (int j = 0; j < N; j++)
+						Coeficientes[i][j] = (PSO_populacao+Part)->x[i][j];
+			}
+			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
 		}
 		PSO_atualizaVelocidades();
 	}
@@ -193,9 +194,9 @@ void PSR::PSO_ImprimeCoeficientes() {
 	PSO_Coeficientes_W << N << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			PSO_Coeficientes_W << Melhor.x[i][j] << "\t";
+			PSO_Coeficientes_W << Coeficientes[i][j] << "\t";
 		}
 		PSO_Coeficientes_W << endl;
 	}
-	PSO_Coeficientes_W << endl << Melhor.melhorInd << endl;
+	PSO_Coeficientes_W << endl << PSO_MelhorPbReq << endl;
 }

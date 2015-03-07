@@ -110,8 +110,6 @@ long double Enlace::get_peso() {
 }
 
 void Enlace::recalcular_peso(long double **Coef) {
-	assert (distancia != 0);
-	assert (Origem != NULL);
 	Coeficientes = Coef;
 }
 

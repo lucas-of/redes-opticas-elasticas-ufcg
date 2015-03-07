@@ -74,11 +74,8 @@ int main() {
 	else if (MAux::escSim == Sim_NSlots)
 		SimNSlots();
 	else if (MAux::escSim == Sim_TreinoPSR) {
-		PSR(5);
+		PSR(3);
 		PSR::executar_PSR();
-	} else if (MAux::escSim == Sim_PSR) {
-		CarregaCoeficientes();
-		SimPbReq();
 	}
 
 	delete []MAux::Topology;
@@ -260,6 +257,8 @@ void createStructures() {
 			}
 		}
 	}
+
+	if (MAux::Alg_Routing == PSO) CarregaCoeficientes();
 }
 
 void DefineNextEventOfCon (Event* evt) {
@@ -350,7 +349,7 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tPSR <" << Sim_PSR << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
@@ -398,7 +397,7 @@ void Load() {
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
 	if (MAux::escSim != Sim_TreinoPSR) {
-		cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado" << endl;
+		cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
 	}
@@ -525,6 +524,7 @@ void RequestCon(Event* evt) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
+	nTaxa = 40;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		nTaxa = Def::get_numPossiveisTaxas() - 1;
 	}
@@ -549,9 +549,9 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
-		if(MAux::escSim == Sim_TreinoPSR)
+		if(MAux::Alg_Routing == PSO)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
-		if(MAux::escSim == Sim_PSR)
+		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {

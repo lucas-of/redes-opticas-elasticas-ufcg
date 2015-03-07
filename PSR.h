@@ -38,7 +38,7 @@ class PSR {
 		static long double PSO_c1;
 		static long double PSO_c2; //parâmetros das velocidades
 		static long double PSO_chi; //fator de constrição
-		static Particula *PSO_populacao, Melhor;
+		static Particula *PSO_populacao;
 		static ofstream PSO_Coeficientes_W;
 
 		static long double get_coeficiente(int, int);
