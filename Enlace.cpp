@@ -77,7 +77,7 @@ void Enlace::calcula_preamplif() {
 	if (Def::get_Arquitetura() == Def::SS) {
 		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + Def::get_Lsss());
 	} else if (Def::get_Arquitetura() == Def::BS) {
-		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10*log10( Def::getGrauNo(Destino->get_whoami()) + 1 ));
+		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10*log10( Def::getGrauNo(Destino->whoami) + 1 ));
 	}
 
 	ruido_preamplif = Def::get_Famp()*(ganho_preamplif - 1.0)*Constante::h*freq*Def::get_Bref();
@@ -99,17 +99,21 @@ long double Enlace::get_peso() {
 	long double Disponibilidade;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-        if (!MAux::Topology_S[Slot][Origem->get_whoami()][Destino->get_whoami()]) SlotsDispon++;
-    Disponibilidade = SlotsDispon/(1.0*Def::getSE());
-    for (int i = 0; i < PSR::get_N(); i++) {
+		if (!MAux::Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
+	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
+
+	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
+	Disponibilidade = log(Disponibilidade);
+
+	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coeficientes[i][j]*pow(PSR::ComprimentosNormalizados[Origem->get_whoami()][Destino->get_whoami()], i)*pow(Disponibilidade,j);
+			peso += Coeficientes[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
 		}
 	}
 	return peso;
 }
 
-void Enlace::recalcular_peso(long double **Coef) {
+void Enlace::recalcular_peso(long double *Coef) {
 	Coeficientes = Coef;
 }
 

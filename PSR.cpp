@@ -1,7 +1,7 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 int PSR::N;
-long double **PSR::Coeficientes, **PSR::ComprimentosNormalizados;
+long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
 long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
 int PSR::PSO_P, PSR::PSO_G;
@@ -18,18 +18,9 @@ PSR::PSR(int NewN) {
 	MaiorEnlace = 0;
 	N = NewN;
 
-	Coeficientes = new long double*[PSR::get_N()];
-	for (int i = 0; i < N; i++) Coeficientes[i] = new long double[PSR::get_N()];
-
-	ComprimentosNormalizados = new long double*[Def::getNnodes()];
-	for (int i = 0; i < Def::getNnodes(); i++) {
-		ComprimentosNormalizados[i] = new long double[Def::getNnodes()];
-	}
+	Coeficientes = new long double[PSR::get_N()*PSR::get_N()];
+	ComprimentosNormalizados = new long double[Def::getNnodes()*Def::getNnodes()];
 	Normalizacao();
-}
-
-PSR::~PSR() {
-	delete[] Coeficientes;
 }
 
 const int PSR::get_N() {
@@ -39,7 +30,7 @@ const int PSR::get_N() {
 long double PSR::get_coeficiente(int i, int j) {
 	assert ((i < get_N()) && (i >= 0));
 	assert ((j < get_N()) && (j >= 0));
-	return Coeficientes[i][j];
+	return Coeficientes[i*PSR::N+j];
 }
 
 long double PSR::procurarMaiorEnlace() {
@@ -58,18 +49,18 @@ void PSR::Normalizacao() {
 
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-			if (MAux::Topology[i][j] == 0) {
-				ComprimentosNormalizados[i][j] = Def::MAX_LONGDOUBLE;
+			if (MAux::Topology[i*Def::Nnodes+j] == 0) {
+				ComprimentosNormalizados[i*Def::Nnodes+j] = Def::MAX_LONGDOUBLE;
 				continue;
 			}
-			ComprimentosNormalizados[i][j] = MAux::Caminho[i].at(j).get_comprimento() / MaiorEnlace;
+			ComprimentosNormalizados[i*Def::Nnodes+j] = MAux::Caminho[i].at(j).get_comprimento() / MaiorEnlace;
 		}
 	}
 }
 
 void PSR::PSO_configurar() {
 	PSO_P = 50;
-	PSO_G = 500;
+	PSO_G = 3;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
@@ -83,14 +74,9 @@ void PSR::PSO_configurar() {
 		if(i!=PSO_P-1) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
 		else PSO_populacao[i].Vizinha2 = PSO_populacao;
 
-		PSO_populacao[i].x = new long double*[N];
-		PSO_populacao[i].v = new long double*[N];
-		PSO_populacao[i].p = new long double*[N];
-		for (int j = 0; j < N; j++) {
-			PSO_populacao[i].x[j] = new long double[N];
-			PSO_populacao[i].v[j] = new long double[N];
-			PSO_populacao[i].p[j] = new long double[N];
-		}
+		PSO_populacao[i].x = new long double[N*N];
+		PSO_populacao[i].v = new long double[N*N];
+		PSO_populacao[i].p = new long double[N*N];
 	}
 }
 
@@ -106,13 +92,14 @@ void PSR::PSO() {
 			PbReq = PSO_simulaRede(PSO_populacao + Part);
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
-				(PSO_populacao + Part)->p = (PSO_populacao + Part)->x;
+				for (int i = 0; i < N*N; i++)
+				(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->x[i];
 			}
 			if (PbReq < PSR::PSO_MelhorPbReq) {
 				PSR::PSO_MelhorPbReq = PbReq;
 				for (int i = 0; i < N; i++)
 					for (int j = 0; j < N; j++)
-						Coeficientes[i][j] = (PSO_populacao+Part)->x[i][j];
+						Coeficientes[i*N + j] = (PSO_populacao+Part)->x[i*N +j];
 				PSO_ImprimeCoeficientes();
 			}
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
@@ -125,8 +112,8 @@ void PSR::PSO_iniciarPopulacao() {
 	for (int i = 0; i < PSO_P; i++) {
 		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
-				PSO_populacao[i].v[j][k] = 0;
-				PSO_populacao[i].x[j][k] = General::uniforme(0,1);
+				PSO_populacao[i].v[j*N+k] = 0;
+				PSO_populacao[i].x[j*N+k] = General::uniforme(0,1);
 			}
 		}
 	}
@@ -135,7 +122,7 @@ void PSR::PSO_iniciarPopulacao() {
 void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-			if (MAux::Topology[i][j] == 1)
+			if (MAux::Topology[i*Def::Nnodes+j] == 1)
 				MAux::Caminho[i].at(j).recalcular_peso(P->x);
 		}
 	}
@@ -149,6 +136,15 @@ long double PSR::get_MaiorEnlace() {
 long double PSR::PSO_simulaRede(Particula *P) {
 	PSO_atualizaCustoEnlaces(P);
 	clearMemory();
+	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
+		while (!MAux::AllRoutes[i].empty()) {
+			delete MAux::AllRoutes[i].back();
+			MAux::AllRoutes[i].pop_back();
+		}
+		vector<Route*> ().swap(MAux::AllRoutes[i]);
+	}
+	delete[] MAux::AllRoutes;
+	MAux::AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
 	MAux::firstEvent = new Event;
 	setReqEvent(MAux::firstEvent, MAux::simTime);
 	while(Def::numReq < Def::getNumReqMax()) {
@@ -168,6 +164,17 @@ long double PSR::PSO_simulaRede(Particula *P) {
 void PSR::executar_PSR() {
 	PSO();
 	PSO_ImprimeCoeficientes();
+	for (int i = 0; i < PSO_P; i++) {
+		delete[] PSO_populacao[i].x;
+		delete[] PSO_populacao[i].p;
+		delete[] PSO_populacao[i].v;
+	}
+	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
+		if (!MAux::AllRoutes[i].empty())
+			delete MAux::AllRoutes[i].front();
+		vector<Route*> ().swap(MAux::AllRoutes[i]);
+	}
+	delete[] PSO_populacao;
 }
 
 void PSR::PSO_atualizaVelocidades() {
@@ -183,12 +190,12 @@ void PSR::PSO_atualizaVelocidades() {
 			for (int k = 0; k < N; k++) {
 				eps1 = General::uniforme(0,1);
 				eps2 = General::uniforme(0,1);
-				PSO_populacao[i].v[j][k] = PSO_chi * ( PSO_populacao[i].v[j][k] + PSO_c1*eps1*( PSO_populacao[i].p[j][k] - PSO_populacao[i].x[j][k] ) + PSO_c2*eps2*( Fitter->p[j][k] - PSO_populacao[i].x[j][k] ) );
-				if (PSO_populacao[i].v[j][k] > PSO_Vmax) PSO_populacao[i].v[j][k] = PSO_Vmax;
-				if (PSO_populacao[i].v[j][k] < PSO_Vmin) PSO_populacao[i].v[j][k] = PSO_Vmin;
-				PSO_populacao[i].x[j][k] += PSO_populacao[i].v[j][k];
-				if (PSO_populacao[i].x[j][k] > PSO_Xmax) PSO_populacao[i].x[j][k] = PSO_Xmax;
-				if (PSO_populacao[i].x[j][k] < PSO_Xmin) PSO_populacao[i].x[j][k] = PSO_Xmin;
+				PSO_populacao[i].v[j*N+k] = PSO_chi * ( PSO_populacao[i].v[j*N+k] + PSO_c1*eps1*( PSO_populacao[i].p[j*N+k] - PSO_populacao[i].x[j*N+k] ) + PSO_c2*eps2*( Fitter->p[j*N+k] - PSO_populacao[i].x[j*N+k] ) );
+				if (PSO_populacao[i].v[j*N+k] > PSO_Vmax) PSO_populacao[i].v[j*N+k] = PSO_Vmax;
+				if (PSO_populacao[i].v[j*N+k] < PSO_Vmin) PSO_populacao[i].v[j*N+k] = PSO_Vmin;
+				PSO_populacao[i].x[j*N+k] += PSO_populacao[i].v[j*N+k];
+				if (PSO_populacao[i].x[j*N+k] > PSO_Xmax) PSO_populacao[i].x[j*N+k] = PSO_Xmax;
+				if (PSO_populacao[i].x[j*N+k] < PSO_Xmin) PSO_populacao[i].x[j*N+k] = PSO_Xmin;
 			}
 		}
 	}
@@ -199,7 +206,7 @@ void PSR::PSO_ImprimeCoeficientes() {
 	PSO_Coeficientes_W << N << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			PSO_Coeficientes_W << Coeficientes[i][j] << "\t";
+			PSO_Coeficientes_W << Coeficientes[i*PSR::N+j] << "\t";
 		}
 		PSO_Coeficientes_W << endl;
 	}

@@ -8,7 +8,7 @@ bool RWA::CheckSlotAvailability(const Route* route, const int s) {
 	for(unsigned int c = 0; c < route->getNhops(); c++) {
 		L_or = route->getNode(c);
 		L_de = route->getNode(c+1);
-		if(MAux::Topology_S[s][L_or][L_de] == true)
+		if(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true)
 			return false; //Basta o slot s nao estar disponivel em uma das fibras da rota;
 	}
 	return true; //O slot s esta disponivel em todas as fibras da rota;
@@ -44,15 +44,16 @@ void RWA::Dijkstra() {
 			Status[k] = 1;
 			VA = VA-1;
 			for(j = 0; j < Def::getNnodes(); j++)
-				if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)&&(CustoVertice[k]+MAux::Topology[k][j] < CustoVertice[j])) {
-					CustoVertice[j] = CustoVertice[k]+MAux::Topology[k][j];
+				if((Status[j] == 0)&&(MAux::Topology[k*Def::getNnodes() + j] != 0)&&(CustoVertice[k]+MAux::Topology[k*Def::getNnodes() + j] < CustoVertice[j])) {
+					CustoVertice[j] = CustoVertice[k]+MAux::Topology[k*Def::Nnodes + j];
 					Precedente[j] = k;
 				}
 		}
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			MAux::AllRoutes[path].clear();
+			vector<Route*> Temp;
+			MAux::AllRoutes[path].swap(Temp);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
@@ -93,13 +94,12 @@ void RWA::DijkstraSP() {
 	int orN, deN, VA, i, j, k=0, path, h, hops;
 	long double min;
 	vector<Node*> r;
-	long double *CustoVertice = new long double[Def::getNnodes()];
+	long double *CustoVertice = new long double[Def::Nnodes];
 	int *Precedente = new int[Def::getNnodes()];
 	int *PathRev = new int[Def::getNnodes()];
 	bool *Status = new bool[Def::getNnodes()];
 
-	MAux::MinimasDistancias = new long double*[Def::getNnodes()];
-	for (i = 0; i < Def::getNnodes(); i++) MAux::MinimasDistancias[i] = new long double[Def::getNnodes()];
+	MAux::MinimasDistancias = new long double[Def::Nnodes*Def::Nnodes];
 	cout << Def::getNnodes() << endl;
 	//Busca para todos os pares de no a rota mais curta:
 	for(orN = 0; orN < Def::getNnodes(); orN++) {
@@ -122,17 +122,18 @@ void RWA::DijkstraSP() {
 			Status[k] = 1;
 			VA = VA-1;
 			for(j = 0; j < Def::getNnodes(); j++)
-				if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)&&(CustoVertice[k]+MAux::Caminho[j].at(k).get_comprimento() < CustoVertice[j])) {
+				if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)&&(CustoVertice[k]+MAux::Caminho[j].at(k).get_comprimento() < CustoVertice[j])) {
 					CustoVertice[j] = CustoVertice[k]+MAux::Caminho[j].at(k).get_comprimento();
 					Precedente[j] = k;
 				}
 		}
 
-		for (j = 0; j< Def::getNnodes(); j++) MAux::MinimasDistancias[orN][j] = CustoVertice[j];
+		for (j = 0; j< Def::getNnodes(); j++) MAux::MinimasDistancias[orN*Def::Nnodes + j] = CustoVertice[j];
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			MAux::AllRoutes[path].clear();
+			vector<Route*> Temp;
+			MAux::AllRoutes[path].swap(Temp);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
@@ -161,7 +162,7 @@ void RWA::DijkstraSP() {
 				if(hops != 0)
 					for(h = 0; h <= hops; h++)
 						cout<<MAux::AllRoutes[path].at(0)->getNode(h)<<"-";
-					cout << " (" << MAux::MinimasDistancias[orN][deN] << "km)";
+					cout << " (" << MAux::MinimasDistancias[orN*Def::Nnodes + deN] << "km)";
 			}
 	cout<<endl<<endl;
 	delete []CustoVertice;
@@ -202,11 +203,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 		VA = VA-1;
 		//Verifica se precisa atualizar ou nao os vizinhos de k
 		for(j = 0; j < Def::getNnodes(); j++)
-			if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)) {
+			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s][k][j];
+					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso() < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso();
 					Precedente[j] = k;
@@ -216,7 +217,8 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	MAux::AllRoutes[path].clear();
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
+
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -229,7 +231,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 	r.clear();
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
-	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
+	assert(r.at(0)->whoami == orN && r.at(hops)->whoami == deN);
 	MAux::AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
@@ -284,11 +286,11 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 		//A partir do no k, atualiza ou nao o custo de seus nos vizinhos (j)
 		VA = VA-1;
 		for(j = 0; j < Def::getNnodes(); j++)
-			if((Status[j] == false)&&(MAux::Topology[k][j] != 0)) {
+			if((Status[j] == false)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade em j por uma rota proveniente de k
 				for(s = 0; s < Def::getSE(); s++)
-					DispAux[s] = DispVertice[k][s] * !MAux::Topology_S[s][k][j];
+					DispAux[s] = DispVertice[k][s] * !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				//Calcula o numero de hops em j por uma rota proveniente de k
 				hopsAux = HopsVertice[k]+1;
 				//Checa se o custo em j deve ser atualizado
@@ -324,7 +326,7 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 
 	//Insere a rota nova em AllRoutes
 	path = orN*Def::getNnodes()+deN;
-	MAux::AllRoutes[path].clear();
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	MAux::AllRoutes[path].push_back(new Route(r));
 }
 
@@ -361,11 +363,11 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 		VA = VA-1;
 		//Verifica se precisa atualizar ou nao os vizinhos de k
 		for(j = 0; j < Def::getNnodes(); j++)
-			if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)) {
+			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s][k][j];
+					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -376,7 +378,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	MAux::AllRoutes[path].clear();
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -424,7 +426,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 	//Busca Maior Enlace
 	for (i = 0; i < Def::getNnodes(); i++) {
 		for (int j = i+1; j < Def::getNnodes(); j++) {
-			if (MAux::Topology[i][j] == 0) continue;
+			if (MAux::Topology[i*Def::Nnodes+j] == 0) continue;
 			if (MAux::Caminho[i].at(j).get_comprimento() > MaiorComprimentoEnlace)
 				MaiorComprimentoEnlace = MAux::Caminho[i].at(j).get_comprimento();
 		}
@@ -442,11 +444,11 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 		VA = VA-1;
 		//Verifica se precisa atualizar ou nao os vizinhos de k
 		for(j = 0; j < Def::getNnodes(); j++)
-			if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)) {
+			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s][k][j];
+					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = alpha*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alpha)*Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -457,7 +459,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	MAux::AllRoutes[path].clear();
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -620,7 +622,7 @@ int RWA::sumOccupation(int s) {
 	int soma=0;
 	for(int origem = 0; origem < Def::getNnodes(); origem++)
 		for(int destino = 0; destino < Def::getNnodes(); destino++)
-			if( (MAux::Topology[origem][destino] > 0.0) && (MAux::Topology_S[s][origem][destino] == true) )
+			if( (MAux::Topology[origem*Def::Nnodes+destino] > 0.0) && (MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+origem*Def::Nnodes+destino] == true) )
 				//Se houver enlace entre origem e destino e o slot 's' estiver livre neste enlace
 				soma++;
 	return soma;
@@ -650,7 +652,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 	//Busca Maior Enlace
 	for (i = 0; i < Def::getNnodes(); i++) {
 		for (int j = i+1; j < Def::getNnodes(); j++) {
-			if (MAux::Topology[i][j] == 0) continue;
+			if (MAux::Topology[i*Def::Nnodes+j] == 0) continue;
 			if (MAux::Caminho[i].at(j).get_comprimento() > MaiorComprimentoEnlace)
 				MaiorComprimentoEnlace = MAux::Caminho[i].at(j).get_comprimento();
 		}
@@ -668,11 +670,11 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 		VA = VA-1;
 		//Verifica se precisa atualizar ou nao os vizinhos de k
 		for(j = 0; j < Def::getNnodes(); j++)
-			if((Status[j] == 0)&&(MAux::Topology[k][j] != 0)) {
+			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s][k][j];
+					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace - Heuristics::calculateCostLink(DispLink, L) + 1;
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -683,7 +685,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	MAux::AllRoutes[path].clear();
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;

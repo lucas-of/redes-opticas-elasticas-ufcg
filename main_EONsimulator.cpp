@@ -82,7 +82,12 @@ int main() {
 	delete []MAux::Topology_S;
 	delete []MAux::AllRoutes;
 	delete []MAux::Caminho;
-	if (MAux::FFlists != NULL) delete MAux::FFlists;
+	delete []MAux::Coeficientes;
+	delete []MAux::MinimasDistancias;
+	if (MAux::FFlists != NULL)
+		for (int i = 0; i < Def::getSR()+1; i++)
+			delete MAux::FFlists[i];
+	delete[] MAux::FFlists;
 	cout << "Fim do programa";
 	cin.get();
 	cin.get();
@@ -98,22 +103,20 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {
 }
 
 void CarregaCoeficientes() {
-    int N;
+	int N;
 	PSR::PSO_Coeficientes_R >> N;
-    PSR PSR_Auxiliar(N);
+	PSR PSR_Auxiliar(N);
 
-    MAux::Coeficientes = new long double*[N];
-    for (int i = 0; i < N; i++) MAux::Coeficientes[i] = new long double[N];
-
-	for (int i = 0; i < N; i++) {
+	MAux::Coeficientes = new long double[N*N];
+		for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-            PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i][j];
+			PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i*N + j];
 		}
 	}
 
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-            MAux::Caminho[i].at(j).recalcular_peso(MAux::Coeficientes);
+			MAux::Caminho[i].at(j).recalcular_peso(MAux::Coeficientes);
 		}
 	}
 }
@@ -142,7 +145,7 @@ void clearMemory() {
 				L_or = route->getNode(c);
 				L_de = route->getNode(c+1);
 				for (s = con->getFirstSlot(); s <= con->getLastSlot(); s++)
-					MAux::Topology_S[s][L_or][L_de] = false;
+					MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = false;
 			}
 			delete con;
 		}
@@ -161,7 +164,7 @@ void clearMemory() {
 	for(int orN = 0; orN < Def::getNnodes(); orN++)
 		for(int deN = 0; deN < Def::getNnodes(); deN++)
 			for(s = 0; s < Def::getSE(); s++)
-				assert(MAux::Topology_S[s][orN][deN] == false);
+				assert(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + orN*Def::Nnodes + deN] == false);
 	assert(MAux::firstEvent == NULL);
 }
 
@@ -197,17 +200,12 @@ void CompressRight(Conexao *con) {
 }
 
 void createStructures() {
-	MAux::Topology = new long double*[Def::getNnodes()]; //matriz de conexões entre nós
-	for (int i=0 ; i < Def::getNnodes() ; i++) MAux::Topology[i] = new long double[Def::getNnodes()];
-	MAux::Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
-	for (int i=0 ; i < Def::getSE() ; i++) {
-		MAux::Topology_S[i] = new bool*[Def::getNnodes()];
-		for (int j=0; j < Def::getNnodes() ; j++) {
-			MAux::Topology_S[i][j] = new bool[Def::getNnodes()];
+	MAux::Topology = new long double[Def::Nnodes*Def::Nnodes]; //matriz de conexões entre nós
+	MAux::Topology_S = new bool[Def::Nnodes*Def::Nnodes*Def::getSE()]; //matriz de ocupação de slots de cada enlace
+	for (int i=0 ; i < Def::getSE(); i++)
+		for (int j=0; j < Def::getNnodes() ; j++)
 			for (int k = 0; k < Def::getNnodes(); k++)
-				MAux::Topology_S[i][j][k] = false;
-		}
-	}
+				MAux::Topology_S[i*Def::Nnodes*Def::Nnodes + Def::Nnodes*j + k] = false;
 
 	//Carrega topologia de rede a partir do arquivo Topology.txt
 	MAux::AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
@@ -215,15 +213,15 @@ void createStructures() {
 	for (orN = 0; orN < Def::getNnodes(); orN++) {
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			switch(MAux::escTop) {
-				case PacificBell: MAux::Topol2 >> MAux::Topology[orN][deN]; break;
-				case NSFNet: MAux::Topol>>MAux::Topology[orN][deN]; break;
-				case NFSNetMod: MAux::Topol5>>MAux::Topology[orN][deN]; break;
-				case PontoaPonto8: MAux::Topol3>>MAux::Topology[orN][deN]; break;
-				case PontoaPonto4: MAux::Topol4>>MAux::Topology[orN][deN]; break;
-				case Top1: MAux::Topol6>>MAux::Topology[orN][deN]; break;
-				case Top2: MAux::Topol7>>MAux::Topology[orN][deN]; break;
+				case PacificBell: MAux::Topol2 >> MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case NSFNet: MAux::Topol>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case NFSNetMod: MAux::Topol5>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case PontoaPonto8: MAux::Topol3>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case PontoaPonto4: MAux::Topol4>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case Top1: MAux::Topol6>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+				case Top2: MAux::Topol7>>MAux::Topology[orN*Def::Nnodes+deN]; break;
 			}
-			cout<<MAux::Topology[orN][deN]<<" ";
+			cout<<MAux::Topology[orN*Def::Nnodes+deN]<<" ";
 		}
 		cout << endl;
 	}
@@ -249,7 +247,7 @@ void createStructures() {
 				case Top1: MAux::Topol6>>distancia_temp; break;
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
-			if(MAux::Topology[i][j] == 1){
+			if(MAux::Topology[i*Def::Nnodes + j] == 1){
 				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
@@ -324,8 +322,8 @@ bool FillSlot(const Route* route, const int s, const bool b) {
 	for (unsigned c = 0; c < route->getNhops(); c++) {
 		L_or = route->getNode(c);
 		L_de = route->getNode(c+1);
-		assert(MAux::Topology_S[s][L_or][L_de] != b);
-		MAux::Topology_S[s][L_or][L_de] = b;
+		assert(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] != b);
+		MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = b;
 	}
 	return true;
 }
@@ -335,7 +333,7 @@ void GrauDosNodes() {
 	Def::clearGrauNo();
 	for (int orN = 0; orN < Def::getNnodes() ; orN++) {
 		for (int deN = 0; deN < Def::getNnodes() ; deN++) {
-			if (MAux::Topology[orN][deN] == 1) node_temp++;
+			if (MAux::Topology[orN*Def::Nnodes+deN] == 1) node_temp++;
 		}
 		Def::setGrauNo(node_temp);
 		node_temp=0;
@@ -406,7 +404,7 @@ void Load() {
 	cin >> MAux::Alg_Aloc;
 
 	//Cria as listas First Fit
-	if(MAux::Alg_Aloc == FFO || MAux::Alg_Aloc == FF) {
+	if((MAux::Alg_Aloc == FFO) || (MAux::Alg_Aloc == FF)) {
 		MAux::FFlists = new vector<int>*[Def::getSR()+1];
 		for(int i = 0; i < Def::getSR()+1; i++)
 			MAux::FFlists[i] = new vector<int>(0);
@@ -504,8 +502,8 @@ bool ReleaseSlot(const Route* route, int s) {
 	for(unsigned c = 0; c < route->getNhops(); c++) {
 		L_or = route->getNode(c);
 		L_de = route->getNode(c+1);
-		assert(MAux::Topology_S[s][L_or][L_de] == true);
-		MAux::Topology_S[s][L_or][L_de] = false;
+		assert(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true);
+		MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = false;
 	}
 	return true;
 }
@@ -547,7 +545,7 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
-        if(MAux::Alg_Routing == PSO)
+		if(MAux::Alg_Routing == PSO)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
@@ -568,8 +566,8 @@ void RequestCon(Event* evt) {
 						L_or = route->getNode(c);
 						L_de = route->getNode(c+1);
 						for(int s = si; s < si + NslotsUsed; s++) {
-							assert(MAux::Topology_S[s][L_or][L_de] == false);
-							MAux::Topology_S[s][L_or][L_de] = true;
+							assert(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == false);
+							MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = true;
 							//Os slots sao marcados como ocupados
 						}
 					}
@@ -677,15 +675,7 @@ void SimNSlots() {
 	for (int Slots = SlotsMin; Slots <= SlotsMax; Slots+=SlotsMin) {
 		delete []MAux::Topology_S;
 		Def::setSE(Slots);
-		MAux::Topology_S = new bool**[Def::getSE()]; //matriz de ocupação de slots de cada enlace
-		for (int i=0 ; i < Def::getSE() ; i++) {
-			MAux::Topology_S[i] = new bool*[Def::getNnodes()];
-			for (int j=0; j < Def::getNnodes() ; j++) {
-				MAux::Topology_S[i][j] = new bool[Def::getNnodes()];
-				for (int k = 0; k < Def::getNnodes(); k++)
-					MAux::Topology_S[i][j][k] = false;
-			}
-		}
+		MAux::Topology_S = new bool[Def::getSE()*Def::Nnodes*Def::Nnodes]; //matriz de ocupação de slots de cada enlace
 		Simulate();
 	}
 }
@@ -828,12 +818,12 @@ void Simulate_dAMP() {
 			RefreshNoise();
 			Event *evt = new Event;
 			setReqEvent(evt,0);
-			long double Max = MAux::MinimasDistancias[0][0], OSNRout;
+			long double Max = MAux::MinimasDistancias[0], OSNRout;
 			int orN, deN;
 			for (int i = 0; i < Def::getNnodes(); i++) {
 				for (int j = 0; j < Def::getNnodes(); j++) {
-					if (Max < MAux::MinimasDistancias[i][j]) {
-						Max = MAux::MinimasDistancias[i][j];
+					if (Max < MAux::MinimasDistancias[i*Def::Nnodes + j]) {
+						Max = MAux::MinimasDistancias[i*Def::Nnodes + j];
 						orN = i;
 						deN = j;
 					}

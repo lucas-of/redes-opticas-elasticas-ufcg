@@ -44,8 +44,7 @@ class MAux {
 
 		//Variáveis necessárias em main_EONsimulator.cpp
 		static bool ExpComp;
-		static bool ***Topology_S;
-		static bool *Traf;
+		static bool *Topology_S;
 		static Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
@@ -62,9 +61,9 @@ class MAux {
 		static long double DAmpPasso;
 		static long double mu;
 		static long double muC;
-        static long double **Coeficientes;
-		static long double **Topology;
-		static long double **MinimasDistancias;
+		static long double *Coeficientes;
+		static long double *Topology;
+		static long double *MinimasDistancias;
 		static TIME simTime;
 		static vector<int> **FFlists;
 		static vector<Route*> *AllRoutes;
