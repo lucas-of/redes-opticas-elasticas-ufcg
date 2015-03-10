@@ -577,7 +577,7 @@ void RequestCon(Event* evt) {
 
 					//Cria uma nova conexao
 					long double Tempo = General::exponential(MAux::mu);
-					Conexao *newConexao = new Conexao(route, si, si + NslotsUsed - 1, MAux::simTime + Tempo);
+					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, MAux::simTime + Tempo);
 					//Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
 					Event *evt = new Event;
 					evt->conexao = newConexao;

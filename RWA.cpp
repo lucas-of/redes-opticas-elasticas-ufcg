@@ -217,6 +217,10 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
 	vector<Route*> ().swap(MAux::AllRoutes[path]);
 
 	PathRev[0] = deN;
@@ -326,6 +330,10 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 
 	//Insere a rota nova em AllRoutes
 	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
 	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	MAux::AllRoutes[path].push_back(new Route(r));
 }
@@ -378,6 +386,10 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
 	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
@@ -459,6 +471,10 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
 	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
@@ -685,6 +701,10 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
 	vector<Route*> ().swap(MAux::AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
