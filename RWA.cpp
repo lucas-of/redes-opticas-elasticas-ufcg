@@ -52,8 +52,11 @@ void RWA::Dijkstra() {
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			vector<Route*> Temp;
-			MAux::AllRoutes[path].swap(Temp);
+			while (!MAux::AllRoutes[path].empty()) {
+				delete MAux::AllRoutes[path].back();
+				MAux::AllRoutes[path].pop_back();
+			}
+			vector<Route*> ().swap(MAux::AllRoutes[path]);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
@@ -132,8 +135,11 @@ void RWA::DijkstraSP() {
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			vector<Route*> Temp;
-			MAux::AllRoutes[path].swap(Temp);
+			while (!MAux::AllRoutes[path].empty()) {
+				delete MAux::AllRoutes[path].back();
+				MAux::AllRoutes[path].pop_back();
+			}
+			vector<Route*> ().swap(MAux::AllRoutes[path]);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
