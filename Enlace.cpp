@@ -26,7 +26,7 @@ void Enlace::calcula_num_amplificadores() {
 }
 
 void Enlace::calcula_ganho_enlace() {
-	ganho_enlace = General::dB(1.0*num_amplif*(General::lin(L_DCF)+General::lin(L_FB))/(num_amplif + 1.0));
+	ganho_enlace = General::dB(1.0*num_amplif*(General::lin(L_DCF)+General::lin(L_FB))/(1.0*num_amplif + 1.0));
 }
 
 long double Enlace::get_ganho_enlace() {
@@ -39,8 +39,7 @@ void Enlace::calcula_ruido_enlace() {
 		double freq = Def::get_freq();
 
 		ruido_enlace = num_amplif*Def::get_Famp()*Constante::h*freq*Def::get_Bref();
-		ruido_enlace *= (-1.0 + pow(L_FB*L_DCF, 1.0/(num_amplif+1.0)));
-		ruido_enlace /= pow(L_FB*L_DCF, 1.0/(num_amplif + 1.0));
+		ruido_enlace *= (1.0L - pow(L_FB*L_DCF, -1.0/(num_amplif+1.0)));
 	}
 }
 
@@ -49,7 +48,7 @@ void Enlace::calcula_perdas() {
 	dDCF = (dDCF > 0 ? dDCF : -dDCF);
 	L_FB = pow(10,0.1*Constante::alphaFB*distancia);//exp(Constante::alphaFB*distancia/4.34);
 	L_DCF = pow(10,0.1*Constante::alphaDCF*dDCF); //exp(Constante::alphaDCF*dDCF/4.34);
-}
+ }
 
 long double Enlace::get_ruido_enlace(int) {
 	return ruido_enlace;
@@ -77,7 +76,7 @@ void Enlace::calcula_preamplif() {
 	if (Def::get_Arquitetura() == Def::SS) {
 		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + Def::get_Lsss());
 	} else if (Def::get_Arquitetura() == Def::BS) {
-		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10*log10( Def::getGrauNo(Destino->whoami) + 1 ));
+		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10.0*log10( Def::getGrauNo(Destino->whoami) + 1 ));
 	}
 
 	ruido_preamplif = Def::get_Famp()*(ganho_preamplif - 1.0)*Constante::h*freq*Def::get_Bref();
@@ -91,7 +90,6 @@ void Enlace::recalcular() {
 		calcula_ruido_enlace();
 		calcula_preamplif();
 	}
-
 }
 
 long double Enlace::get_peso() {
