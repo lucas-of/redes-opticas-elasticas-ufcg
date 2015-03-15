@@ -248,7 +248,7 @@ void createStructures() {
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
-                MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
+				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
 			}
@@ -641,7 +641,7 @@ void setReqEvent(Event* evt, TIME t) {
 	evt->nextEvent = NULL;
 	evt->conexao = NULL;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
-        evt->Esquema = _4QAM;
+		evt->Esquema = _4QAM;
 	}
 }
 
@@ -810,16 +810,16 @@ void Simulate() {
 
 void Simulate_dAMP() {
 	RWA::DijkstraSP();
-    Event *evt = new Event;
-    setReqEvent(evt,0);
-    cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) << "dB" << endl;
+	Event *evt = new Event;
+	setReqEvent(evt,0);
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) << "dB" << endl;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
 		Def::setOSNR(osnr);
 		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
 			Def::set_DistaA(dAmplif);
 			RefreshNoise();
 			setReqEvent(evt,0);
-            long double Max = MAux::MinimasDistancias[0], OSNRout;
+			long double Max = MAux::MinimasDistancias[0], OSNRout;
 			int orN, deN;
 			for (int i = 0; i < Def::getNnodes(); i++) {
 				for (int j = 0; j < Def::getNnodes(); j++) {
@@ -830,8 +830,8 @@ void Simulate_dAMP() {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-            OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
-            int NSlots = SlotsReq(Def::get_numPossiveisTaxas() - 1, evt);
+			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
+			int NSlots = SlotsReq(Def::get_numPossiveisTaxas() - 1, evt);
 			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
 			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) ) {
 				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
@@ -840,7 +840,7 @@ void Simulate_dAMP() {
 			}
 		}
 	}
-    delete evt;
+	delete evt;
 }
 
 int SlotsReq(int Ran, Event *evt) {

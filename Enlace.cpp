@@ -118,3 +118,8 @@ void Enlace::recalcular_peso(long double *Coef) {
 Node* Enlace::get_NodeOrigem() {
 	return Origem;
 }
+
+void Enlace::set_distancia(long double dist) {
+	assert (dist > 0);
+	distancia = dist;
+}
