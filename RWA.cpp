@@ -419,9 +419,11 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
+void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, long double alfa) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
+	assert(alfa >= 0);
+	assert(alfa <= 1);
 	int VA, i, j, k=0, path, h, hops;
 	long double min;
 	bool *DispLink = new bool[Def::getSE()];
@@ -431,7 +433,6 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 	int *PathRev = new int[Def::getNnodes()];
 	bool *Status = new bool[Def::getNnodes()];
 	long double MaiorComprimentoEnlace = 0;
-	long double alpha = 0.5;
 	//Busca para todos os pares de no a rota mais curta:
 	for(i = 0; i < Def::getNnodes(); i++) {
 		if(i != orN)
@@ -467,7 +468,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L) {
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
 					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				custoLink = alpha*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alpha)*Heuristics::calculateCostLink(DispLink, L);
+				custoLink = alfa*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alfa)*Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
 					Precedente[j] = k;

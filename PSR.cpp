@@ -12,6 +12,7 @@ void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o temp
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
+long double Simula_Rede();
 
 PSR::PSR(int NewN) {
 	assert(NewN > 0);
@@ -135,30 +136,7 @@ long double PSR::get_MaiorEnlace() {
 
 long double PSR::PSO_simulaRede(Particula *P) {
 	PSO_atualizaCustoEnlaces(P);
-	clearMemory();
-	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
-		while (!MAux::AllRoutes[i].empty()) {
-			delete MAux::AllRoutes[i].back();
-			MAux::AllRoutes[i].pop_back();
-		}
-		vector<Route*> ().swap(MAux::AllRoutes[i]);
-	}
-	delete[] MAux::AllRoutes;
-	MAux::AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
-	MAux::firstEvent = new Event;
-	setReqEvent(MAux::firstEvent, MAux::simTime);
-	while(Def::numReq < Def::getNumReqMax()) {
-		Event *curEvent = MAux::firstEvent;
-		MAux::firstEvent = MAux::firstEvent->nextEvent;
-		MAux::simTime = curEvent->time;
-		if(curEvent->type == Req) {
-			RequestCon(curEvent);
-		} else if(curEvent->type == Desc) {
-			RemoveCon(curEvent);
-		}
-	}
-	long double PbReq = Def::numReq_Bloq/Def::numReq;
-	return PbReq;
+	return Simula_Rede();
 }
 
 void PSR::executar_PSR() {

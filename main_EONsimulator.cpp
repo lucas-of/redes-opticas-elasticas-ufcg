@@ -46,9 +46,11 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
+long double Simula_Rede();
 void SimPbReq(); /*Simulação para Probabilidade de Bloqueio*/
 void SimOSNR(); /*Simulação para OSNR*/
 void SimNSlots();
+void SimAlfa();
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
@@ -76,6 +78,8 @@ int main() {
 	else if (MAux::escSim == Sim_TreinoPSR) {
 		PSR(3);
 		PSR::executar_PSR();
+	} else if (MAux::escSim == Sim_AlfaOtimizado) {
+		SimAlfa();
 	}
 
 	delete []MAux::Topology;
@@ -346,7 +350,7 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa <" << Sim_AlfaOtimizado << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
@@ -393,10 +397,13 @@ void Load() {
 	//Outras entradas para o simulador
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-	if (MAux::escSim != Sim_TreinoPSR) {
+	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaOtimizado)) {
 		cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
+	}
+	if (MAux::escSim == Sim_AlfaOtimizado) {
+		MAux::Alg_Routing = DJK_SPeFormas;
 	}
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
@@ -432,7 +439,7 @@ void Load() {
 		cin >> Npontos;
 		MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
 	}
-	if (MAux::escSim == Sim_TreinoPSR) {
+	if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaOtimizado) {
 		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
 		cout << "LaNet = ";
 		cin >> MAux::laNet; // La = taxa de chegada das conexoes;
@@ -542,7 +549,7 @@ void RequestCon(Event* evt) {
 		if(MAux::Alg_Routing == DJK_Acum)
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq);
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Def::Alfa);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == PSO)
@@ -642,6 +649,42 @@ void setReqEvent(Event* evt, TIME t) {
 	evt->conexao = NULL;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		evt->Esquema = _4QAM;
+	}
+}
+
+long double Simula_Rede() {
+	clearMemory();
+	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
+		while (!MAux::AllRoutes[i].empty()) {
+			delete MAux::AllRoutes[i].back();
+			MAux::AllRoutes[i].pop_back();
+		}
+		vector<Route*> ().swap(MAux::AllRoutes[i]);
+	}
+	delete[] MAux::AllRoutes;
+	MAux::AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
+	MAux::firstEvent = new Event;
+	setReqEvent(MAux::firstEvent, MAux::simTime);
+	while(Def::numReq < Def::getNumReqMax()) {
+		Event *curEvent = MAux::firstEvent;
+		MAux::firstEvent = MAux::firstEvent->nextEvent;
+		MAux::simTime = curEvent->time;
+		if(curEvent->type == Req) {
+			RequestCon(curEvent);
+		} else if(curEvent->type == Desc) {
+			RemoveCon(curEvent);
+		}
+	}
+	long double PbReq = Def::numReq_Bloq/Def::numReq;
+	return PbReq;
+}
+
+void SimAlfa() {
+	long double PbReq;
+	for (Def::Alfa = 0; Def::Alfa <= 1.0; Def::Alfa += 0.01) {
+		PbReq = Simula_Rede();
+		cout << "Alfa " << Def::Alfa << "\tPbReq " << PbReq << endl;
+		MAux::Resul << Def::Alfa << "\t" << PbReq << endl;
 	}
 }
 
