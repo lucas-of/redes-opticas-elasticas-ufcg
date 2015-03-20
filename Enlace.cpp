@@ -71,6 +71,7 @@ long double Enlace::get_ruido_preamplif() {
 }
 
 void Enlace::calcula_preamplif() {
+	calcula_perdas();
 	long double freq = Def::get_freq();
 
 	if (Def::get_Arquitetura() == Def::SS) {

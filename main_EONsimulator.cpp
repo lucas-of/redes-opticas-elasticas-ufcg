@@ -810,9 +810,8 @@ void Simulate() {
 
 void Simulate_dAMP() {
 	RWA::DijkstraSP();
-	Event *evt = new Event;
-	setReqEvent(evt,0);
-	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) << "dB" << endl;
+	Event *evt = new Event;	setReqEvent(evt,0);
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,100E9) << "dB" << endl;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
 		Def::setOSNR(osnr);
 		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
@@ -830,10 +829,9 @@ void Simulate_dAMP() {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
-			int NSlots = SlotsReq(Def::get_numPossiveisTaxas() - 1, evt);
+			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(99, evt));
 			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
-			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,Def::PossiveisTaxas[Def::get_numPossiveisTaxas() - 1]) ) {
+			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,100E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
 			} else {
 				MAux::ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
