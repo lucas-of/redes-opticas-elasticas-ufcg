@@ -13,7 +13,7 @@ class RWA {
 		static void DijkstraFormas(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando número de maneiras de alocar os slots no enlace e número de nós até o destino como o custo do caminho*/
 		static void DijkstraPSR(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando coeficientes do PSR*/
 		static void DijkstraSP(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
-		static void DijkstraSPeFormas(const int orN, const int deN, const int L, long double alfa); /*Implementa o algoritmo de roteamento Dijkstra com Shortest Path e Formas.*/
+        static void DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa); /*Implementa o algoritmo de roteamento Dijkstra com Shortest Path e Formas.*/
 		static void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit*/
 		static void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
 		static void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/

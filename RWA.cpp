@@ -419,7 +419,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, long double alfa) {
+void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	assert(alfa >= 0);
