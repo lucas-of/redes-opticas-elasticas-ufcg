@@ -14,15 +14,15 @@ long double Def::netOccupancy = 0.0;
 const int Def::numEsquemasDeModulacao = 3;
 long double Def::numHopsPerRoute = 0.0;
 long double Def::numReq = 0.0;
-long double Def::Alfa = 0;
+double Def::Alfa = 0;
 long double Def::numReq_Bloq = 0.0;
 long double Def::numReqMax = 0.0;
 long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
-const int Def::numPossiveisTaxas = 100;
-long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {0}; //em Gbps
+const int Def::numPossiveisTaxas = 5;
+long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
 long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
@@ -30,7 +30,7 @@ int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
 long double Def::Pref=1.0;
-long double Def::OSNRin=20.0;
+long double Def::OSNRin=30.0;
 long double Def::Lsss=5.0;
 long double Def::DistA=75.0;
 long double Def::freq = 193.4E12;
@@ -41,8 +41,8 @@ long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 void Def::setPossiveisTaxas() {
-	for (int i = 1; i <= Def::numPossiveisTaxas; i++)
-		Def::PossiveisTaxas[i-1] = i*1E9;
+	for (int i = 0; i < Def::numPossiveisTaxas; i++)
+		Def::PossiveisTaxas[i] = Def::PossiveisTaxas[i]*1E9;
 }
 
 void Def::setBslot(double Bslot) {

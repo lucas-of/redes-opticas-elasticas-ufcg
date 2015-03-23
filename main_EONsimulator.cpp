@@ -252,7 +252,7 @@ void createStructures() {
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
-				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
+				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),10*distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
 			}
@@ -528,6 +528,7 @@ void RequestCon(Event* evt) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
+	nTaxa = Def::get_numPossiveisTaxas() - 1;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		nTaxa = Def::get_numPossiveisTaxas() - 1;
 	}
@@ -542,6 +543,7 @@ void RequestCon(Event* evt) {
 	EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
 	for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
 		evt->Esquema = Esquemas[Esq];
+		evt->Esquema = _4QAM;
 		NslotsReq = SlotsReq(nTaxa, evt);
 
 		if(MAux::Alg_Routing == DJK_Formas)
@@ -681,7 +683,8 @@ long double Simula_Rede() {
 
 void SimAlfa() {
 	long double PbReq;
-	for (Def::Alfa = 0; Def::Alfa <= 1.0; Def::Alfa += 0.01) {
+	for (Def::Alfa = 0; Def::Alfa <= 1.01; Def::Alfa += 0.01) {
+		RefreshNoise();
 		PbReq = Simula_Rede();
 		cout << "Alfa " << Def::Alfa << "\tPbReq " << PbReq << endl;
 		MAux::Resul << Def::Alfa << "\t" << PbReq << endl;
@@ -854,7 +857,7 @@ void Simulate() {
 void Simulate_dAMP() {
 	RWA::DijkstraSP();
 	Event *evt = new Event;	setReqEvent(evt,0);
-	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,100E9) << "dB" << endl;
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,400E9) << "dB" << endl;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
 		Def::setOSNR(osnr);
 		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
@@ -874,7 +877,7 @@ void Simulate_dAMP() {
 			} //Encontra a maior entre as menores distancias
 			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(99, evt));
 			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
-			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,100E9) ) {
+			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
 			} else {
 				MAux::ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;

@@ -47,7 +47,7 @@ class Def {
 		static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
-		static long double Alfa;
+		static double Alfa;
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
 		static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
