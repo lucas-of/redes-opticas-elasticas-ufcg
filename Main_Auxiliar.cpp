@@ -2,7 +2,7 @@
 
 ofstream MAux::Resul("Result.txt");
 ofstream MAux::Metrica("Metrica.txt");
-ofstream MAux::ResulOSNR("ResulOSNR.txt");
+ofstream MAux::ResulOSNR("ResultOSNR.txt");
 ofstream MAux::Resul2("Result2.txt");
 ofstream MAux::ResulProbBloqTaxa("ProbBloqTaxa.txt");
 ofstream MAux::ResulProbAceitTaxa("ProbAceitTaxa.txt");
@@ -13,6 +13,7 @@ ofstream MAux::ResulFFOconv_FFOext("ResultFFOconv_FFOext.txt");
 ofstream MAux::ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
 ofstream MAux::ResultDAmpMaiorQueLimiar("DAmpMaiorQueLimiar.txt");
 ofstream MAux::ResultDAmpMenorQueLimiar("DAmpMenorQueLimiar.txt");
+ofstream MAux::ResultEsquemas("ResultEsquemas.txt");
 ifstream MAux::Topol("TopologyNFS.txt");
 ifstream MAux::Topol2("TopologyPBell.txt");
 ifstream MAux::Topol3("TopologyRed8.txt");

@@ -47,7 +47,7 @@ class Def {
 		static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
-        static float Alfa;
+		static float Alfa;
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
 		static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
@@ -62,7 +62,9 @@ class Def {
 		static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
 		static long double numReq_Taxa[];
 		static long double numReqBloq_Taxa[];
+		static long double numReqAceit_Esquema[];
 		static long double tempoTotal_Taxa[];
+		static long double taxaTotal_Esquema[];
 
 		static void clearGrauNo();
 		static void setPossiveisTaxas();

@@ -164,6 +164,11 @@ void clearMemory() {
 		Def::tempoTotal_Taxa[i] = 0;
 	}
 
+	for (int i = 0; i<Def::numEsquemasDeModulacao; i++) {
+		Def::numReqAceit_Esquema[i] = 0;
+		Def::taxaTotal_Esquema[i] = 0;
+	}
+
 	//Checar se limpeza foi realizada corretamente
 	for(int orN = 0; orN < Def::getNnodes(); orN++)
 		for(int deN = 0; deN < Def::getNnodes(); deN++)
@@ -252,7 +257,7 @@ void createStructures() {
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
-                MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
+				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),10*distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
 			}
@@ -533,7 +538,7 @@ void RequestCon(Event* evt) {
 	}
 
    /*if (MAux::escSim == Sim_AlfaOtimizado)
-        nTaxa = 4;*/
+		nTaxa = 4;*/
 
 	//Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
 	Route *route;
@@ -552,7 +557,7 @@ void RequestCon(Event* evt) {
 		if(MAux::Alg_Routing == DJK_Acum)
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Def::Alfa);
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.1*Def::Alfa);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == PSO)
@@ -594,6 +599,8 @@ void RequestCon(Event* evt) {
 					DefineNextEventOfCon(evt);
 					ScheduleEvent(evt);
 					Def::tempoTotal_Taxa[nTaxa] += Tempo;
+					Def::numReqAceit_Esquema[Esq] += 1;
+					Def::taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
 					break;
 				} else { //conexao bloqueada por OSNR
 					NslotsUsed = 0;
@@ -679,18 +686,18 @@ long double Simula_Rede() {
 		}
 	}
 	long double PbReq = Def::numReq_Bloq/Def::numReq;
-    for (int i = 0; i < Def::get_numPossiveisTaxas(); i++)
-        cout << i << " " << Def::numReqBloq_Taxa[i] << endl;
+	for (int i = 0; i < Def::get_numPossiveisTaxas(); i++)
+		cout << i << " " << Def::numReqBloq_Taxa[i] << endl;
 	return PbReq;
 }
 
 void SimAlfa() {
 	long double PbReq;
-    for (Def::Alfa = 0; Def::Alfa <= 1.01; Def::Alfa += 0.1) {
-        RefreshNoise();
+	for (Def::Alfa = 0; Def::Alfa <= 10; Def::Alfa += 1) {
+		RefreshNoise();
 		PbReq = Simula_Rede();
-		cout << "Alfa " << Def::Alfa << "\tPbReq " << PbReq << endl;
-		MAux::Resul << Def::Alfa << "\t" << PbReq << endl;
+		cout << "Alfa " << 0.1*Def::Alfa << "\tPbReq " << PbReq << endl;
+		MAux::Resul << 0.1*Def::Alfa << "\t" << PbReq << endl;
 	}
 }
 
@@ -854,6 +861,7 @@ void Simulate() {
 		ProbBloqueioTaxa();
 		ProbAceitacaoTaxa();
 		calcTaxaMedia();
+		AceitacaoEsquema();
 	}
 }
 
@@ -878,7 +886,7 @@ void Simulate_dAMP() {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-            OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
+			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
 			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
 			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;

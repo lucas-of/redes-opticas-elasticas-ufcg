@@ -31,3 +31,9 @@ void calcTaxaMedia() {
 	cout << "Taxa Media de transmissão é " << TaxaMedia/pow(10,9) << " Gbps" << endl;
 	MAux::ResulTaxaMedia << MAux::laNet << "\t" << TaxaMedia << endl;
 }
+
+void AceitacaoEsquema() {
+	for (int i = 0; i < Def::numEsquemasDeModulacao; i++ ) {
+		MAux::ResultEsquemas << i << "\t" << Def::numReqAceit_Esquema[i] << "\t" << Def::taxaTotal_Esquema[i] << endl;
+	}
+}

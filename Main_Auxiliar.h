@@ -27,6 +27,7 @@ class MAux {
 		static ofstream ResulProbBloqTaxa;
 		static ofstream ResulProbAceitTaxa;
 		static ofstream ResulTaxaMedia;
+		static ofstream ResultEsquemas;
 		static ofstream ResulFFOmet_FFOext;
 		static ofstream ResulFFOext_FFOmet;
 		static ofstream ResulFFOconv_FFOext;
