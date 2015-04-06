@@ -65,6 +65,7 @@ class Def {
 		static long double numReqAceit_Esquema[];
 		static long double tempoTotal_Taxa[];
 		static long double taxaTotal_Esquema[];
+		static long double taxaTotal;
 
 		static void clearGrauNo();
 		static void setPossiveisTaxas();

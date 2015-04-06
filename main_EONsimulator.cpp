@@ -138,7 +138,7 @@ void clearMemory() {
 	Conexao *con;
 	Event *evtPtr;
 	const Route* route;
-	Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute = Def::netOccupancy = MAux::simTime = Def::numReq_BloqPorOSNR = Def::numSlots_BloqPorOSNR = 0.0;
+	Def::numReq = Def::numReq_Bloq = Def::numSlots_Req = Def::numSlots_Bloq = Def::numHopsPerRoute = Def::netOccupancy = MAux::simTime = Def::numReq_BloqPorOSNR = Def::numSlots_BloqPorOSNR = Def::taxaTotal = 0.0;
 	while(MAux::firstEvent != NULL) {
 		if(MAux::firstEvent->conexao != NULL) {
 			//Há uma conexao
@@ -257,7 +257,7 @@ void createStructures() {
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
-				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),10*distancia_temp));
+				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
 			}
@@ -536,6 +536,7 @@ void RequestCon(Event* evt) {
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
 		nTaxa = Def::get_numPossiveisTaxas() - 1;
 	}
+	Def::taxaTotal += Def::PossiveisTaxas[nTaxa];
 
    /*if (MAux::escSim == Sim_AlfaOtimizado)
 		nTaxa = 4;*/

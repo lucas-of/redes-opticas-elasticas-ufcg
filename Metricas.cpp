@@ -34,6 +34,6 @@ void calcTaxaMedia() {
 
 void AceitacaoEsquema() {
 	for (int i = 0; i < Def::numEsquemasDeModulacao; i++ ) {
-		MAux::ResultEsquemas << i << "\t" << Def::numReqAceit_Esquema[i] << "\t" << Def::taxaTotal_Esquema[i] << endl;
+		MAux::ResultEsquemas << i << "\t" << Def::numReqAceit_Esquema[i]/Def::numReq << "\t" << Def::taxaTotal_Esquema[i]/Def::taxaTotal << endl;
 	}
 }
