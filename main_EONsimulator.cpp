@@ -63,7 +63,7 @@ int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
 	createStructures();
-	if (MAux::Alg_Routing == DJK)
+	if (MAux::Alg_Routing == MH)
 		RWA::Dijkstra();
 	else if (MAux::Alg_Routing == SP)
 		RWA::DijkstraSP();
@@ -403,13 +403,15 @@ void Load() {
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaOtimizado)) {
-		cout << "\t" << DJK<<" - DJK \n\t"<<DJK_Formas<<" - DJK_Formas \n\t"<< DJK_Acum<<" - DijkstraAcumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - DJK Shortest Path e Formas\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n";
+		cout << "\t" << MH<<" - Minimum Hops \n\t"<<DJK_Formas<<" - DJK - Formas de Alocação\n\t"<< DJK_Acum<<" - Dijkstra Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << CSP << " - CSP\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
 	}
 	if (MAux::escSim == Sim_AlfaOtimizado) {
 		MAux::Alg_Routing = DJK_SPeFormas;
 	}
+	if (MAux::Alg_Routing == OSNRR)
+		MAux::AvaliaOsnr = SIM;
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
 	cout << "Entre com o Algoritmo de Alocacao: ";
@@ -559,12 +561,14 @@ void RequestCon(Event* evt) {
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.1*Def::Alfa);
-		if(MAux::Alg_Routing == LOR_Modificado)
+		if(MAux::Alg_Routing == CSP)
 			RWA::LORModificado(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == PSO)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
+		if(MAux::Alg_Routing == OSNRR)
+			RWA::OSNRR(orN, deN, NslotsReq);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN

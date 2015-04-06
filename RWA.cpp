@@ -734,3 +734,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 	delete []PathRev;
 	delete []DispLink;
 }
+
+void RWA::OSNRR(const int orN, const int deN, const int L) {
+
+}
