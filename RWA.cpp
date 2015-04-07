@@ -741,7 +741,7 @@ void RWA::OSNRR(const int orN, const int deN, const int L) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
-	long double min;
+	long double max;
 	bool *DispLink = new bool[Def::getSE()];
 	long double *CustoVertice = new long double[Def::getNnodes()];
 	int *Precedente = new int[Def::getNnodes()];
@@ -751,19 +751,19 @@ void RWA::OSNRR(const int orN, const int deN, const int L) {
 	//Busca para todos os pares de no a rota mais curta:
 	for(i = 0; i < Def::getNnodes(); i++) {
 		if(i != orN)
-			CustoVertice[i] = Def::MAX_DOUBLE;
-		else
 			CustoVertice[i] = 0.0;
+		else
+			CustoVertice[i] = Def::MAX_DOUBLE;
 		Precedente[i] = -1;
 		Status[i] = 0;
 	}
 	VA = Def::getNnodes();
 	while(VA > 0) {
 		//Procura o vertice de menor custo
-		min = Def::MAX_DOUBLE;
+		max = 0;
 		for(i = 0; i < Def::getNnodes(); i++)
-			if((Status[i] == 0)&&(CustoVertice[i] < min)) {
-				min = CustoVertice[i];
+			if((Status[i] == 0)&&(CustoVertice[i] > max)) {
+				max = CustoVertice[i];
 				k = i;
 			}
 		Status[k] = 1; //k e o vertice de menor custo;
@@ -791,10 +791,9 @@ void RWA::OSNRR(const int orN, const int deN, const int L) {
 
 				Route *dummyRoute = new Route(dummyNodes);
 				long double OSNRKMaisLink = AvaliarOSNR(dummyRoute,NULL);
-				long double CustoVerticeKMaisLink = Def::get_Pin()/General::dB(OSNRKMaisLink);
 
-				if(CustoVerticeKMaisLink < CustoVertice[j]) {
-					CustoVertice[j] = CustoVerticeKMaisLink;
+				if(OSNRKMaisLink > CustoVertice[j]) {
+					CustoVertice[j] = OSNRKMaisLink;
 					Precedente[j] = k;
 				}
 				delete[] PathInvertido;
