@@ -2,6 +2,8 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 
+long double AvaliarOSNR(const Route *Rota, int);
+
 bool RWA::CheckSlotAvailability(const Route* route, const int s) {
 	assert(s >=0 && s < Def::getSE());
 	int L_or, L_de;
@@ -736,5 +738,95 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 }
 
 void RWA::OSNRR(const int orN, const int deN, const int L) {
+	//L e a largura de banda (em numero de slots) da requisicao
+	assert(orN != deN);
+	int VA, i, j, k=0, path, h, hops;
+	long double min;
+	bool *DispLink = new bool[Def::getSE()];
+	long double *CustoVertice = new long double[Def::getNnodes()];
+	int *Precedente = new int[Def::getNnodes()];
+	int *PathRev = new int[Def::getNnodes()];
+	bool *Status = new bool[Def::getNnodes()];
+	vector <Node*> dummyNodes;
+	//Busca para todos os pares de no a rota mais curta:
+	for(i = 0; i < Def::getNnodes(); i++) {
+		if(i != orN)
+			CustoVertice[i] = Def::MAX_DOUBLE;
+		else
+			CustoVertice[i] = 0.0;
+		Precedente[i] = -1;
+		Status[i] = 0;
+	}
+	VA = Def::getNnodes();
+	while(VA > 0) {
+		//Procura o vertice de menor custo
+		min = Def::MAX_DOUBLE;
+		for(i = 0; i < Def::getNnodes(); i++)
+			if((Status[i] == 0)&&(CustoVertice[i] < min)) {
+				min = CustoVertice[i];
+				k = i;
+			}
+		Status[k] = 1; //k e o vertice de menor custo;
+		VA = VA-1;
+		//Verifica se precisa atualizar ou nao os vizinhos de k
+		for(j = 0; j < Def::getNnodes(); j++)
+			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
+				//O no j e nao marcado e vizinho do no k
+				//Calcula a OSNR ate o vertice k + o custo do enlace
+				int *PathInvertido = new int[Def::Nnodes];
+				int t = k;
+				int hop = 1;
 
+				vector<Node*> ().swap(dummyNodes);
+				dummyNodes.clear();
+				PathInvertido[0] = j;
+				PathInvertido[1] = k;
+				while(t != orN) {
+					hop = hop+1;
+					PathInvertido[hop] = Precedente[t];
+					t = Precedente[t];
+				}
+				for(int t = 0; t <= hop; t++)
+					dummyNodes.push_back(&MAux::Rede.at(PathInvertido[hop-t]));
+
+				Route *dummyRoute = new Route(dummyNodes);
+				long double OSNRKMaisLink = AvaliarOSNR(dummyRoute,NULL);
+				long double CustoVerticeKMaisLink = Def::get_Pin()/General::dB(OSNRKMaisLink);
+
+				if(CustoVerticeKMaisLink < CustoVertice[j]) {
+					CustoVertice[j] = CustoVerticeKMaisLink;
+					Precedente[j] = k;
+				}
+				delete[] PathInvertido;
+				delete dummyRoute;
+			}
+	}
+
+	//Formar a rota:
+	path = orN*Def::getNnodes()+deN;
+	while (!MAux::AllRoutes[path].empty()) {
+		delete MAux::AllRoutes[path].back();
+		MAux::AllRoutes[path].pop_back();
+	}
+	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	PathRev[0] = deN;
+	hops = 0;
+	j = deN;
+	while(j != orN) {
+		hops = hops+1;
+		PathRev[hops] = Precedente[j];
+		j = Precedente[j];
+	}
+	vector<Node*> r;
+	r.clear();
+	for(h = 0; h <= hops; h++)
+		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
+	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
+	MAux::AllRoutes[path].push_back(new Route(r));
+
+	delete []CustoVertice;
+	delete []Precedente;
+	delete []Status;
+	delete []PathRev;
+	delete []DispLink;
 }
