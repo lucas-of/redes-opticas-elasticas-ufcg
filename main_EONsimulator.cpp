@@ -242,6 +242,17 @@ void createStructures() {
 		MAux::Rede.push_back(Node(i));
 	}
 
+	double multiplicador;
+	switch(MAux::escTop) {
+		case PacificBell: MAux::Topol2 >> multiplicador; break;
+		case NSFNet: MAux::Topol>>multiplicador; break;
+		case NFSNetMod: MAux::Topol5>>multiplicador; break;
+		case PontoaPonto8: MAux::Topol3>>multiplicador; break;
+		case PontoaPonto4: MAux::Topol4>>multiplicador; break;
+		case Top1: MAux::Topol6>>multiplicador; break;
+		case Top2: MAux::Topol7>>multiplicador; break;
+	}
+
 	//Implemente os Enlaces
 	MAux::Caminho = new vector<Enlace>[Def::getNnodes()];
 	for (int i=0; i < Def::getNnodes(); i++){
@@ -257,7 +268,7 @@ void createStructures() {
 				case Top2: MAux::Topol7>>distancia_temp; break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
-				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
+				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),multiplicador*distancia_temp));
 			} else {
 				MAux::Caminho[i].push_back(Enlace(NULL,NULL,Def::MAX_INT));
 			}
