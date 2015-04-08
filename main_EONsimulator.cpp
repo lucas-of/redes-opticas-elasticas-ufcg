@@ -733,6 +733,8 @@ void SimNSlots() {
 		delete []MAux::Topology_S;
 		Def::setSE(Slots);
 		MAux::Topology_S = new bool[Def::getSE()*Def::Nnodes*Def::Nnodes]; //matriz de ocupação de slots de cada enlace
+        for (int i = 0; i < Def::getSE()*Def::Nnodes*Def::Nnodes; i++)
+            MAux::Topology_S[i]=false;
 		Simulate();
 	}
 }
