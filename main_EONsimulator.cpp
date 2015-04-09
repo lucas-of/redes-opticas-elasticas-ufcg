@@ -36,6 +36,7 @@ void CompressRight(Conexao *con); /*Comprime conexão, removendo o slot da direi
 void createStructures(); /*Cria estrutura topológica da rede, e carrega os dados de Topology.txt*/
 void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
 void ExpandCon(Event*); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
+void EncontraMultiplicador(); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
 void GrauDosNodes(void); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
@@ -71,9 +72,10 @@ int main() {
 		SimPbReq();
 	else if (MAux::escSim == Sim_OSNR)
 		SimOSNR();
-	else if (MAux::escSim == Sim_DAmp)
+	else if (MAux::escSim == Sim_DAmp) {
 		Simulate_dAMP();
-	else if (MAux::escSim == Sim_NSlots)
+		//EncontraMultiplicador();
+	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots();
 	else if (MAux::escSim == Sim_TreinoPSR) {
 		PSR(3);
@@ -748,6 +750,8 @@ void SimNSlots() {
 		delete []MAux::Topology_S;
 		Def::setSE(Slots);
 		MAux::Topology_S = new bool[Def::getSE()*Def::Nnodes*Def::Nnodes]; //matriz de ocupação de slots de cada enlace
+		for (int i = 0; i < Def::getSE()*Def::Nnodes*Def::Nnodes; i++)
+			MAux::Topology_S[i] = false;
 		Simulate();
 	}
 }
@@ -870,7 +874,7 @@ void Simulate() {
 
 	else if (MAux::escSim == Sim_NSlots) {
 		cout << "NSlots = " << Def::getSE() << "\t PbReq Fis = " << Def::numReq_BloqPorOSNR/Def::numReq << "\t PbReq Rede = " << (1.0 - Def::numReq_BloqPorOSNR/Def::numReq_Bloq)*Def::numReq_Bloq/Def::numReq << endl;
-		MAux::Resul << Def::getSE() << "\t" << Def::numReq_BloqPorOSNR/Def::numReq << "\t" << (1.0 - Def::numReq_BloqPorOSNR/Def::numReq_Bloq)*Def::numReq_Bloq/Def::numReq << endl;
+		MAux::Resul << Def::getSE() << "\t" << Def::numReq_Bloq/Def::numReq << "\t" << Def::numReq_BloqPorOSNR/Def::numReq << "\t" << (1.0 - Def::numReq_BloqPorOSNR/Def::numReq_Bloq)*Def::numReq_Bloq/Def::numReq << endl;
 	}
 
 	{
@@ -910,6 +914,47 @@ void Simulate_dAMP() {
 				MAux::ResultDAmpMaiorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
 			}
 		}
+	}
+	delete evt;
+}
+
+void EncontraMultiplicador() {
+	RWA::DijkstraSP();
+	Event *evt = new Event;	setReqEvent(evt,0);
+	Def::set_DistaA(80); //80km
+	Def::setOSNR(30); //30dB
+
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,400E9) << "dB" << endl;
+
+	int orN, deN;
+	long double Max = MAux::MinimasDistancias[0];
+	for (int i = 0; i < Def::getNnodes(); i++) {
+		for (int j = 0; j < Def::getNnodes(); j++) {
+			if (Max < MAux::MinimasDistancias[i*Def::Nnodes + j]) {
+				Max = MAux::MinimasDistancias[i*Def::Nnodes + j];
+				orN = i;
+				deN = j;
+			}
+		}
+	} //Encontra a maior entre as menores distancias
+
+	for (long double multiplicador = 1; multiplicador <= 30; multiplicador += 1) {
+
+		if (multiplicador != 1)
+			for (int i = 0; i < MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNhops(); i++) {
+				int noOrig = MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i);
+				int noDest = MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i+1);
+				long double oldDist = MAux::Caminho[noOrig].at(noDest).get_comprimento();
+				long double newDist = oldDist * multiplicador / (multiplicador - 1);
+				MAux::Caminho[noOrig].at(noDest).set_distancia(newDist);
+				MAux::Caminho[noDest].at(noOrig).set_distancia(newDist);
+			}
+
+		RefreshNoise();
+		setReqEvent(evt,0);
+		long double OSNRout;
+		OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
+		cout << "Multiplicador = " << multiplicador << ", OSNR = " << OSNRout << "dB" << endl; //primeira rota
 	}
 	delete evt;
 }
