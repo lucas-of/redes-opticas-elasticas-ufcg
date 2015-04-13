@@ -51,7 +51,7 @@ long double Simula_Rede();
 void SimPbReq(); /*Simulação para Probabilidade de Bloqueio*/
 void SimOSNR(); /*Simulação para OSNR*/
 void SimNSlots();
-void SimAlfa();
+void SimAlfaBeta();
 void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
@@ -80,8 +80,8 @@ int main() {
     else if (MAux::escSim == Sim_TreinoPSR) {
         PSR(3);
         PSR::executar_PSR();
-    } else if (MAux::escSim == Sim_AlfaOtimizado) {
-        SimAlfa();
+    } else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
+        SimAlfaBeta();
     }
 
     delete []MAux::Topology;
@@ -368,9 +368,16 @@ void Load() {
     int Npontos, aux;
     long double op;
 
-    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa <" << Sim_AlfaOtimizado << ">." << endl;
+    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">." << endl;
     cin >> aux;
     MAux::escSim = (Simulacao)aux;
+
+    if (MAux::escSim == Sim_AlfaBetaOtimizado) {
+        cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
+        cout << OtimizarAlfa << " - Distancia\n\t" << OtimizarBeta << " - Ruido\n";
+        cin >> aux;
+        MAux::escOtim = (SimOtimizacao)aux;
+    }
 
     cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
     cin>>aux;
@@ -415,13 +422,16 @@ void Load() {
     //Outras entradas para o simulador
     Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-    if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaOtimizado)) {
-        cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
+    if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
+        cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
         cout << "Entre com o Algoritmo de Roteamento: ";
         cin >> MAux::Alg_Routing;
     }
-    if (MAux::escSim == Sim_AlfaOtimizado) {
-        MAux::Alg_Routing = DJK_SPeFormas;
+    if (MAux::escSim == Sim_AlfaBetaOtimizado) {
+        if (MAux::escOtim == OtimizarAlfa)
+            MAux::Alg_Routing = DJK_SPeFormas;
+        else if (MAux::escOtim == OtimizarBeta)
+            MAux::Alg_Routing = DJK_RuidoEFormas;
     }
     if (MAux::Alg_Routing == OSNRR)
         MAux::AvaliaOsnr = SIM;
@@ -459,7 +469,7 @@ void Load() {
         cin >> Npontos;
         MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
     }
-    if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaOtimizado) {
+    if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado) {
         cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
         cout << "LaNet = ";
         cin >> MAux::laNet; // La = taxa de chegada das conexoes;
@@ -582,6 +592,8 @@ void RequestCon(Event* evt) {
             RWA::DijkstraPSR(orN, deN, NslotsReq);
         if(MAux::Alg_Routing == OSNRR)
             RWA::OSNRR(orN, deN, NslotsReq);
+        if(MAux::Alg_Routing == DJK_RuidoEFormas)
+            RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.1*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa]);
 
         for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
             route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -709,14 +721,22 @@ long double Simula_Rede() {
     return PbReq;
 }
 
-void SimAlfa() {
+void SimAlfaBeta() {
     long double PbReq;
-    for (Def::Alfa = 0; Def::Alfa <= 10; Def::Alfa += 1) {
-        RefreshNoise();
-        PbReq = Simula_Rede();
-        cout << "Alfa " << 0.1*Def::Alfa << "\tPbReq " << PbReq << endl;
-        MAux::Resul << 0.1*Def::Alfa << "\t" << PbReq << endl;
-    }
+    if (MAux::escOtim == OtimizarAlfa)
+        for (Def::Alfa = 0; Def::Alfa <= 10; Def::Alfa += 1) {
+            RefreshNoise();
+            PbReq = Simula_Rede();
+            cout << "Alfa " << 0.1*Def::Alfa << "\tPbReq " << PbReq << endl;
+            MAux::Resul << 0.1*Def::Alfa << "\t" << PbReq << endl;
+        }
+    else if (MAux::escOtim == OtimizarBeta)
+        for (Def::Beta = 0; Def::Beta <= 10; Def::Beta += 1) {
+            RefreshNoise();
+            PbReq = Simula_Rede();
+            cout << "Beta " << 0.1*Def::Beta << "\tPbReq " << PbReq << endl;
+            MAux::Resul << 0.1*Def::Beta << "\t" << PbReq << endl;
+        }
 }
 
 void SimPbReq() {

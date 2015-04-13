@@ -15,6 +15,7 @@ const int Def::numEsquemasDeModulacao = 3;
 long double Def::numHopsPerRoute = 0.0;
 long double Def::numReq = 0.0;
 float Def::Alfa = 1;
+float Def::Beta = 1;
 long double Def::numReq_Bloq = 0.0;
 long double Def::numReqMax = 0.0;
 long double Def::numSlots_Bloq = 0.0;

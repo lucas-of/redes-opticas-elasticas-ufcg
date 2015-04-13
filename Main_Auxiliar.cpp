@@ -51,3 +51,4 @@ vector<Enlace> *MAux::Caminho;
 Respostas MAux::AvaliaOsnr;
 Topologia MAux::escTop;
 Simulacao MAux::escSim;
+SimOtimizacao MAux::escOtim;
