@@ -716,8 +716,6 @@ long double Simula_Rede() {
         }
     }
     long double PbReq = Def::numReq_Bloq/Def::numReq;
-    for (int i = 0; i < Def::get_numPossiveisTaxas(); i++)
-        cout << i << " " << Def::numReqBloq_Taxa[i] << endl;
     return PbReq;
 }
 
