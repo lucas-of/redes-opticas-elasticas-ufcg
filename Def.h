@@ -27,7 +27,8 @@ class Def {
     private:
         static vector<int> GrauNo; //O grau de cada no
         static vector<double> LaNet; //La é o tráfego por cada slot
-        static long double numReqBloqMin; //é o número máximo de requisições bloqueadas
+        static long double numReqBloqMin; //é o número minimo de requisições bloqueadas
+        static long double numReqMax; //numero maximo de requisições
         static int SE; //S é o número de slots por Enlace
         static int SR; //SR é o número máximo de slots requisitados
 
@@ -78,6 +79,7 @@ class Def {
         static double getlimiarOSNR(EsquemaDeModulacao, long double);
         static int getNnodes();
         static long double getNumReqBloqMin();
+        static long double getNumReqMax();
         static void setNnodes(int);
         static int getSE();
         static int getSR();

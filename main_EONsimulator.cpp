@@ -705,7 +705,7 @@ long double Simula_Rede() {
     MAux::AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
     MAux::firstEvent = new Event;
     setReqEvent(MAux::firstEvent, MAux::simTime);
-    while(Def::numReq_Bloq < Def::getNumReqBloqMin()) {
+    while((Def::numReq_Bloq < Def::getNumReqBloqMin()) && (Def::numReq < Def::getNumReqMax())) {
         Event *curEvent = MAux::firstEvent;
         MAux::firstEvent = MAux::firstEvent->nextEvent;
         MAux::simTime = curEvent->time;
@@ -858,7 +858,7 @@ void Simulate() {
     //Cria o primeiro evento da rede como uma requisicao:
     MAux::firstEvent = new Event;
     setReqEvent(MAux::firstEvent, MAux::simTime);
-    while(Def::numReq_Bloq < Def::getNumReqBloqMin()) {
+    while((Def::numReq_Bloq < Def::getNumReqBloqMin()) && (Def::numReq < Def::getNumReqMax())) {
         Event *curEvent = MAux::firstEvent;
         MAux::firstEvent = MAux::firstEvent->nextEvent;
         MAux::simTime = curEvent->time;

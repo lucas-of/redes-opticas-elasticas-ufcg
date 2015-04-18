@@ -22,6 +22,7 @@ long double Def::numSlots_Bloq = 0.0;
 long double Def::numSlots_BloqPorOSNR = 0.0;
 long double Def::numReq_BloqPorOSNR = 0.0;
 long double Def::numSlots_Req = 0.0;
+long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
 const int Def::numPossiveisTaxas = 5;
 long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
 long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
@@ -92,6 +93,10 @@ long double Def::get_Bref() {
 
 int Def::getSE() {
     return SE;
+}
+
+long double Def::getNumReqMax() {
+    return numReqMax;
 }
 
 long double Def::get_snrb(EsquemaDeModulacao Esq) {
