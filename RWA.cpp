@@ -549,7 +549,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 				for(int s = 0; s < Def::getSE(); s++)
 					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
-				RuidoLimiar = General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao)) * Def::get_Pin();
+				RuidoLimiar = Def::get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
 				custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace(NULL)/RuidoLimiar;
 				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
 
