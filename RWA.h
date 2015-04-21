@@ -19,9 +19,13 @@ class RWA {
 		static void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
 		static void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/
 		static void LORModificado(const int orN, const int deN, const int L);
-		static void OSNRR(const int orN, const int deN); /*Implementa o algoritmo de roteamento OSNR-R*/
+		static void OSNRR(); /*Implementa o algoritmo de roteamento OSNR-R*/
 		static void Random(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Dentre os slots que podem atender a solicitação, sorteia um*/
 		static int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
+	private:
+		static void ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR);
+		static bool VerificarInclusao(Node *No, std::vector<Node*> *Visitados);
+		static long double *BestOSNR;
 };
 
 #endif // RWA_H

@@ -1,6 +1,7 @@
 #include "RWA.h"
 #include "PSR.h"
 #include "Main_Auxiliar.h"
+#include <algorithm>
 
 long double AvaliarOSNR(const Route *Rota, int);
 
@@ -819,88 +820,60 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::OSNRR(const int orN, const int deN) {
+void RWA::OSNRR() {
 	//L e a largura de banda (em numero de slots) da requisicao
-	assert(orN != deN);
-	int VA, i, j, k=0, path, h, hops;
-	long double min;
-	bool *DispLink = new bool[Def::getSE()];
-	long double *CustoVertice = new long double[Def::getNnodes()];
-	int *Precedente = new int[Def::getNnodes()];
-	int *PathRev = new int[Def::getNnodes()];
-	bool *Status = new bool[Def::getNnodes()];
-	vector <Node*> dummyNodes;
-	//Busca para todos os pares de no a rota mais curta:
-	for(i = 0; i < Def::getNnodes(); i++) {
-		if(i != orN)
-			CustoVertice[i] = Def::MAX_DOUBLE; //ruido unitario
-		else
-			CustoVertice[i] = Def::get_Pin()/General::dB(30);
-		Precedente[i] = -1;
-		Status[i] = 0;
+	int orN, deN, path, hops, j, h;
+	long double *BestOSNR = new long double[Def::Nnodes*Def::Nnodes];
+	static vector<Node*> Visitados;
+
+	for (orN = 0; orN < Def::Nnodes; orN++) {
+		for (deN = orN; deN < Def::Nnodes; deN++) {
+			if (orN == deN) continue;
+			BestOSNR[Def::Nnodes*orN + deN] = - Def::MAX_DOUBLE;
+			BestOSNR[Def::Nnodes*deN + orN] = - Def::MAX_DOUBLE;
+
+			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR);
+		}
 	}
-	VA = Def::getNnodes();
-	while(VA > 0) {
-		//Procura o vertice de menor custo
-		min = Def::MAX_DOUBLE;
-		for(i = 0; i < Def::getNnodes(); i++)
-			if((Status[i] == 0)&&(CustoVertice[i] < min)) {
-				min = CustoVertice[i];
-				k = i;
-			}
-		Status[k] = 1; //k e o vertice de menor custo;
-		VA = VA-1;
-		long double newOSNRin = General::lin( Def::get_Pin()/CustoVertice[k] );
-		Def::setOSNR( newOSNRin );
+}
 
-		//Verifica se precisa atualizar ou nao os vizinhos de k
-		for(j = 0; j < Def::getNnodes(); j++) {
-			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
-				//O no j e nao marcado e vizinho do no k
+void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR) {
+	Visitados->push_back(Current);
 
-				vector<Node*> ().swap(dummyNodes);
-				dummyNodes.clear();
-				dummyNodes.push_back(&MAux::Rede.at(k));
-				dummyNodes.push_back(&MAux::Rede.at(j));
+	if (Current->whoami == deN->whoami) { //Encontrou uma rota
+		Route *R = new Route(*Visitados);
+		long double OSNRRota = AvaliarOSNR(R, NULL);
+		int path = orN->whoami*Def::getNnodes()+deN->whoami;
+		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
+			BestOSNR[path] = OSNRRota;
+			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			MAux::AllRoutes[path].push_back(new Route(*Visitados));
+			//cout << "Encontrou rota entre " << orN->whoami << " e " << deN->whoami << " com OSNR " << OSNRRota << endl;
+		}
+		delete R;
 
-				Route *dummyRoute = new Route(dummyNodes);
-				long double Ruido = Def::get_Pin()/General::dB(AvaliarOSNR(dummyRoute,NULL));
-
-				if(Ruido < CustoVertice[j]) {
-					CustoVertice[j] = Ruido;
-					Precedente[j] = k;
-				}
-
-				delete dummyRoute;
-			}
+		//configura rota deN -> orN
+		if (OSNRRota > BestOSNR[path]) {
+			reverse(Visitados->begin(), Visitados->end());
+			Route *R = new Route(*Visitados);
+			path = deN->whoami*Def::getNnodes()+orN->whoami;
+			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			MAux::AllRoutes[path].push_back(new Route(*Visitados));
+			delete R;
 		}
 	}
 
-	//Formar a rota:
-	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	for (int i = 0; i < Def::Nnodes; i++) {
+		if ((MAux::Topology[(Current->whoami)*Def::Nnodes + i] == 1) && !(VerificarInclusao(&MAux::Rede.at(i), Visitados)))
+			ProcurarRota(orN, &MAux::Rede.at(i), deN, Visitados, BestOSNR);
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
-	PathRev[0] = deN;
-	hops = 0;
-	j = deN;
-	while(j != orN) {
-		hops = hops+1;
-		PathRev[hops] = Precedente[j];
-		j = Precedente[j];
-	}
-	vector<Node*> r;
-	r.clear();
-	for(h = 0; h <= hops; h++)
-		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
-	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
 
-	delete []CustoVertice;
-	delete []Precedente;
-	delete []Status;
-	delete []PathRev;
-	delete []DispLink;
+	Visitados->pop_back(); //Remover no da Lista
+}
+
+bool RWA::VerificarInclusao(Node *No, std::vector<Node*> *Visitados) {
+	for (int i = 0; i < Visitados->size(); i++) {
+		if (No->whoami == Visitados->at(i)->whoami) return true;
+	}
+	return false;
 }
