@@ -586,7 +586,7 @@ void RequestCon(Event* evt) {
 		if(MAux::Alg_Routing == CSP_Acum)
 			RWA::DijkstraAcum(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.1*Def::Alfa);
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Def::Alfa);
 		if(MAux::Alg_Routing == LOR_Modificado)
 			RWA::LORModificado(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == PSO)
@@ -594,7 +594,7 @@ void RequestCon(Event* evt) {
 		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.1*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa]);
+			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa]);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -723,18 +723,18 @@ long double Simula_Rede() {
 void SimAlfaBeta() {
 	long double PbReq;
 	if (MAux::escOtim == OtimizarAlfa)
-		for (Def::Alfa = 0; Def::Alfa <= 10; Def::Alfa += 1) {
+		for (Def::Alfa = 0; Def::Alfa <= 100; Def::Alfa += 2) {
 			RefreshNoise();
 			PbReq = Simula_Rede();
-			cout << "Alfa " << 0.1*Def::Alfa << "\tPbReq " << PbReq << endl;
-			MAux::Resul << 0.1*Def::Alfa << "\t" << PbReq << endl;
+			cout << "Alfa " << 0.01*Def::Alfa << "\tPbReq " << PbReq << endl;
+			MAux::Resul << 0.01*Def::Alfa << "\t" << PbReq << endl;
 		}
 	else if (MAux::escOtim == OtimizarBeta)
-		for (Def::Beta = 0; Def::Beta <= 10; Def::Beta += 1) {
+		for (Def::Beta = 0; Def::Beta <= 100; Def::Beta += 2) {
 			RefreshNoise();
 			PbReq = Simula_Rede();
-			cout << "Beta " << 0.1*Def::Beta << "\tPbReq " << PbReq << endl;
-			MAux::Resul << 0.1*Def::Beta << "\t" << PbReq << endl;
+			cout << "Beta " << 0.01*Def::Beta << "\tPbReq " << PbReq << endl;
+			MAux::Resul << 0.01*Def::Beta << "\t" << PbReq << endl;
 		}
 }
 
