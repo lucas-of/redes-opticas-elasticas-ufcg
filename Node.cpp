@@ -32,7 +32,7 @@ long double Node::get_gain_pot() {
 	return gain_pot;
 }
 
-long double Node::get_ruido_pot(int) {
+long double Node::get_ruido_pot() {
 	calcula_ganho_pot();
 	return ruido_pot;
 }

@@ -1,7 +1,7 @@
 #include "Def.h"
 #include "Conexao.h"
 
-long double AvaliarOSNR(const Route *Rota, int) {
+long double AvaliarOSNR(const Route *Rota) {
 	long double Potencia = Def::get_Pin();
 	long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
 	long double osnr;
@@ -22,13 +22,13 @@ long double AvaliarOSNR(const Route *Rota, int) {
 			else MAux::Rede.at(Rota->getNode(i)).set_potenciatx(General::lin(Def::get_Pin()/1E-3L));
 			Potencia *= MAux::Rede.at(Rota->getNode(i)).get_gain_pot();
 			Ruido *= MAux::Rede.at(Rota->getNode(i)).get_gain_pot();
-			Ruido += MAux::Rede.at(Rota->getNode(i)).get_ruido_pot(NULL); //Perdas nos preamplificadores
+            Ruido += MAux::Rede.at(Rota->getNode(i)).get_ruido_pot(); //Perdas nos preamplificadores
 
 			Potencia /= MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_perda_enlace();
 			Ruido /= MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_perda_enlace();
 			Potencia *= MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_enlace();
 			Ruido *= MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ganho_enlace();
-			Ruido += MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(NULL); //perda no enlace
+            Ruido += MAux::Caminho[Rota->getNode(i)].at(Rota->getNode(i+1)).get_ruido_enlace(); //perda no enlace
 		}
 	}
 
