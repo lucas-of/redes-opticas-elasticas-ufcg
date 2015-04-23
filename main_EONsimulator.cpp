@@ -496,7 +496,7 @@ void Load() {
 		cin>>op;
 		Def::set_Pref(op);
 		if (MAux::escSim != Sim_DAmp) {
-			cout<<"Entre com distancia entre os amplificadores"<<endl;
+			cout<<"Entre com distancia entre os amplificadores (em km)."<<endl;
 			cin>>op;
 			Def::set_DistaA(op);
 		}

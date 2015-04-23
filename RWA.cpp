@@ -822,15 +822,15 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 
 void RWA::OSNRR() {
 	//L e a largura de banda (em numero de slots) da requisicao
-	int orN, deN, path, hops, j, h;
+	int orN, deN;
 	long double *BestOSNR = new long double[Def::Nnodes*Def::Nnodes];
 	static vector<Node*> Visitados;
 
 	for (orN = 0; orN < Def::Nnodes; orN++) {
 		for (deN = orN; deN < Def::Nnodes; deN++) {
 			if (orN == deN) continue;
-			BestOSNR[Def::Nnodes*orN + deN] = - Def::MAX_DOUBLE;
-			BestOSNR[Def::Nnodes*deN + orN] = - Def::MAX_DOUBLE;
+			BestOSNR[Def::Nnodes*orN + deN] = 0;
+			BestOSNR[Def::Nnodes*deN + orN] = 0;
 
 			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR);
 		}
@@ -846,7 +846,8 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;
-			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			if (!MAux::AllRoutes[path].empty()) delete MAux::AllRoutes[path].front();
+			MAux::AllRoutes[path].clear();
 			MAux::AllRoutes[path].push_back(new Route(*Visitados));
 			//cout << "Encontrou rota entre " << orN->whoami << " e " << deN->whoami << " com OSNR " << OSNRRota << endl;
 		}
@@ -855,11 +856,11 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 		//configura rota deN -> orN
 		if (OSNRRota > BestOSNR[path]) {
 			reverse(Visitados->begin(), Visitados->end());
-			Route *R = new Route(*Visitados);
 			path = deN->whoami*Def::getNnodes()+orN->whoami;
-			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			if (!MAux::AllRoutes[path].empty()) delete MAux::AllRoutes[path].front();
+			MAux::AllRoutes[path].clear();
 			MAux::AllRoutes[path].push_back(new Route(*Visitados));
-			delete R;
+			reverse(Visitados->begin(), Visitados->end()); //desfaz
 		}
 	}
 
