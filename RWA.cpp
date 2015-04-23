@@ -3,7 +3,7 @@
 #include "Main_Auxiliar.h"
 #include <algorithm>
 
-long double AvaliarOSNR(const Route *Rota, int);
+long double AvaliarOSNR(const Route *Rota);
 
 bool RWA::CheckSlotAvailability(const Route* route, const int s) {
 	assert(s >=0 && s < Def::getSE());
@@ -551,7 +551,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
 				RuidoLimiar = Def::get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
-				custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace(NULL)/RuidoLimiar;
+                custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
 				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
 
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
@@ -842,7 +842,7 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 
 	if (Current->whoami == deN->whoami) { //Encontrou uma rota
 		Route *R = new Route(*Visitados);
-		long double OSNRRota = AvaliarOSNR(R, NULL);
+        long double OSNRRota = AvaliarOSNR(R);
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;

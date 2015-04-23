@@ -50,7 +50,7 @@ void Enlace::calcula_perdas() {
 	L_DCF = pow(10,0.1*Constante::alphaDCF*dDCF); //exp(Constante::alphaDCF*dDCF/4.34);
  }
 
-long double Enlace::get_ruido_enlace(int) {
+long double Enlace::get_ruido_enlace() {
 	return ruido_enlace;
 }
 

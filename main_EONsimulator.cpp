@@ -604,7 +604,7 @@ void RequestCon(Event* evt) {
 			assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route,NslotsUsed);
+                if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route);
 				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
 				//Inserir a conexao na rede
 					int L_or, L_de;
@@ -925,7 +925,7 @@ void Simulate_dAMP() {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-			OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
+            OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) );
 			cout << "OSNRin = " << Def::get_OSRNin() << "dB, dAmp = " << Def::get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
 			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Def::get_DistaA() << "\t" << Def::get_OSRNin() << endl;
@@ -972,7 +972,7 @@ void EncontraMultiplicador() {
 		RefreshNoise();
 		setReqEvent(evt,0);
 		long double OSNRout;
-		OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , SlotsReq(Def::get_numPossiveisTaxas() - 1, evt));
+        OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) );
 		cout << "Multiplicador = " << multiplicador << ", OSNR = " << OSNRout << "dB" << endl; //primeira rota
 	}
 	delete evt;
