@@ -1,7 +1,6 @@
 #include "RWA.h"
 #include "PSR.h"
 #include "Main_Auxiliar.h"
-#include <algorithm>
 
 long double AvaliarOSNR(const Route *Rota, int);
 
@@ -171,7 +170,6 @@ void RWA::DijkstraSP() {
 				if(hops != 0)
 					for(h = 0; h <= hops; h++)
 						cout<<MAux::AllRoutes[path].at(0)->getNode(h)<<"-";
-					cout << " (" << MAux::MinimasDistancias[orN*Def::Nnodes + deN] << "km)";
 			}
 	cout<<endl<<endl;
 	delete []CustoVertice;
@@ -827,14 +825,19 @@ void RWA::OSNRR() {
 	static vector<Node*> Visitados;
 
 	for (orN = 0; orN < Def::Nnodes; orN++) {
-		for (deN = orN; deN < Def::Nnodes; deN++) {
+		for (deN = 0; deN < Def::Nnodes; deN++) {
 			if (orN == deN) continue;
+			cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
 			BestOSNR[Def::Nnodes*orN + deN] = 0;
-			BestOSNR[Def::Nnodes*deN + orN] = 0;
-
 			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR);
+			if(MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() != 0) {
+				cout << MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() << " hops: ";
+				for(int h = 0; h <= MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops(); h++)
+					cout<<MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNode(h)<<"-";
+			}
 		}
 	}
+	cout << endl;
 }
 
 void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR) {
@@ -846,22 +849,15 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;
-			if (!MAux::AllRoutes[path].empty()) delete MAux::AllRoutes[path].front();
-			MAux::AllRoutes[path].clear();
+			while (!MAux::AllRoutes[path].empty()) {
+				delete MAux::AllRoutes[path].back();
+				MAux::AllRoutes[path].pop_back();
+			}
+			vector<Route*> ().swap(MAux::AllRoutes[path]);
 			MAux::AllRoutes[path].push_back(new Route(*Visitados));
 			//cout << "Encontrou rota entre " << orN->whoami << " e " << deN->whoami << " com OSNR " << OSNRRota << endl;
 		}
 		delete R;
-
-		//configura rota deN -> orN
-		if (OSNRRota > BestOSNR[path]) {
-			reverse(Visitados->begin(), Visitados->end());
-			path = deN->whoami*Def::getNnodes()+orN->whoami;
-			if (!MAux::AllRoutes[path].empty()) delete MAux::AllRoutes[path].front();
-			MAux::AllRoutes[path].clear();
-			MAux::AllRoutes[path].push_back(new Route(*Visitados));
-			reverse(Visitados->begin(), Visitados->end()); //desfaz
-		}
 	}
 
 	for (int i = 0; i < Def::Nnodes; i++) {
