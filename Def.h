@@ -45,6 +45,7 @@ class Def {
 		static long double Dcr; //relacionado a dispersao cromatica
 		static long double DDCF; //coeficiente de dispersao
 		static long double freq; //frequencia
+        static int threadNumber; //numero de threads
 		static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
@@ -111,5 +112,6 @@ class Def {
 		static long double get_DDCF();
 		static long double get_Dcr();
 		static int get_numPossiveisTaxas();
+        static int get_numThreads();
 };
 #endif

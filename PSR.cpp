@@ -1,5 +1,7 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
+#include <QtConcurrent>
+
 int PSR::N;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
@@ -136,7 +138,7 @@ long double PSR::get_MaiorEnlace() {
 
 long double PSR::PSO_simulaRede(Particula *P) {
     PSO_atualizaCustoEnlaces(P);
-    return Simula_Rede();
+    return QtConcurrent::run(Simula_Rede);
 }
 
 void PSR::executar_PSR() {

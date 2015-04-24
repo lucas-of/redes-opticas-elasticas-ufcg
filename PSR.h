@@ -17,7 +17,7 @@ struct Particula {
 		Particula *Vizinha1, *Vizinha2;
 };
 
-class PSR {
+class PSR{
 	public:
 		PSR(int);
 		const static int get_N();

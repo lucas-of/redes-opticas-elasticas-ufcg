@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <QThread>
 #include "Main_Auxiliar.h"
 #include "RWA.h"
 #include "PSR.h"
