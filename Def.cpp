@@ -35,6 +35,12 @@ Def::Def() {
     numReqAceit_Esquema = new long double[numEsquemasDeModulacao];
     numReq_Taxa = new long double[numPossiveisTaxas];
     numReqBloq_Taxa = new long double[numPossiveisTaxas];
+    Topology_S = new bool[Nnodes*Nnodes*SE];
+    for (int i=0 ; i < Def::getSE(); i++)
+		for (int j=0; j < Def::getNnodes() ; j++)
+			for (int k = 0; k < Def::getNnodes(); k++)
+				Topology_S[i*Def::Nnodes*Def::Nnodes + Def::Nnodes*j + k] = false;
+   
     numSlots_Bloq = 0.0;
     numSlots_BloqPorOSNR = 0.0;
     numReq_BloqPorOSNR = 0.0;
@@ -46,6 +52,15 @@ Def::Def() {
     tempoTotal_Taxa = new long double[numPossiveisTaxas];
     taxaTotal_Esquema = new long double[numEsquemasDeModulacao];
     taxaTotal = 0;
+}
+
+Def::~Def() {
+    delete[] numReqAceit_Esquema;
+    delete[] numReq_Taxa;
+    delete[] numReqBloq_Taxa;
+    delete[] Topology_S;
+    delete[] tempoTotal_Taxa;
+    delete[] taxaTotal_Esquema;
 }
 
 void Def::setPossiveisTaxas() {

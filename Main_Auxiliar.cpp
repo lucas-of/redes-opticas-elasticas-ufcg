@@ -24,7 +24,6 @@ ifstream MAux::Topol6("TopologyTop1.txt");
 ifstream MAux::Topol7("TopologyTop2.txt");
 
 bool MAux::ExpComp;
-bool *MAux::Topology_S;
 Event *MAux::firstEvent;
 int MAux::Alg_Aloc;
 int MAux::Alg_Routing;

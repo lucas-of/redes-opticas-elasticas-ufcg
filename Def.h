@@ -18,6 +18,7 @@ typedef long double TIME;
 class Def {
 	public:
         Def();
+        ~Def();
 		enum Arquitetura {
 			BS, SS
 		}; /* Broadcast-and-Select ou Switch-and-Select*/
@@ -67,6 +68,7 @@ class Def {
 		long double *tempoTotal_Taxa;
 		long double *taxaTotal_Esquema;
 		long double taxaTotal;
+        bool *Topology_S;
 
 		void clearGrauNo();
 		static void setPossiveisTaxas();

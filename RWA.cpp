@@ -4,13 +4,13 @@
 
 long double AvaliarOSNR(const Route*, Def*);
 
-bool RWA::CheckSlotAvailability(const Route* route, const int s) {
+bool RWA::CheckSlotAvailability(const Route* route, const int s, Def *Config) {
 	assert(s >=0 && s < Def::getSE());
 	int L_or, L_de;
 	for(unsigned int c = 0; c < route->getNhops(); c++) {
 		L_or = route->getNode(c);
 		L_de = route->getNode(c+1);
-		if(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true)
+		if(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true)
 			return false; //Basta o slot s nao estar disponivel em uma das fibras da rota;
 	}
 	return true; //O slot s esta disponivel em todas as fibras da rota;
@@ -178,7 +178,7 @@ void RWA::DijkstraSP() {
 	delete []PathRev;
 }
 
-void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
+void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -214,9 +214,9 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso() < CustoVertice[j]) {
-					CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso();
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+				if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config) < CustoVertice[j]) {
+					CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config);
 					Precedente[j] = k;
 				}
 			}
@@ -252,7 +252,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
+void RWA::DijkstraAcum(const int orN, const int deN, const int L, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(deN != orN);
 	int VA, i, j, s, k=0, h, path, hops, hopsAux;
@@ -301,7 +301,7 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade em j por uma rota proveniente de k
 				for(s = 0; s < Def::getSE(); s++)
-					DispAux[s] = DispVertice[k][s] * !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispAux[s] = DispVertice[k][s] * !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				//Calcula o numero de hops em j por uma rota proveniente de k
 				hopsAux = HopsVertice[k]+1;
 				//Checa se o custo em j deve ser atualizado
@@ -345,7 +345,7 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 	MAux::AllRoutes[path].push_back(new Route(r));
 }
 
-void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
+void RWA::DijkstraFormas(const int orN, const int deN, const int L, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -382,7 +382,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -420,7 +420,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa) {
+void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	assert(alfa >= 0);
@@ -468,7 +468,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = alfa*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alfa)*Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -546,7 +546,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
 				RuidoLimiar = Config->get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
                 custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
@@ -588,14 +588,14 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 	delete []DispLink;
 }
 
-void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	si = -1;
 	NslotsUsed = 0; //Valores nao permitidos
 	int sum;
 	for(int s = 0; s <= Def::getSE() - NslotsReq; s++) {
 		sum = 0;
 		for(int se = s; se < s + NslotsReq; se++) {
-			if(CheckSlotAvailability(route, se))
+			if(CheckSlotAvailability(route, se, Config))
 				sum++;
 			else
 				break;
@@ -608,7 +608,7 @@ void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int
 	}
 }
 
-void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	assert( (si == -1) && (NslotsUsed == 0) );
 	int s, sum=0;
 	for(int sOrd = 0; sOrd < Def::getSE(); sOrd++) {
@@ -617,7 +617,7 @@ void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, 
 			//si e capaz de suportar a requisicao;
 			sum = 0;
 			for(int se = s; se < s + NslotsReq; se++)
-				if(CheckSlotAvailability(route, se))
+				if(CheckSlotAvailability(route, se,Config))
 					sum++;
 				else
 					break;
@@ -630,19 +630,19 @@ void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, 
 	}
 }
 
-void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	int *vetSlotsUsed = new int[Def::getSE()];
 	bool *vetDisp = new bool[Def::getSE()];
 
 	//Checa a disponibilidade no caminho 'path' para cada slot s;
 	for(int s = 0; s < Def::getSE(); s++)
-		vetDisp[s] = RWA::CheckSlotAvailability(route, s);
+		vetDisp[s] = RWA::CheckSlotAvailability(route, s, Config);
 
 	//Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
 	int soma;
 	for(int s = 0; s < Def::getSE(); s++) {
 		if(vetDisp[s] == true)
-			vetSlotsUsed[s] = sumOccupation(s);
+			vetSlotsUsed[s] = sumOccupation(s, Config);
 		else
 			vetSlotsUsed[s] = -1;
 	}
@@ -673,7 +673,7 @@ void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int
 	delete []vetDisp;
 }
 
-void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	int soma=0, somaAlocacao=0, alocarSlot;
 	bool *vetDisp = new bool[Def::getSE()];
 	int *vetAloc = new int[Def::getSE()];
@@ -682,7 +682,7 @@ void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
 
 	//Checa a disponibilidade no caminho 'path' para cada slot s;
 	for(int s = 0; s < Def::getSE(); s++)
-		vetDisp[s] = CheckSlotAvailability(route, s);
+		vetDisp[s] = CheckSlotAvailability(route, s, Config);
 	//Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
 	bool fit;
 	NslotsUsed = 0;
@@ -724,17 +724,17 @@ void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
 	delete []vetAloc;
 }
 
-int RWA::sumOccupation(int s) {
+int RWA::sumOccupation(int s, Def *Config) {
 	int soma=0;
 	for(int origem = 0; origem < Def::getNnodes(); origem++)
 		for(int destino = 0; destino < Def::getNnodes(); destino++)
-			if( (MAux::Topology[origem*Def::Nnodes+destino] > 0.0) && (MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+origem*Def::Nnodes+destino] == true) )
+			if( (MAux::Topology[origem*Def::Nnodes+destino] > 0.0) && (Config->Topology_S[s*Def::Nnodes*Def::Nnodes+origem*Def::Nnodes+destino] == true) )
 				//Se houver enlace entre origem e destino e o slot 's' estiver livre neste enlace
 				soma++;
 	return soma;
 }
 
-void RWA::LORModificado(const int orN, const int deN, const int L) {
+void RWA::LORModificado(const int orN, const int deN, const int L, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -780,7 +780,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace - Heuristics::calculateCostLink(DispLink, L) + 1;
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;

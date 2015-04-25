@@ -93,12 +93,12 @@ void Enlace::recalcular(Def *Config) {
 	}
 }
 
-long double Enlace::get_peso() {
+long double Enlace::get_peso(Def *Config) {
 	peso = 0;
 	long double Disponibilidade;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!MAux::Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
+		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
 	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
