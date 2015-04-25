@@ -66,9 +66,9 @@ class Def {
 		long double numReq_Taxa[];
 		long double numReqBloq_Taxa[];
 		long double numReqAceit_Esquema[];
-		static long double tempoTotal_Taxa[];
-		static long double taxaTotal_Esquema[];
-		static long double taxaTotal;
+		long double tempoTotal_Taxa[];
+		long double taxaTotal_Esquema[];
+		long double taxaTotal;
 
 		void clearGrauNo();
 		static void setPossiveisTaxas();

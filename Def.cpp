@@ -1,6 +1,7 @@
 #include "Def.h"
 #include "math.h"
 #include "Constantes.h"
+#include "Main_Auxiliar.h"
 #include <limits>
 
 //Inicializa constantes estáticas
@@ -16,9 +17,6 @@ long double Def::numReqBloqMin = 0.0;
 long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
 const int Def::numPossiveisTaxas = 5;
 long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
-long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
-long double Def::taxaTotal_Esquema[Def::numEsquemasDeModulacao] = {0};
-long double Def::taxaTotal = 0;
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
@@ -32,8 +30,8 @@ long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 Def::Def() {
-    DistA=75.0;
-    OSNRin=30.0;
+    DistA=MAux::Config.get_DistaA();
+    OSNRin=MAux::Config.get_OSRNin();
     numReqAceit_Esquema[Def::numEsquemasDeModulacao] = {0};
     numReq_Taxa[Def::numPossiveisTaxas] = {0};
     numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
@@ -45,6 +43,9 @@ Def::Def() {
     numHopsPerRoute = 0.0;
     numReq = 0.0;
     netOccupancy = 0.0;    
+    tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
+    taxaTotal_Esquema[Def::numEsquemasDeModulacao] = {0};
+    taxaTotal = 0;
 }
 
 void Def::setPossiveisTaxas() {
