@@ -530,10 +530,10 @@ void Load() {
 		MAux::Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
 }
 
-void RefreshNoise() {
+void RefreshNoise(Def *Config) {
 	for (int i = 0; i< Def::getNnodes(); i++ ) {
 		for (int j = 0; j < Def::getNnodes(); j++ ) {
-			MAux::Caminho[i].at(j).recalcular();
+			MAux::Caminho[i].at(j).recalcular(Config);
 		}
 	}
 }

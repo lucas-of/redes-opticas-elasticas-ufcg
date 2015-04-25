@@ -13,16 +13,16 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 	peso = Def::MAX_LONGDOUBLE;
 	calcula_perdas();
 	if (NOrig != NULL) { //se nao e o no "infinito"
-		calcula_num_amplificadores();
+		calcula_num_amplificadores(&MAux::Config);
 		calcula_ganho_enlace();
 		calcula_ruido_enlace();
-		calcula_preamplif();
+		calcula_preamplif(&MAux::Config);
 	}
 }
 
-void Enlace::calcula_num_amplificadores() {
-	num_amplif = floor(distancia/Def::get_DistaA());
-	if (ceil(distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
+void Enlace::calcula_num_amplificadores(Def *Config) {
+	num_amplif = floor(distancia/Config->get_DistaA());
+	if (ceil(distancia/Config->get_DistaA()) == num_amplif) num_amplif--;
 }
 
 void Enlace::calcula_ganho_enlace() {
@@ -70,26 +70,26 @@ long double Enlace::get_ruido_preamplif() {
 	return ruido_preamplif;
 }
 
-void Enlace::calcula_preamplif() {
+void Enlace::calcula_preamplif(Def *Config) {
 	calcula_perdas();
 	long double freq = Def::get_freq();
 
 	if (Def::get_Arquitetura() == Def::SS) {
 		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + Def::get_Lsss());
 	} else if (Def::get_Arquitetura() == Def::BS) {
-		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10.0*log10( Def::getGrauNo(Destino->whoami) + 1 ));
+		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10.0*log10( Config->getGrauNo(Destino->whoami) + 1 ));
 	}
 
 	ruido_preamplif = Def::get_Famp()*(ganho_preamplif - 1.0)*Constante::h*freq*Def::get_Bref();
 }
 
-void Enlace::recalcular() {
+void Enlace::recalcular(Def *Config) {
 	calcula_perdas();
 	if (Origem != NULL) { //se nao e o no "infinito"
-		calcula_num_amplificadores();
+		calcula_num_amplificadores(Config);
 		calcula_ganho_enlace();
 		calcula_ruido_enlace();
-		calcula_preamplif();
+		calcula_preamplif(Config);
 	}
 }
 

@@ -16,7 +16,7 @@ class Enlace {
 		long double get_perda_enlace();
         long double get_ruido_enlace();
 		void set_distancia(long double);
-		void recalcular();
+		void recalcular(Def *Config);
 		void recalcular_peso(long double *Coef);
 	private:
 		double distancia;
@@ -34,8 +34,8 @@ class Enlace {
 		void calcula_perdas();
 		void calcula_ganho_enlace();
 		void calcula_ruido_enlace();
-		void calcula_num_amplificadores();
-		void calcula_preamplif();
+		void calcula_num_amplificadores(Def *Config);
+		void calcula_preamplif(Def *Config);
 };
 
 #endif // ENLACE_H
