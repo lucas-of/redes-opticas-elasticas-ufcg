@@ -4,46 +4,48 @@
 #include <limits>
 
 //Inicializa constantes estáticas
-vector<double> Def::LaNet(0);
 vector<int> Def::GrauNo(0);
 double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes;
-long double Def::netOccupancy = 0.0;
 const int Def::numEsquemasDeModulacao = 3;
-long double Def::numHopsPerRoute = 0.0;
-long double Def::numReq = 0.0;
 float Def::Alfa = 10;
 float Def::Beta = 10;
-long double Def::numReq_Bloq = 0.0;
 long double Def::numReqBloqMin = 0.0;
-long double Def::numSlots_Bloq = 0.0;
-long double Def::numSlots_BloqPorOSNR = 0.0;
-long double Def::numReq_BloqPorOSNR = 0.0;
-long double Def::numSlots_Req = 0.0;
 long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
 const int Def::numPossiveisTaxas = 5;
 long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
-long double Def::numReq_Taxa[Def::numPossiveisTaxas] = {0};
-long double Def::numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
 long double Def::tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
-long double Def::numReqAceit_Esquema[Def::numEsquemasDeModulacao] = {0};
 long double Def::taxaTotal_Esquema[Def::numEsquemasDeModulacao] = {0};
 long double Def::taxaTotal = 0;
 int Def::SE = 0;
 int Def::SR = 0;
 long double Def::Pin=1.0;
 long double Def::Pref=1.0;
-long double Def::OSNRin=30.0;
 long double Def::Lsss=5.0;
-long double Def::DistA=75.0;
 long double Def::freq = 193.4E12;
 Def::Arquitetura Def::arquitetura=Def::BS;
 long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
 long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
+
+Def::Def() {
+    DistA=75.0;
+    OSNRin=30.0;
+    numReqAceit_Esquema[Def::numEsquemasDeModulacao] = {0};
+    numReq_Taxa[Def::numPossiveisTaxas] = {0};
+    numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
+    numSlots_Bloq = 0.0;
+    numSlots_BloqPorOSNR = 0.0;
+    numReq_BloqPorOSNR = 0.0;
+    numSlots_Req = 0.0;
+    numReq_Bloq = 0.0;
+    numHopsPerRoute = 0.0;
+    numReq = 0.0;
+    netOccupancy = 0.0;    
+}
 
 void Def::setPossiveisTaxas() {
 	for (int i = 0; i < Def::numPossiveisTaxas; i++)

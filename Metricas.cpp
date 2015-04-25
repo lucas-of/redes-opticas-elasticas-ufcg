@@ -11,14 +11,14 @@ long double ProbAceitacao() {
 
 void ProbBloqueioTaxa() {
 	for (int i = 0; i < Def::get_numPossiveisTaxas(); i++ ) {
-		MAux::ResulProbBloqTaxa << MAux::laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+		MAux::ResulProbBloqTaxa << MAux::laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << MAux::Config.numReqBloq_Taxa[i]/MAux::Config.numReq_Taxa[i] << endl;
 		//cout << Def::PossiveisTaxas[i]/pow(10,9) << "Gbps\tProb Bloq = " << Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
 	}
 }
 
 void ProbAceitacaoTaxa() {
 	for (int i = 0; i < Def::get_numPossiveisTaxas(); i++ ) {
-		MAux::ResulProbAceitTaxa << MAux::laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << 1.0 - Def::numReqBloq_Taxa[i]/Def::numReq_Taxa[i] << endl;
+		MAux::ResulProbAceitTaxa << MAux::laNet << "\t" << Def::PossiveisTaxas[i] << "\t" << 1.0 - MAux::Config.numReqBloq_Taxa[i]/MAux::Config.numReq_Taxa[i] << endl;
 	}
 }
 
@@ -34,6 +34,6 @@ void calcTaxaMedia() {
 
 void AceitacaoEsquema() {
 	for (int i = 0; i < Def::numEsquemasDeModulacao; i++ ) {
-		MAux::ResultEsquemas << i << "\t" << Def::numReqAceit_Esquema[i]/Def::numReq << "\t" << Def::taxaTotal_Esquema[i]/Def::taxaTotal << endl;
+		MAux::ResultEsquemas << i << "\t" << MAux::Config.numReqAceit_Esquema[i]/MAux::Config.numReq << "\t" << MAux::Config.taxaTotal_Esquema[i]/MAux::Config.taxaTotal << endl;
 	}
 }

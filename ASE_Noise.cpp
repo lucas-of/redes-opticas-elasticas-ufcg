@@ -1,9 +1,9 @@
-#include "Def.h"
 #include "Conexao.h"
+#include "Main_Auxiliar.h"
 
-long double AvaliarOSNR(const Route *Rota) {
-	long double Potencia = Def::get_Pin();
-	long double Ruido = Def::get_Pin()/General::dB(Def::get_OSRNin());
+long double AvaliarOSNR(const Route *Rota, Def *Config) {
+	long double Potencia = Config->get_Pin();
+	long double Ruido = Config->get_Pin()/General::dB(Config->get_OSRNin());
 	long double osnr;
 
 	for (unsigned i = 0; i<= Rota->getNhops() ; i++ ) {
@@ -18,8 +18,8 @@ long double AvaliarOSNR(const Route *Rota) {
 		if (i != Rota->getNhops()) {
 			Potencia *= MAux::Rede.at(Rota->getNode(i)).get_loss();
 			Ruido *= MAux::Rede.at(Rota->getNode(i)).get_loss(); //Perda nos elementos da rede (mux)
-			if (i != 0) MAux::Rede.at(Rota->getNode(i)).set_potenciatx(General::lin(Def::get_Pref()/1E-3L));
-			else MAux::Rede.at(Rota->getNode(i)).set_potenciatx(General::lin(Def::get_Pin()/1E-3L));
+			if (i != 0) MAux::Rede.at(Rota->getNode(i)).set_potenciatx(General::lin(Config->get_Pref()/1E-3L));
+			else MAux::Rede.at(Rota->getNode(i)).set_potenciatx(General::lin(Config->get_Pin()/1E-3L));
 			Potencia *= MAux::Rede.at(Rota->getNode(i)).get_gain_pot();
 			Ruido *= MAux::Rede.at(Rota->getNode(i)).get_gain_pot();
             Ruido += MAux::Rede.at(Rota->getNode(i)).get_ruido_pot(); //Perdas nos preamplificadores
@@ -36,8 +36,8 @@ long double AvaliarOSNR(const Route *Rota) {
 	return osnr;
 }
 
-void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed) {
+void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed, Def *Config) {
 	if(NslotsUsed <= 0) //A conexao foi bloqueada
-		Def::numReq_BloqPorOSNR++;
-	Def::numSlots_BloqPorOSNR += (NslotsReq - NslotsUsed);
+		Config->numReq_BloqPorOSNR++;
+	Config->numSlots_BloqPorOSNR += (NslotsReq - NslotsUsed);
 }

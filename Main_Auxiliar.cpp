@@ -1,5 +1,6 @@
 #include "Main_Auxiliar.h"
 
+Def MAux::Config;
 ofstream MAux::Resul("Result.txt");
 ofstream MAux::Metrica("Metrica.txt");
 ofstream MAux::ResulOSNR("ResultOSNR.txt");
