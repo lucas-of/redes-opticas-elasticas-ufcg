@@ -30,11 +30,11 @@ long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
 Def::Def() {
-    DistA=MAux::Config.get_DistaA();
-    OSNRin=MAux::Config.get_OSRNin();
-    numReqAceit_Esquema[Def::numEsquemasDeModulacao] = {0};
-    numReq_Taxa[Def::numPossiveisTaxas] = {0};
-    numReqBloq_Taxa[Def::numPossiveisTaxas] = {0};
+    DistA=80;
+    OSNRin=30;
+    numReqAceit_Esquema = new long double[numEsquemasDeModulacao];
+    numReq_Taxa = new long double[numPossiveisTaxas];
+    numReqBloq_Taxa = new long double[numPossiveisTaxas];
     numSlots_Bloq = 0.0;
     numSlots_BloqPorOSNR = 0.0;
     numReq_BloqPorOSNR = 0.0;
@@ -43,8 +43,8 @@ Def::Def() {
     numHopsPerRoute = 0.0;
     numReq = 0.0;
     netOccupancy = 0.0;    
-    tempoTotal_Taxa[Def::numPossiveisTaxas] = {0};
-    taxaTotal_Esquema[Def::numEsquemasDeModulacao] = {0};
+    tempoTotal_Taxa = new long double[numPossiveisTaxas];
+    taxaTotal_Esquema = new long double[numEsquemasDeModulacao];
     taxaTotal = 0;
 }
 

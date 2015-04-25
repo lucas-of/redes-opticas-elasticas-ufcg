@@ -43,8 +43,6 @@ class Def {
 		static long double Bslot;//largura de banda do slot
 		static long double Bref;//largura de linha de referencia
 		static long double Famp;//fator do ruido amplificador
-		static long double Dcr; //relacionado a dispersao cromatica
-		static long double DDCF; //coeficiente de dispersao
 		static long double freq; //frequencia
         static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
@@ -63,11 +61,11 @@ class Def {
 		long double numSlots_Bloq; //número de slots bloqueados
 		long double numSlots_Req; //número de slots requisitados
 		long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
-		long double numReq_Taxa[];
-		long double numReqBloq_Taxa[];
-		long double numReqAceit_Esquema[];
-		long double tempoTotal_Taxa[];
-		long double taxaTotal_Esquema[];
+		long double *numReq_Taxa;
+		long double *numReqBloq_Taxa;
+		long double *numReqAceit_Esquema;
+		long double *tempoTotal_Taxa;
+		long double *taxaTotal_Esquema;
 		long double taxaTotal;
 
 		void clearGrauNo();
