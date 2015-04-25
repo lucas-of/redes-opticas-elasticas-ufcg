@@ -14,7 +14,7 @@ class RWA {
 		static void DijkstraPSR(const int orN, const int deN, const int L); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede, considerando coeficientes do PSR*/
 		static void DijkstraSP(); /*Implementa o algoritmo de roteamento de Dijkstra para achar rotas entre quaisquer dois nós da rede*/
 		static void DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa); /*Implementa o algoritmo de roteamento Dijkstra com Shortest Path e Formas.*/
-		static void DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao); /*Implementa o algoritmo de roteamento Dijkstra com Ruído do Enlace normalizado e Formas.*/
+		static void DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config); /*Implementa o algoritmo de roteamento Dijkstra com Ruído do Enlace normalizado e Formas.*/
 		static void FirstFit(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit*/
 		static void FirstFitOpt(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots de acordo com o algoritmo First Fit, usando as listas otimizadas*/
 		static void MostUsed(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Aloca os slots, procurando dentre os slots que podem atender a requisição aqueles mais utilizados*/
@@ -23,7 +23,7 @@ class RWA {
 		static void Random(const Route*, const int NslotsReq, int& NslotsUsed, int& si); /*Dentre os slots que podem atender a solicitação, sorteia um*/
 		static int sumOccupation(int s); /*Encontra a ocupação de um certo slot s em todos os enlaces da rede. Para uso em MostUsed()*/
 	private:
-		static void ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR);
+		static void ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR, Def *Config);
 		static bool VerificarInclusao(Node *No, std::vector<Node*> *Visitados);
 		static long double *BestOSNR;
 };

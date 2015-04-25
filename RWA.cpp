@@ -2,7 +2,7 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 
-long double AvaliarOSNR(const Route *Rota);
+long double AvaliarOSNR(const Route*, Def*);
 
 bool RWA::CheckSlotAvailability(const Route* route, const int s) {
 	assert(s >=0 && s < Def::getSE());
@@ -506,7 +506,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 	delete []DispLink;
 }
 
-void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao) {
+void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	assert(beta >= 0);
@@ -548,7 +548,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 				for(int s = 0; s < Def::getSE(); s++)
 					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
-				RuidoLimiar = Def::get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
+				RuidoLimiar = Config->get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
                 custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
 				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
 
@@ -829,7 +829,7 @@ void RWA::OSNRR() {
 			if (orN == deN) continue;
 			cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
 			BestOSNR[Def::Nnodes*orN + deN] = 0;
-			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR);
+			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR, MAux::Config);
 			if(MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() != 0) {
 				cout << MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() << " hops: ";
 				for(int h = 0; h <= MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops(); h++)
@@ -840,12 +840,12 @@ void RWA::OSNRR() {
 	cout << endl;
 }
 
-void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR) {
+void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR, Def *Config) {
 	Visitados->push_back(Current);
 
 	if (Current->whoami == deN->whoami) { //Encontrou uma rota
 		Route *R = new Route(*Visitados);
-        long double OSNRRota = AvaliarOSNR(R);
+        long double OSNRRota = AvaliarOSNR(R, Config);
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;
@@ -862,7 +862,7 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 
 	for (int i = 0; i < Def::Nnodes; i++) {
 		if ((MAux::Topology[(Current->whoami)*Def::Nnodes + i] == 1) && !(VerificarInclusao(&MAux::Rede.at(i), Visitados)))
-			ProcurarRota(orN, &MAux::Rede.at(i), deN, Visitados, BestOSNR);
+			ProcurarRota(orN, &MAux::Rede.at(i), deN, Visitados, BestOSNR, Config);
 	}
 
 	Visitados->pop_back(); //Remover no da Lista

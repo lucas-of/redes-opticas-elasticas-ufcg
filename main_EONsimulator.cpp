@@ -39,9 +39,9 @@ void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão
 void ExpandCon(Event*, Def *Config); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
 void EncontraMultiplicador(Def *Config); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
 bool FillSlot(const Route* route, const int s, const bool b); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
-void GrauDosNodes(void); /*Calcula o grau dos nós*/
+void GrauDosNodes(Def *Config); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
-void RefreshNoise(); /*atualiza os ruídos dos enlaces*/
+void RefreshNoise(Def *Config); /*atualiza os ruídos dos enlaces*/
 bool ReleaseSlot(const Route* route, int s); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*, Def *Config); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
@@ -77,10 +77,10 @@ int main() {
 	else if (MAux::escSim == Sim_OSNR)
 		SimOSNR();
 	else if (MAux::escSim == Sim_DAmp) {
-		Simulate_dAMP(&MAux::Config);
+		Simulate_dAMP(MAux::Config);
 		//EncontraMultiplicador();
 	} else if (MAux::escSim == Sim_NSlots)
-		SimNSlots(&MAux::Config);
+		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
 		PSR(4);
 		PSR::executar_PSR();
@@ -242,7 +242,7 @@ void createStructures() {
 	}
 
 	//Calcula o grau de cada no
-	GrauDosNodes();
+	GrauDosNodes(MAux::Config);
 
 	for (int i=0;i < Def::getNnodes() ; i++) {
 		MAux::Rede.push_back(Node(i));
@@ -492,14 +492,14 @@ void Load() {
 	if (MAux::AvaliaOsnr==SIM) {
 		cout << "Entre com a potencia de entrada, em dBm." << endl;
 		cin>>op;
-		MAux::Config.set_Pin(op);
+		MAux::Config->set_Pin(op);
 		cout << "Entre com a potencia de referencia da fibra, em dBm." << endl;
 		cin>>op;
-		MAux::Config.set_Pref(op);
+		MAux::Config->set_Pref(op);
 		if (MAux::escSim != Sim_DAmp) {
 			cout<<"Entre com distancia entre os amplificadores (em km)."<<endl;
 			cin>>op;
-			MAux::Config.set_DistaA(op);
+			MAux::Config->set_DistaA(op);
 		}
 		cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
 		cin>>aux;
@@ -595,7 +595,7 @@ void RequestCon(Event* evt, Def *Config) {
 		if(MAux::escSim == Sim_TreinoPSR)
 			RWA::DijkstraPSR(orN, deN, NslotsReq);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa]);
+			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config);
 
 		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -637,7 +637,7 @@ void RequestCon(Event* evt, Def *Config) {
 				} else { //conexao bloqueada por OSNR
 					NslotsUsed = 0;
 					if (Esq == numEsquemasDeModulacao - 1) {
-						AccountForBlockingOSNR(NslotsReq,NslotsUsed);
+                        AccountForBlockingOSNR(NslotsReq,NslotsUsed,Config);
 					}
 				}
 			}
@@ -725,15 +725,15 @@ void SimAlfaBeta() {
 	long double PbReq;
 	if (MAux::escOtim == OtimizarAlfa)
 		for (Def::Alfa = 0; Def::Alfa <= 100; Def::Alfa += 2) {
-			RefreshNoise();
-			PbReq = Simula_Rede(&MAux::Config);
+			RefreshNoise(MAux::Config);
+			PbReq = Simula_Rede(MAux::Config);
 			cout << "Alfa " << 0.01*Def::Alfa << "\tPbReq " << PbReq << endl;
 			MAux::Resul << 0.01*Def::Alfa << "\t" << PbReq << endl;
 		}
 	else if (MAux::escOtim == OtimizarBeta)
 		for (Def::Beta = 0; Def::Beta <= 100; Def::Beta += 2) {
-			RefreshNoise();
-			PbReq = Simula_Rede(&MAux::Config);
+			RefreshNoise(MAux::Config);
+			PbReq = Simula_Rede(MAux::Config);
 			cout << "Beta " << 0.01*Def::Beta << "\tPbReq " << PbReq << endl;
 			MAux::Resul << 0.01*Def::Beta << "\t" << PbReq << endl;
 		}
@@ -751,7 +751,7 @@ void SimOSNR() {
 	cout << "Insira a carga da rede." << endl;
 	cin >> MAux::laNet;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
-		MAux::Config.setOSNR(osnr);
+		MAux::Config->setOSNR(osnr);
 		Sim();
 		//SimCompFFO(); Simula usando as listas FF otimizadas
 	}
@@ -779,7 +779,7 @@ void SimNSlots(Def *Config) {
 
 void Sim() {
 	//Indica como o trafego e distribuido entre s = 1, 2, ..., SE
-	MAux::Config.setLaUniform(MAux::laNet);
+	MAux::Config->setLaUniform(MAux::laNet);
 	//Def::setLaRandom(laNet);
 
 	if(MAux::Alg_Aloc == FFO) {
@@ -789,43 +789,43 @@ void Sim() {
 		//Heuristics::FFO_invertido(FFlists);
 		//Heuristics::FFO_metrica(FFlists);
 	}
-	Simulate(&MAux::Config);
+	Simulate(MAux::Config);
 }
 
 void SimCompFFO() {
 	long double Pb_conv, Pb_ext, Pb_met;
 	long double difPerc, difPerc_FFOmet_FFOext_Pos = 0.0, difPerc_FFOmet_FFOext_Neg = 0.0,	difPerc_FFOconv_FFOext_Pos = 0.0, difPerc_FFOconv_FFOext_Neg = 0.0;
 	for(int it = 0; it < 100; it++) {
-		MAux::Config.setLaRandom(MAux::laNet);
+		MAux::Config->setLaRandom(MAux::laNet);
 
 		//Testa as heuristicas
 		Heuristics::FFO_convencional(MAux::FFlists);
-		Simulate(&MAux::Config);
-		Pb_conv = MAux::Config.numReq_Bloq/MAux::Config.numReq;
+		Simulate(MAux::Config);
+		Pb_conv = MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		Heuristics::FFO_extremos(MAux::FFlists);
-		Simulate(&MAux::Config);
-		Pb_ext = (double)MAux::Config.numReq_Bloq/MAux::Config.numReq;
+		Simulate(MAux::Config);
+		Pb_ext = (double)MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		Heuristics::FFO_metrica(MAux::FFlists);
-		Simulate(&MAux::Config);
-		Pb_met = MAux::Config.numReq_Bloq/MAux::Config.numReq;
+		Simulate(MAux::Config);
+		Pb_met = MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		//Calcular as diferencas percentuais:
 		//Entre FFOmetrica e FFOextremos
-		if( (Pb_met > 1000*(1.0/MAux::Config.numReq)) && (Pb_ext > 1000*(1.0/MAux::Config.numReq)) ) {
+		if( (Pb_met > 1000*(1.0/MAux::Config->numReq)) && (Pb_ext > 1000*(1.0/MAux::Config->numReq)) ) {
 			//Tenho confianca nos resultados
 			difPerc = (Pb_met - Pb_ext)/Pb_ext;
 			if(difPerc > difPerc_FFOmet_FFOext_Pos) {
 				difPerc_FFOmet_FFOext_Pos = difPerc;
 				for(int Lr = 1; Lr <= Def::getSR(); Lr++)
-					MAux::ResulFFOmet_FFOext<<MAux::Config.getLaNet(Lr)<<" ";
+					MAux::ResulFFOmet_FFOext<<MAux::Config->getLaNet(Lr)<<" ";
 				MAux::ResulFFOmet_FFOext<<endl;
 			}
 			if(difPerc < difPerc_FFOmet_FFOext_Neg) {
 				difPerc_FFOmet_FFOext_Neg = difPerc;
 				for(int Lr = 1; Lr <= Def::getSR(); Lr++)
-					MAux::ResulFFOext_FFOmet<<MAux::Config.getLaNet(Lr)<<" ";
+					MAux::ResulFFOext_FFOmet<<MAux::Config->getLaNet(Lr)<<" ";
 				MAux::ResulFFOext_FFOmet<<endl;
 			}
 
@@ -833,13 +833,13 @@ void SimCompFFO() {
 			if(difPerc > difPerc_FFOconv_FFOext_Pos) {
 				difPerc_FFOconv_FFOext_Pos = difPerc;
 				for(int Lr = 1; Lr <= Def::getSR(); Lr++)
-					MAux::ResulFFOconv_FFOext<<MAux::Config.getLaNet(Lr)<<" ";
+					MAux::ResulFFOconv_FFOext<<MAux::Config->getLaNet(Lr)<<" ";
 				MAux::ResulFFOconv_FFOext<<endl;
 			}
 			if(difPerc < difPerc_FFOconv_FFOext_Neg) {
 				difPerc_FFOconv_FFOext_Neg = difPerc;
 				for(int Lr = 1; Lr <= Def::getSR(); Lr++)
-					MAux::ResulFFOext_FFOconv<<MAux::Config.getLaNet(Lr)<<" ";
+					MAux::ResulFFOext_FFOconv<<MAux::Config->getLaNet(Lr)<<" ";
 				MAux::ResulFFOext_FFOconv<<endl;
 			}
 		}
@@ -913,7 +913,7 @@ void Simulate_dAMP(Def *Config) {
 		Config->setOSNR(osnr);
 		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
 			Config->set_DistaA(dAmplif);
-			RefreshNoise();
+			RefreshNoise(Config);
 			setReqEvent(evt,0);
 			long double Max = MAux::MinimasDistancias[0], OSNRout;
 			int orN, deN;
@@ -970,7 +970,7 @@ void EncontraMultiplicador(Def *Config) {
 				MAux::Caminho[noDest].at(noOrig).set_distancia(newDist);
 			}
 
-		RefreshNoise();
+		RefreshNoise(Config);
 		setReqEvent(evt,0);
 		long double OSNRout;
         OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);

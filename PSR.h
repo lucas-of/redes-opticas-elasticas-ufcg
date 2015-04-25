@@ -52,7 +52,7 @@ class PSR{
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
 		static void PSO_atualizaCustoEnlaces(Particula *P);
-		static long double PSO_simulaRede(Particula *P);
+		static long double PSO_simulaRede(Particula *P, Def *Config);
 		static void PSO_atualizaVelocidades();
 		static void PSO_ImprimeCoeficientes();
 };

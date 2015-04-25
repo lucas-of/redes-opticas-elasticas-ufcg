@@ -21,7 +21,7 @@ enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
 	public:
-        static Def Config;
+        static Def *Config;
 		static ofstream Resul;
 		static ofstream Metrica;
 		static ofstream ResulOSNR;

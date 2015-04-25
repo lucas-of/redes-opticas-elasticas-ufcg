@@ -13,10 +13,10 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 	peso = Def::MAX_LONGDOUBLE;
 	calcula_perdas();
 	if (NOrig != NULL) { //se nao e o no "infinito"
-		calcula_num_amplificadores(&MAux::Config);
+		calcula_num_amplificadores(MAux::Config);
 		calcula_ganho_enlace();
 		calcula_ruido_enlace();
-		calcula_preamplif(&MAux::Config);
+		calcula_preamplif(MAux::Config);
 	}
 }
 

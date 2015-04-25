@@ -13,7 +13,7 @@ void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o temp
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
-long double Simula_Rede();
+long double Simula_Rede(Def *Config);
 
 PSR::PSR(int NewN) {
     assert(NewN > 0);
@@ -91,7 +91,8 @@ void PSR::PSO() {
     for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
         for (int Part = 0; Part < PSO_P; Part++) {
-            PbReq = PSO_simulaRede(PSO_populacao + Part);
+            Def *Config = new Def();
+            PbReq = PSO_simulaRede(PSO_populacao + Part, Config);
             if (PbReq < (PSO_populacao + Part)->melhorInd) {
                 (PSO_populacao + Part)->melhorInd = PbReq;
                 for (int i = 0; i < N*N; i++)
@@ -105,6 +106,7 @@ void PSR::PSO() {
                 PSO_ImprimeCoeficientes();
             }
             cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
+            delete Config;
         }
         PSO_atualizaVelocidades();
     }
@@ -135,9 +137,9 @@ long double PSR::get_MaiorEnlace() {
     return MaiorEnlace;
 }
 
-long double PSR::PSO_simulaRede(Particula *P) {
+long double PSR::PSO_simulaRede(Particula *P, Def *Config) {
     PSO_atualizaCustoEnlaces(P);
-    return Simula_Rede();
+    return Simula_Rede(Config);
 }
 
 void PSR::executar_PSR() {
