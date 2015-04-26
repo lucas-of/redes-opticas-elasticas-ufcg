@@ -112,7 +112,7 @@ long double Enlace::get_peso(Def *Config) {
 	return peso;
 }
 
-long double Enlace::get_peso(Def *Config, long double *Coef) {
+long double Enlace::get_peso(Def *Config, long double *PartCoef) {
 	peso = 0;
 	long double Disponibilidade;
 	int SlotsDispon = 0;
@@ -125,7 +125,7 @@ long double Enlace::get_peso(Def *Config, long double *Coef) {
 
 	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coef[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
+			peso += PartCoef[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
 		}
 	}
 	return peso;
