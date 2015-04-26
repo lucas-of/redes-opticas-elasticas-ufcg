@@ -214,12 +214,14 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 				//O no j e nao marcado e vizinho do no k
 				if (Config->P == NULL) {
 					long double Peso = MAux::Caminho[k].at(j).get_peso(Config);
+					assert(Peso >= 0);
 					if(CustoVertice[k] + Peso < CustoVertice[j]) {
 						CustoVertice[j] = CustoVertice[k] + Peso;
 						Precedente[j] = k;
 					}
 				} else {
 					long double Peso = MAux::Caminho[k].at(j).get_peso(Config,Config->P->x);
+					assert(Peso >= 0);
 					if(CustoVertice[k] + Peso < CustoVertice[j]) {
 						CustoVertice[j] = CustoVertice[k] + Peso;
 						Precedente[j] = k;
@@ -243,7 +245,6 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 		hops = hops+1;
 		PathRev[hops] = Precedente[j];
 		j = Precedente[j];
-		assert(j!=-1);
 	}
 	vector<Node*> r;
 	r.clear();

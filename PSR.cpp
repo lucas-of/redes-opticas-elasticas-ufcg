@@ -4,7 +4,7 @@
 int PSR::N;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
-long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = 0;
+long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 0.5, PSR::PSO_Vmin = -0.5, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = 0;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
@@ -38,7 +38,6 @@ long double PSR::get_coeficiente(int i, int j) {
 long double PSR::procurarMaiorEnlace() {
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
-
 			if (MAux::Caminho[i].at(j).get_NodeOrigem() == NULL) continue;
 			if (MaiorEnlace < MAux::Caminho[i].at(j).get_comprimento()) MaiorEnlace = MAux::Caminho[i].at(j).get_comprimento();
 		}
