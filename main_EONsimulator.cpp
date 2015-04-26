@@ -29,67 +29,68 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config); 
 void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
-void clearMemory(Def *Config); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
+void clearMemory(Def *Config, MAux *Aux); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void CarregaCoeficientes();
-void CompressCon(Event*, Def *Config); /*Diminui a quantidade de slots reservados para a conexão. Pode ser configurada para retirar sempre o slot da direita ou o da esquerda ou o da direita, escolhido aleatoriamente. Lembrar de conferir isto.*/
+void CompressCon(Event*, Def *Config, MAux *Aux); /*Diminui a quantidade de slots reservados para a conexão. Pode ser configurada para retirar sempre o slot da direita ou o da esquerda ou o da direita, escolhido aleatoriamente. Lembrar de conferir isto.*/
 void CompressRandom(Conexao *con, Def *Config); /*Comprime conexão, removendo slot da esquerda ou da direita*/
 void CompressRight(Conexao *con, Def *Config); /*Comprime conexão, removendo o slot da direita*/
 void createStructures(); /*Cria estrutura topológica da rede, e carrega os dados de Topology.txt*/
-void DefineNextEventOfCon(Event* evt); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
-void ExpandCon(Event*, Def *Config); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
-void EncontraMultiplicador(Def *Config); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
+void DefineNextEventOfCon(Event* evt, MAux *Aux); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
+void ExpandCon(Event*, Def *Config, MAux *Aux); /*Exprime conexão, inserindo um novo slot disponível para a mesma*/
+void EncontraMultiplicador(Def *Config, MAux *Aux); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
 bool FillSlot(const Route* route, const int s, const bool b, Def *Config); /*Preenche todos os slots s da rota route com o valor b (ou seja, ocupa ou livra o slot s de todos os enlaces da rota)*/
 void GrauDosNodes(Def *Config); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 void RefreshNoise(Def *Config); /*atualiza os ruídos dos enlaces*/
 bool ReleaseSlot(const Route* route, int s, Def *Config); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*, Def *Config); /*Retira uma conexão da rede - liberando todos os seus slots*/
-void RequestCon(Event*, Def *Config); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
-void ScheduleEvent(Event*); /*Programa evento para execução, criando a fila*/
+void RequestCon(Event*, Def *Config, MAux *Aux); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
+void ScheduleEvent(Event*, MAux *Aux); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
-long double Simula_Rede(Def *Config);
-void SimPbReq(); /*Simulação para Probabilidade de Bloqueio*/
-void SimOSNR(); /*Simulação para OSNR*/
+long double Simula_Rede(Def *Config, MAux *Aux);
+void SimPbReq(MAux *Aux); /*Simulação para Probabilidade de Bloqueio*/
+void SimOSNR(MAux *Aux); /*Simulação para OSNR*/
 void SimNSlots(Def *Config);
-void SimAlfaBeta();
-void Sim(); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
-void SimCompFFO(); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
-void Simulate(Def *Config); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
-void Simulate_dAMP(Def *Config); /*Análogo de Simulate(), mas para variações na distância entre os amplificadores*/
+void SimAlfaBeta(MAux *Aux);
+void Sim(MAux *Aux); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
+void SimCompFFO(MAux *Aux); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
+void Simulate(Def *Config, MAux *Aux); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
+void Simulate_dAMP(Def *Config, MAux *Aux); /*Análogo de Simulate(), mas para variações na distância entre os amplificadores*/
 int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
+
+MAux *Aux;
 
 int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
 	createStructures();
 	if (MAux::Alg_Routing == MH)
-		RWA::Dijkstra();
+		RWA::Dijkstra(Aux);
 	else if (MAux::Alg_Routing == SP)
-		RWA::DijkstraSP();
+		RWA::DijkstraSP(Aux);
 	else if(MAux::Alg_Routing == OSNRR)
-		RWA::OSNRR();
+		RWA::OSNRR(Aux);
 
 	if (MAux::escSim == Sim_PbReq)
-		SimPbReq();
+		SimPbReq(Aux);
 	else if (MAux::escSim == Sim_OSNR)
-		SimOSNR();
+		SimOSNR(Aux);
 	else if (MAux::escSim == Sim_DAmp) {
-		Simulate_dAMP(MAux::Config);
+		Simulate_dAMP(MAux::Config, Aux);
 		//EncontraMultiplicador();
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
 		PSR(4);
-		PSR::executar_PSR();
+		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
-		SimAlfaBeta();
+		SimAlfaBeta(Aux);
 	}
 
 	delete []MAux::Topology;
-	delete []MAux::AllRoutes;
 	delete []MAux::Caminho;
 	delete []MAux::Coeficientes;
 	delete []MAux::MinimasDistancias;
@@ -138,16 +139,16 @@ bool checkFitSi(const bool* vetDisp, int s, int NslotsReq) {
 	return true;
 }
 
-void clearMemory(Def *Config) {
+void clearMemory(Def *Config, MAux *Aux) {
 	int s, L_or, L_de;
 	Conexao *con;
 	Event *evtPtr;
 	const Route* route;
-	Config->numReq = Config->numReq_Bloq = Config->numSlots_Req = Config->numSlots_Bloq = Config->numHopsPerRoute = Config->netOccupancy = MAux::simTime = Config->numReq_BloqPorOSNR = Config->numSlots_BloqPorOSNR = Config->taxaTotal = 0.0;
-	while(MAux::firstEvent != NULL) {
-		if(MAux::firstEvent->conexao != NULL) {
+	Config->numReq = Config->numReq_Bloq = Config->numSlots_Req = Config->numSlots_Bloq = Config->numHopsPerRoute = Config->netOccupancy = Aux->simTime = Config->numReq_BloqPorOSNR = Config->numSlots_BloqPorOSNR = Config->taxaTotal = 0.0;
+	while(Aux->firstEvent != NULL) {
+		if(Aux->firstEvent->conexao != NULL) {
 			//Há uma conexao
-			con = MAux::firstEvent->conexao;
+			con = Aux->firstEvent->conexao;
 			route = con->getRoute();
 			for (unsigned c = 0; c < route->getNhops(); c++) {
 				//remove todos os slots ocupados da conexao
@@ -158,8 +159,8 @@ void clearMemory(Def *Config) {
 			}
 			delete con;
 		}
-		evtPtr = MAux::firstEvent;
-		MAux::firstEvent = MAux::firstEvent->nextEvent;
+		evtPtr = Aux->firstEvent;
+		Aux->firstEvent = Aux->firstEvent->nextEvent;
 		delete evtPtr;
 	}
 
@@ -179,18 +180,18 @@ void clearMemory(Def *Config) {
 		for(int deN = 0; deN < Def::getNnodes(); deN++)
 			for(s = 0; s < Def::getSE(); s++)
                 assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + orN*Def::Nnodes + deN] == false);
-	assert(MAux::firstEvent == NULL);
+	assert(Aux->firstEvent == NULL);
 }
 
-void CompressCon(Event* evt, Def *Config) {
+void CompressCon(Event* evt, Def *Config, MAux *Aux) {
 	if (MAux::ExpComp) {
 		//Remover um slot lateral
 		Conexao *con = evt->conexao;
 		CompressRight(con, Config); //Remove sempre o slot da direita. Tentar outras heuristicas
 		//CompressRandom(con);
 		assert(con->getLastSlot() >= con->getFirstSlot()); //Apenas para checar erros
-		DefineNextEventOfCon(evt);
-		ScheduleEvent(evt);
+		DefineNextEventOfCon(evt, Aux);
+		ScheduleEvent(evt, Aux);
 	}
 }
 
@@ -217,7 +218,6 @@ void createStructures() {
 	MAux::Topology = new long double[Def::Nnodes*Def::Nnodes]; //matriz de conexões entre nós
 
 	//Carrega topologia de rede a partir do arquivo Topology.txt
-	MAux::AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
 	int orN, deN;
 	for (orN = 0; orN < Def::getNnodes(); orN++) {
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
@@ -234,6 +234,10 @@ void createStructures() {
 		}
 		cout << endl;
 	}
+    
+    delete Aux;
+    Aux = new MAux();
+    
 
 	//Calcula o grau de cada no
 	GrauDosNodes(MAux::Config);
@@ -278,7 +282,7 @@ void createStructures() {
 	if (MAux::Alg_Routing == PSO) CarregaCoeficientes();
 }
 
-void DefineNextEventOfCon (Event* evt) {
+void DefineNextEventOfCon (Event* evt, MAux *Aux) {
 	//Recalcula Te (tempo de expansao) e Tc (tempo de compressao) e os compara com o tempo para desativacao
 	//So pode haver expansao se o numero de slots for menor do que Def::getSE()
 
@@ -287,13 +291,13 @@ void DefineNextEventOfCon (Event* evt) {
 	EventType evtType = UNKNOWN;
 	if ( (MAux::ExpComp == true) && ((con->getLastSlot() - con->getFirstSlot() + 1) < Def::getSE()) )
 		//Se o numero de slots utilizados for menor do que Def::getSE()
-		Te = MAux::simTime + General::exponential(MAux::laE);
+		Te = Aux->simTime + General::exponential(MAux::laE);
 	else
 		Te = Def::MAX_DOUBLE;
 		//So pode haver compressao se o numero de slots for maior ou igual a 2, pois 1 e o numero minimo do slots que podem estar ativos para uma conexao
 
 	if ( (MAux::ExpComp == true) && (con->getLastSlot() - con->getFirstSlot() > 0) )
-		Tc = MAux::simTime + General::exponential(MAux::muC);
+		Tc = Aux->simTime + General::exponential(MAux::muC);
 	else
 		Tc = Def::MAX_DOUBLE;
 		//Checa o proximo evento dentre expansao, compressao e desativacao
@@ -319,7 +323,7 @@ void DefineNextEventOfCon (Event* evt) {
 }
 
 
-void ExpandCon(Event* evt, Def *Config) {
+void ExpandCon(Event* evt, Def *Config, MAux *Aux) {
 	if (MAux::ExpComp) {
 		Conexao *con = evt->conexao;
 		//Procura um slot lateral. Assume-se que tenta primeiro o slot a esquerda e depois o a direita.
@@ -332,8 +336,8 @@ void ExpandCon(Event* evt, Def *Config) {
 		} else
 			Config->numSlots_Bloq++;
 		Config->numSlots_Req++;
-		DefineNextEventOfCon(evt);
-		ScheduleEvent(evt);
+		DefineNextEventOfCon(evt, Aux);
+		ScheduleEvent(evt, Aux);
 	}
 }
 
@@ -422,6 +426,8 @@ void Load() {
 
     delete MAux::Config;
     MAux::Config = new Def(); //redefine Config para realocar Topology_S
+    delete Aux;
+    Aux = new MAux();
     
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
 		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
@@ -555,7 +561,7 @@ void RemoveCon(Event* evt, Def *Config) {
 	delete evt;
 }
 
-void RequestCon(Event* evt, Def *Config) {
+void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
@@ -580,22 +586,22 @@ void RequestCon(Event* evt, Def *Config) {
 		NslotsReq = SlotsReq(nTaxa, evt);
 
 		if(MAux::Alg_Routing == CSP)
-			RWA::DijkstraFormas(orN, deN, NslotsReq, Config);
+			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, Aux);
 		if(MAux::Alg_Routing == CSP_Acum)
-			RWA::DijkstraAcum(orN, deN, NslotsReq, Config);
+			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, Aux);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Def::Alfa, Config);
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Def::Alfa, Config, Aux);
 		if(MAux::Alg_Routing == LOR_Modificado)
-			RWA::LORModificado(orN, deN, NslotsReq, Config);
+			RWA::LORModificado(orN, deN, NslotsReq, Config, Aux);
 		if(MAux::Alg_Routing == PSO)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, Aux);
 		if(MAux::escSim == Sim_TreinoPSR)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, Aux);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config);
+			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Def::Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, Aux);
 
-		for(unsigned int i = 0; i < MAux::AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
-			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
+		for(unsigned int i = 0; i < Aux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
+			route = Aux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
 			NslotsUsed = 0;
 			si = -1;
 			TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
@@ -621,12 +627,12 @@ void RequestCon(Event* evt, Def *Config) {
 
 					//Cria uma nova conexao
 					long double Tempo = General::exponential(MAux::mu);
-					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, MAux::simTime + Tempo);
+					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, Aux->simTime + Tempo);
 					//Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
 					Event *evt = new Event;
 					evt->conexao = newConexao;
-					DefineNextEventOfCon(evt);
-					ScheduleEvent(evt);
+					DefineNextEventOfCon(evt, Aux);
+					ScheduleEvent(evt, Aux);
 					Config->tempoTotal_Taxa[nTaxa] += Tempo;
 					Config->numReqAceit_Esquema[Esq] += 1;
 					Config->taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
@@ -647,13 +653,13 @@ void RequestCon(Event* evt, Def *Config) {
 	AccountForBlocking(NslotsReq, NslotsUsed, nTaxa, Config);
 	//Define o novo evento de chegada de requisicao
 	long double IAT = General::exponential(MAux::laNet); //Inter-arrival time
-	setReqEvent(evt, MAux::simTime + IAT);
+	setReqEvent(evt, Aux->simTime + IAT);
 	assert(evt->type == Req);
-	ScheduleEvent(evt); //Reusa este mesmo objeto evt
+	ScheduleEvent(evt, Aux); //Reusa este mesmo objeto evt
 }
 
-void ScheduleEvent(Event *evt) {
-	Event *evtAux = MAux::firstEvent, *evtAnt = NULL;
+void ScheduleEvent(Event *evt, MAux *Aux) {
+	Event *evtAux = Aux->firstEvent, *evtAnt = NULL;
 	while(evtAux != NULL) {
 		if(evt->time < evtAux->time)
 			break;
@@ -665,7 +671,7 @@ void ScheduleEvent(Event *evt) {
 
 	evt->nextEvent = evtAux;
 	if(evtAnt == NULL)
-		MAux::firstEvent = evt;
+		Aux->firstEvent = evt;
 	else
 		evtAnt->nextEvent = evt;
 }
@@ -691,25 +697,25 @@ void setReqEvent(Event* evt, TIME t) {
 	}
 }
 
-long double Simula_Rede(Def *Config) {
-	clearMemory(Config);
+long double Simula_Rede(Def *Config, MAux *Aux) {
+	clearMemory(Config, Aux);
 	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
-		while (!MAux::AllRoutes[i].empty()) {
-			delete MAux::AllRoutes[i].back();
-			MAux::AllRoutes[i].pop_back();
+		while (!Aux->AllRoutes[i].empty()) {
+			delete Aux->AllRoutes[i].back();
+			Aux->AllRoutes[i].pop_back();
 		}
-		vector<Route*> ().swap(MAux::AllRoutes[i]);
+		vector<Route*> ().swap(Aux->AllRoutes[i]);
 	}
-	delete[] MAux::AllRoutes;
-	MAux::AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
-	MAux::firstEvent = new Event;
-	setReqEvent(MAux::firstEvent, MAux::simTime);
+	delete[] Aux->AllRoutes;
+	Aux->AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
+	Aux->firstEvent = new Event;
+	setReqEvent(Aux->firstEvent, Aux->simTime);
 	while((Config->numReq_Bloq < Def::getNumReqBloqMin()) && (Config->numReq < Def::getNumReqMax())) {
-		Event *curEvent = MAux::firstEvent;
-		MAux::firstEvent = MAux::firstEvent->nextEvent;
-		MAux::simTime = curEvent->time;
+		Event *curEvent = Aux->firstEvent;
+		Aux->firstEvent = Aux->firstEvent->nextEvent;
+		Aux->simTime = curEvent->time;
 		if(curEvent->type == Req) {
-			RequestCon(curEvent, Config);
+			RequestCon(curEvent, Config, Aux);
 		} else if(curEvent->type == Desc) {
 			RemoveCon(curEvent, Config);
 		}
@@ -718,38 +724,38 @@ long double Simula_Rede(Def *Config) {
 	return PbReq;
 }
 
-void SimAlfaBeta() {
+void SimAlfaBeta(MAux *Aux) {
 	long double PbReq;
 	if (MAux::escOtim == OtimizarAlfa)
 		for (Def::Alfa = 0; Def::Alfa <= 100; Def::Alfa += 2) {
 			RefreshNoise(MAux::Config);
-			PbReq = Simula_Rede(MAux::Config);
+			PbReq = Simula_Rede(MAux::Config, Aux);
 			cout << "Alfa " << 0.01*Def::Alfa << "\tPbReq " << PbReq << endl;
 			MAux::Resul << 0.01*Def::Alfa << "\t" << PbReq << endl;
 		}
 	else if (MAux::escOtim == OtimizarBeta)
 		for (Def::Beta = 0; Def::Beta <= 100; Def::Beta += 2) {
 			RefreshNoise(MAux::Config);
-			PbReq = Simula_Rede(MAux::Config);
+			PbReq = Simula_Rede(MAux::Config, Aux);
 			cout << "Beta " << 0.01*Def::Beta << "\tPbReq " << PbReq << endl;
 			MAux::Resul << 0.01*Def::Beta << "\t" << PbReq << endl;
 		}
 }
 
-void SimPbReq() {
+void SimPbReq(MAux *Aux) {
 	for(MAux::laNet = MAux::LaNetMin; MAux::laNet <= MAux::LaNetMax; MAux::laNet += MAux::LaPasso) {
-		Sim();
+		Sim(Aux);
 		//SimCompFFO(); Simula usando as listas FF otimizadas
 	}
 }
 
-void SimOSNR() {
+void SimOSNR(MAux *Aux) {
 	//Simulacao para varios trafegos
 	cout << "Insira a carga da rede." << endl;
 	cin >> MAux::laNet;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
 		MAux::Config->setOSNR(osnr);
-		Sim();
+		Sim(Aux);
 		//SimCompFFO(); Simula usando as listas FF otimizadas
 	}
 }
@@ -769,12 +775,12 @@ void SimNSlots(Def *Config) {
 		Config->Topology_S = new bool[Def::getSE()*Def::Nnodes*Def::Nnodes]; //matriz de ocupação de slots de cada enlace
 		for (int i = 0; i < Def::getSE()*Def::Nnodes*Def::Nnodes; i++)
 			Config->Topology_S[i] = false;
-		Simulate(Config);
+		Simulate(Config, Aux);
 	}
 }
 
 
-void Sim() {
+void Sim(MAux *Aux) {
 	//Indica como o trafego e distribuido entre s = 1, 2, ..., SE
 	MAux::Config->setLaUniform(MAux::laNet);
 	//Def::setLaRandom(laNet);
@@ -786,10 +792,10 @@ void Sim() {
 		//Heuristics::FFO_invertido(FFlists);
 		//Heuristics::FFO_metrica(FFlists);
 	}
-	Simulate(MAux::Config);
+	Simulate(MAux::Config, Aux);
 }
 
-void SimCompFFO() {
+void SimCompFFO(MAux *Aux) {
 	long double Pb_conv, Pb_ext, Pb_met;
 	long double difPerc, difPerc_FFOmet_FFOext_Pos = 0.0, difPerc_FFOmet_FFOext_Neg = 0.0,	difPerc_FFOconv_FFOext_Pos = 0.0, difPerc_FFOconv_FFOext_Neg = 0.0;
 	for(int it = 0; it < 100; it++) {
@@ -797,15 +803,15 @@ void SimCompFFO() {
 
 		//Testa as heuristicas
 		Heuristics::FFO_convencional(MAux::FFlists);
-		Simulate(MAux::Config);
+		Simulate(MAux::Config, Aux);
 		Pb_conv = MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		Heuristics::FFO_extremos(MAux::FFlists);
-		Simulate(MAux::Config);
+		Simulate(MAux::Config, Aux);
 		Pb_ext = (double)MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		Heuristics::FFO_metrica(MAux::FFlists);
-		Simulate(MAux::Config);
+		Simulate(MAux::Config, Aux);
 		Pb_met = MAux::Config->numReq_Bloq/MAux::Config->numReq;
 
 		//Calcular as diferencas percentuais:
@@ -852,29 +858,29 @@ void SimCompFFO() {
 	MAux::Resul2<<"Maxima diferenca percentual Negativa entre FFOext e FFOconv: "<<difPerc_FFOconv_FFOext_Neg<<endl;
 }
 
-void Simulate(Def *Config) {
-    clearMemory(Config);
+void Simulate(Def *Config, MAux *Aux) {
+    clearMemory(Config, Aux);
 	//Cria o primeiro evento da rede como uma requisicao:
-	MAux::firstEvent = new Event;
-	setReqEvent(MAux::firstEvent, MAux::simTime);
+	Aux->firstEvent = new Event;
+	setReqEvent(Aux->firstEvent, Aux->simTime);
 	while((Config->numReq_Bloq < Def::getNumReqBloqMin()) && (Config->numReq < Def::getNumReqMax())) {
-		Event *curEvent = MAux::firstEvent;
-		MAux::firstEvent = MAux::firstEvent->nextEvent;
-		MAux::simTime = curEvent->time;
+		Event *curEvent = Aux->firstEvent;
+		Aux->firstEvent = Aux->firstEvent->nextEvent;
+		Aux->simTime = curEvent->time;
 		if(curEvent->type == Req) {
-			RequestCon(curEvent, Config);
+			RequestCon(curEvent, Config, Aux);
 		} else if(curEvent->type == Desc) {
 			RemoveCon(curEvent, Config);
 		} else if(curEvent->type == Exp) {
 			assert(MAux::ExpComp); //Um evento deste tipo so pode ocorrer se MAux::ExpComp=true;
-			ExpandCon(curEvent, Config);
+			ExpandCon(curEvent, Config, Aux);
 		} else if(curEvent->type == Comp) {
 			assert(MAux::ExpComp); //Um evento deste tipo so pode ocorrer se MAux::ExpComp=true;
-			CompressCon(curEvent, Config);
+			CompressCon(curEvent, Config, Aux);
 		}
 	}
 
-	cout <<"Simulation Time= " << MAux::simTime << "  numReq=" << Config->numReq << endl;
+	cout <<"Simulation Time= " << Aux->simTime << "  numReq=" << Config->numReq << endl;
 
 	if (MAux::escSim == Sim_PbReq) {
 		cout << "nu0= " << MAux::laNet << "   PbReq= " << ProbBloqueio(Config) << "   PbAc= " << ProbAceitacao(Config) << "   PbSlots= " << (long double) Config->numSlots_Bloq/Config->numSlots_Req << " HopsMed= " << (long double) Config->numHopsPerRoute/(Config->numReq-Config->numReq_Bloq) << " netOcc= " << (long double) Config->netOccupancy << endl;
@@ -897,13 +903,13 @@ void Simulate(Def *Config) {
 	{
 		ProbBloqueioTaxa(Config);
 		ProbAceitacaoTaxa(Config);
-		calcTaxaMedia(Config);
+		calcTaxaMedia(Config, Aux);
 		AceitacaoEsquema(Config);
 	}
 }
 
-void Simulate_dAMP(Def *Config) {
-	RWA::DijkstraSP();
+void Simulate_dAMP(Def *Config, MAux *Aux) {
+	RWA::DijkstraSP(Aux);
 	Event *evt = new Event;	setReqEvent(evt,0);
 	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,400E9) << "dB" << endl;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
@@ -923,7 +929,7 @@ void Simulate_dAMP(Def *Config) {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-            OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
+            OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
 			cout << "OSNRin = " << Config->get_OSRNin() << "dB, dAmp = " << Config->get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
 			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Config->get_DistaA() << "\t" << Config->get_OSRNin() << endl;
@@ -935,8 +941,8 @@ void Simulate_dAMP(Def *Config) {
 	delete evt;
 }
 
-void EncontraMultiplicador(Def *Config) {
-	RWA::DijkstraSP();
+void EncontraMultiplicador(Def *Config, MAux *Aux) {
+	RWA::DijkstraSP(Aux);
 	Event *evt = new Event;	setReqEvent(evt,0);
 	Config->set_DistaA(80); //80km
 	Config->setOSNR(30); //30dB
@@ -958,9 +964,9 @@ void EncontraMultiplicador(Def *Config) {
 	for (long double multiplicador = 1; multiplicador <= 30; multiplicador += 1) {
 
 		if (multiplicador != 1)
-			for (int i = 0; i < MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNhops(); i++) {
-				int noOrig = MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i);
-				int noDest = MAux::AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i+1);
+			for (int i = 0; i < Aux->AllRoutes[orN*Def::Nnodes + deN].at(0)->getNhops(); i++) {
+				int noOrig = Aux->AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i);
+				int noDest = Aux->AllRoutes[orN*Def::Nnodes + deN].at(0)->getNode(i+1);
 				long double oldDist = MAux::Caminho[noOrig].at(noDest).get_comprimento();
 				long double newDist = oldDist * multiplicador / (multiplicador - 1);
 				MAux::Caminho[noOrig].at(noDest).set_distancia(newDist);
@@ -970,7 +976,7 @@ void EncontraMultiplicador(Def *Config) {
 		RefreshNoise(Config);
 		setReqEvent(evt,0);
 		long double OSNRout;
-        OSNRout = AvaliarOSNR( MAux::AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
+        OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
 		cout << "Multiplicador = " << multiplicador << ", OSNR = " << OSNRout << "dB" << endl; //primeira rota
 	}
 	delete evt;

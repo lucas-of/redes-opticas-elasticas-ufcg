@@ -21,6 +21,8 @@ enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
 	public:
+        MAux();
+        ~MAux();
         static Def *Config;
 		static ofstream Resul;
 		static ofstream Metrica;
@@ -47,7 +49,7 @@ class MAux {
 
 		//Variáveis necessárias em main_EONsimulator.cpp
 		static bool ExpComp;
-		static Event *firstEvent;
+		Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
 		static long double laE;
@@ -66,9 +68,9 @@ class MAux {
 		static long double *Coeficientes;
 		static long double *Topology;
 		static long double *MinimasDistancias;
-		static TIME simTime;
+		TIME simTime;
 		static vector<int> **FFlists;
-		static vector<Route*> *AllRoutes;
+        vector<Route*> *AllRoutes;
 		static vector<Node> Rede;
 		static vector<Enlace> *Caminho;
 		static Respostas AvaliaOsnr;

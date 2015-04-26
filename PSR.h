@@ -21,7 +21,7 @@ class PSR{
 	public:
 		PSR(int);
 		const static int get_N();
-		static void executar_PSR();
+		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
 		static long double *ComprimentosNormalizados;
 		static ifstream PSO_Coeficientes_R;
@@ -52,7 +52,7 @@ class PSR{
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
 		static void PSO_atualizaCustoEnlaces(Particula *P);
-		static long double PSO_simulaRede(Particula *P, Def *Config);
+		static long double PSO_simulaRede(Particula *P, Def *Config, MAux *Aux);
 		static void PSO_atualizaVelocidades();
 		static void PSO_ImprimeCoeficientes();
 };

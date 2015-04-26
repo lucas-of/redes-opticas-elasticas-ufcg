@@ -48,7 +48,7 @@ class Def {
         static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
-		static float Alfa; //SPeFormas
+        static float Alfa; //SPeFormas
 		static float Beta; //RuidoNormalizadoeFormas
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível

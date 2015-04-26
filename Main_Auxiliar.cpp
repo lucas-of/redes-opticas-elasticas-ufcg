@@ -24,7 +24,6 @@ ifstream MAux::Topol6("TopologyTop1.txt");
 ifstream MAux::Topol7("TopologyTop2.txt");
 
 bool MAux::ExpComp;
-Event *MAux::firstEvent;
 int MAux::Alg_Aloc;
 int MAux::Alg_Routing;
 long double MAux::laE;
@@ -43,12 +42,18 @@ long double MAux::muC;
 long double *MAux::Topology;
 long double *MAux::Coeficientes;
 long double *MAux::MinimasDistancias;
-TIME MAux::simTime;
 vector<int> **MAux::FFlists = NULL;
-vector<Route*> *MAux::AllRoutes;
 vector<Node> MAux::Rede;
 vector<Enlace> *MAux::Caminho;
 Respostas MAux::AvaliaOsnr;
 Topologia MAux::escTop;
 Simulacao MAux::escSim;
 SimOtimizacao MAux::escOtim;
+
+MAux::MAux(){
+    AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
+};
+    
+MAux::~MAux() {
+    delete[] AllRoutes;
+}

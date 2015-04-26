@@ -13,7 +13,7 @@ void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o temp
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
-long double Simula_Rede(Def *Config);
+long double Simula_Rede(Def *Config, MAux *Aux);
 
 PSR::PSR(int NewN) {
     assert(NewN > 0);
@@ -90,9 +90,11 @@ void PSR::PSO() {
 
     for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
+#pragma omp parallel for
         for (int Part = 0; Part < PSO_P; Part++) {
             Def *Config = new Def();
-            PbReq = PSO_simulaRede(PSO_populacao + Part, Config);
+            MAux *AuxPSR = new MAux();
+            PbReq = PSO_simulaRede(PSO_populacao + Part, Config, AuxPSR);
             if (PbReq < (PSO_populacao + Part)->melhorInd) {
                 (PSO_populacao + Part)->melhorInd = PbReq;
                 for (int i = 0; i < N*N; i++)
@@ -107,6 +109,7 @@ void PSR::PSO() {
             }
             cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
             delete Config;
+            delete AuxPSR;
         }
         PSO_atualizaVelocidades();
     }
@@ -137,12 +140,12 @@ long double PSR::get_MaiorEnlace() {
     return MaiorEnlace;
 }
 
-long double PSR::PSO_simulaRede(Particula *P, Def *Config) {
+long double PSR::PSO_simulaRede(Particula *P, Def *Config, MAux *Aux) {
     PSO_atualizaCustoEnlaces(P);
-    return Simula_Rede(Config);
+    return Simula_Rede(Config, Aux);
 }
 
-void PSR::executar_PSR() {
+void PSR::executar_PSR(MAux *Aux) {
     PSO();
     PSO_ImprimeCoeficientes();
     for (int i = 0; i < PSO_P; i++) {
@@ -151,9 +154,9 @@ void PSR::executar_PSR() {
         delete[] PSO_populacao[i].v;
     }
     for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
-        if (!MAux::AllRoutes[i].empty())
-            delete MAux::AllRoutes[i].front();
-        vector<Route*> ().swap(MAux::AllRoutes[i]);
+        if (!Aux->AllRoutes[i].empty())
+            delete Aux->AllRoutes[i].front();
+        vector<Route*> ().swap(Aux->AllRoutes[i]);
     }
     delete[] PSO_populacao;
 }

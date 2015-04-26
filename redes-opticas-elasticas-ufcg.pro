@@ -1,5 +1,4 @@
 TEMPLATE = app
-QT += concurrent
 CONFIG += console
 
 SOURCES += \
@@ -46,3 +45,6 @@ HEADERS += \
 
 INSTALLS += \
     install_it
+
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp

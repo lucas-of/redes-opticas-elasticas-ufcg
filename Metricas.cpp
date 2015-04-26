@@ -22,12 +22,12 @@ void ProbAceitacaoTaxa(Def *Config) {
 	}
 }
 
-void calcTaxaMedia(Def *Config) {
+void calcTaxaMedia(Def *Config, MAux *Aux) {
 	long double TaxaMedia = 0;
 	for (int i = 0; i < Def::get_numPossiveisTaxas(); i++) {
 		TaxaMedia += Def::PossiveisTaxas[i] * Config->tempoTotal_Taxa[i];
 	}
-	TaxaMedia /= MAux::simTime;
+	TaxaMedia /= Aux->simTime;
 	cout << "Taxa Media de transmissão é " << TaxaMedia/pow(10,9) << " Gbps" << endl;
 	MAux::ResulTaxaMedia << MAux::laNet << "\t" << TaxaMedia << endl;
 }
