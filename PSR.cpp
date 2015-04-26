@@ -92,9 +92,7 @@ void PSR::PSO() {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
 #pragma omp parallel for
         for (int Part = 0; Part < PSO_P; Part++) {
-            Def *Config = new Def();
-            MAux *AuxPSR = new MAux();
-            PbReq = PSO_simulaRede(PSO_populacao + Part, Config, AuxPSR);
+            PbReq = PSO_simulaRede(PSO_populacao + Part, new Def(), new MAux());
             if (PbReq < (PSO_populacao + Part)->melhorInd) {
                 (PSO_populacao + Part)->melhorInd = PbReq;
                 for (int i = 0; i < N*N; i++)
@@ -108,8 +106,6 @@ void PSR::PSO() {
                 PSO_ImprimeCoeficientes();
             }
             cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
-            delete Config;
-            delete AuxPSR;
         }
         PSO_atualizaVelocidades();
     }
