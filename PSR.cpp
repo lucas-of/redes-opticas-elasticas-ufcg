@@ -87,7 +87,7 @@ void PSR::PSO() {
 
 	for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
 		cout << "PSO - Repeticao " << Repeticao << "." << endl;
-#pragma omp parallel for ordered schedule(dynamic)
+#pragma omp parallel for
 		for (int Part = 0; Part < PSO_P; Part++) {
 			Def *PSRDef = new Def(PSO_populacao + Part);
 			MAux *PSRAux = new MAux();
@@ -106,7 +106,6 @@ void PSR::PSO() {
 			}
 			delete PSRDef;
 			delete PSRAux;
-#pragma omp ordered
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
 		}
 		PSO_atualizaVelocidades();
