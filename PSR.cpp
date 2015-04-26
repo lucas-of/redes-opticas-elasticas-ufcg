@@ -4,7 +4,7 @@
 int PSR::N;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
-long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 0.5, PSR::PSO_Vmin = -0.5, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = 0;
+long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
@@ -118,7 +118,7 @@ void PSR::PSO_iniciarPopulacao() {
 		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				PSO_populacao[i].v[j*N+k] = 0;
-				PSO_populacao[i].x[j*N+k] = General::uniforme(PSR::PSO_Xmin,PSR::PSO_Xmax);
+				PSO_populacao[i].x[j*N+k] = General::uniforme(0,PSR::PSO_Xmax);
 			}
 		}
 	}
