@@ -4,7 +4,7 @@
 int PSR::N;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
-long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
+long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = 0;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
