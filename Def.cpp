@@ -29,38 +29,39 @@ long double Def::Bslot = 12.5;
 long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
 
-Def::Def() {
-    DistA=80;
-    OSNRin=30;
-    numReqAceit_Esquema = new long double[numEsquemasDeModulacao];
-    numReq_Taxa = new long double[numPossiveisTaxas];
-    numReqBloq_Taxa = new long double[numPossiveisTaxas];
-    Topology_S = new bool[Nnodes*Nnodes*SE];
-    for (int i=0 ; i < Def::getSE(); i++)
+Def::Def(Particula *Part) {
+	P = Part;
+	DistA=80;
+	OSNRin=30;
+	numReqAceit_Esquema = new long double[numEsquemasDeModulacao];
+	numReq_Taxa = new long double[numPossiveisTaxas];
+	numReqBloq_Taxa = new long double[numPossiveisTaxas];
+	Topology_S = new bool[Nnodes*Nnodes*SE];
+	for (int i=0 ; i < Def::getSE(); i++)
 		for (int j=0; j < Def::getNnodes() ; j++)
 			for (int k = 0; k < Def::getNnodes(); k++)
 				Topology_S[i*Def::Nnodes*Def::Nnodes + Def::Nnodes*j + k] = false;
-   
-    numSlots_Bloq = 0.0;
-    numSlots_BloqPorOSNR = 0.0;
-    numReq_BloqPorOSNR = 0.0;
-    numSlots_Req = 0.0;
-    numReq_Bloq = 0.0;
-    numHopsPerRoute = 0.0;
-    numReq = 0.0;
-    netOccupancy = 0.0;    
-    tempoTotal_Taxa = new long double[numPossiveisTaxas];
-    taxaTotal_Esquema = new long double[numEsquemasDeModulacao];
-    taxaTotal = 0;
+
+	numSlots_Bloq = 0.0;
+	numSlots_BloqPorOSNR = 0.0;
+	numReq_BloqPorOSNR = 0.0;
+	numSlots_Req = 0.0;
+	numReq_Bloq = 0.0;
+	numHopsPerRoute = 0.0;
+	numReq = 0.0;
+	netOccupancy = 0.0;
+	tempoTotal_Taxa = new long double[numPossiveisTaxas];
+	taxaTotal_Esquema = new long double[numEsquemasDeModulacao];
+	taxaTotal = 0;
 }
 
 Def::~Def() {
-    delete[] numReqAceit_Esquema;
-    delete[] numReq_Taxa;
-    delete[] numReqBloq_Taxa;
-    delete[] Topology_S;
-    delete[] tempoTotal_Taxa;
-    delete[] taxaTotal_Esquema;
+	delete[] numReqAceit_Esquema;
+	delete[] numReq_Taxa;
+	delete[] numReqBloq_Taxa;
+	delete[] Topology_S;
+	delete[] tempoTotal_Taxa;
+	delete[] taxaTotal_Esquema;
 }
 
 void Def::setPossiveisTaxas() {

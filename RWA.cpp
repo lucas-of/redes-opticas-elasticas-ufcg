@@ -212,13 +212,17 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 		for(j = 0; j < Def::getNnodes(); j++)
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
-				//Calcula O vetor de disponibilidade do enlace entre k e j
-				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config) < CustoVertice[j]) {
-					CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config);
-					Precedente[j] = k;
-				}
+				if (Config->P == NULL) {
+					if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config) < CustoVertice[j]) {
+						CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config);
+						Precedente[j] = k;
+					}
+				} else {
+						if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config,Config->P->x) < CustoVertice[j]) {
+							CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config, Config->P->x);
+							Precedente[j] = k;
+						}
+					}
 			}
 	}
 
@@ -549,7 +553,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
 				RuidoLimiar = Config->get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
-                custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
+				custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
 				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
 
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
@@ -845,7 +849,7 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 
 	if (Current->whoami == deN->whoami) { //Encontrou uma rota
 		Route *R = new Route(*Visitados);
-        long double OSNRRota = AvaliarOSNR(R, Config);
+		long double OSNRRota = AvaliarOSNR(R, Config);
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;

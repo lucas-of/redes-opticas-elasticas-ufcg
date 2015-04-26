@@ -9,14 +9,6 @@
 #include "General.h"
 #include "vector"
 
-struct Particula {
-		long double *x;
-		long double *v;
-		long double *p;
-		long double melhorInd = 1;
-		Particula *Vizinha1, *Vizinha2;
-};
-
 class PSR{
 	public:
 		PSR(int);

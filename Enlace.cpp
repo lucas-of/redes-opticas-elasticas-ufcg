@@ -112,6 +112,25 @@ long double Enlace::get_peso(Def *Config) {
 	return peso;
 }
 
+long double Enlace::get_peso(Def *Config, long double *Coef) {
+	peso = 0;
+	long double Disponibilidade;
+	int SlotsDispon = 0;
+	for (int Slot = 0; Slot < Def::getSE(); Slot++)
+		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
+	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
+
+	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
+	Disponibilidade = log(Disponibilidade);
+
+	for (int i = 0; i < PSR::get_N(); i++) {
+		for (int j = 0; j < PSR::get_N(); j++) {
+			peso += Coef[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
+		}
+	}
+	return peso;
+}
+
 void Enlace::recalcular_peso(long double *Coef) {
 	Coeficientes = Coef;
 }

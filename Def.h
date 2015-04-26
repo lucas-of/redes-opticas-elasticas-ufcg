@@ -15,10 +15,18 @@ typedef long double TIME;
 
 #include "General.h"
 
+struct Particula {
+		long double *x;
+		long double *v;
+		long double *p;
+		long double melhorInd = 1;
+		Particula *Vizinha1, *Vizinha2;
+};
+
 class Def {
 	public:
-        Def();
-        ~Def();
+		Def(Particula *);
+		~Def();
 		enum Arquitetura {
 			BS, SS
 		}; /* Broadcast-and-Select ou Switch-and-Select*/
@@ -45,10 +53,11 @@ class Def {
 		static long double Bref;//largura de linha de referencia
 		static long double Famp;//fator do ruido amplificador
 		static long double freq; //frequencia
-        static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
+		static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
-        static float Alfa; //SPeFormas
+		Particula *P;
+		static float Alfa; //SPeFormas
 		static float Beta; //RuidoNormalizadoeFormas
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
@@ -68,7 +77,7 @@ class Def {
 		long double *tempoTotal_Taxa;
 		long double *taxaTotal_Esquema;
 		long double taxaTotal;
-        bool *Topology_S;
+		bool *Topology_S;
 
 		void clearGrauNo();
 		static void setPossiveisTaxas();

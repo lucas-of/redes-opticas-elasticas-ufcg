@@ -8,13 +8,14 @@ class Enlace {
 		Enlace(Node *NOrig, Node *NDest, double dist);
 		double get_comprimento(void);
 		long double get_peso(Def*);
+		long double get_peso(Def*, long double *);
 		Node* get_NodeOrigem(void);
 		Node* get_NodeDestino(void);
 		long double get_ganho_enlace();
 		long double get_ganho_preamplif();
 		long double get_ruido_preamplif();
 		long double get_perda_enlace();
-        long double get_ruido_enlace();
+		long double get_ruido_enlace();
 		void set_distancia(long double);
 		void recalcular(Def *Config);
 		void recalcular_peso(long double *Coef);

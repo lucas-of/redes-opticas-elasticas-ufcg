@@ -1,6 +1,6 @@
 #include "Main_Auxiliar.h"
 
-Def* MAux::Config = new Def();
+Def* MAux::Config = new Def(NULL);
 ofstream MAux::Resul("Result.txt");
 ofstream MAux::Metrica("Metrica.txt");
 ofstream MAux::ResulOSNR("ResultOSNR.txt");
@@ -51,10 +51,10 @@ Simulacao MAux::escSim;
 SimOtimizacao MAux::escOtim;
 
 MAux::MAux(){
-    AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-    firstEvent = NULL;
+	AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
+	firstEvent = NULL;
 };
-    
+
 MAux::~MAux() {
-    delete[] AllRoutes;
+	delete[] AllRoutes;
 }

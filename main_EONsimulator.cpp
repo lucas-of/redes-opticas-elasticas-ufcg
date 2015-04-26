@@ -179,7 +179,7 @@ void clearMemory(Def *Config, MAux *Aux) {
 	for(int orN = 0; orN < Def::getNnodes(); orN++)
 		for(int deN = 0; deN < Def::getNnodes(); deN++)
 			for(s = 0; s < Def::getSE(); s++)
-                assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + orN*Def::Nnodes + deN] == false);
+				assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + orN*Def::Nnodes + deN] == false);
 	assert(Aux->firstEvent == NULL);
 }
 
@@ -234,10 +234,10 @@ void createStructures() {
 		}
 		cout << endl;
 	}
-    
-    delete Aux;
-    Aux = new MAux();
-    
+
+	delete Aux;
+	Aux = new MAux();
+
 
 	//Calcula o grau de cada no
 	GrauDosNodes(MAux::Config);
@@ -397,7 +397,7 @@ void Load() {
 	}
 
 	Def::setNnodes(aux);
-    cout << "Numero de nos: "<< Def::getNnodes() << endl;
+	cout << "Numero de nos: "<< Def::getNnodes() << endl;
 
 	cout<<"Considera a OSNR? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
 	cin>>aux;
@@ -424,11 +424,11 @@ void Load() {
 	//Outras entradas para o simulador
 	Def::setSR(Def::getSE()); //Uma requisicao nao podera pedir mais que SE slots
 
-    delete MAux::Config;
-    MAux::Config = new Def(); //redefine Config para realocar Topology_S
-    delete Aux;
-    Aux = new MAux();
-    
+	delete MAux::Config;
+	MAux::Config = new Def(NULL); //redefine Config para realocar Topology_S
+	delete Aux;
+	Aux = new MAux();
+
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
 		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
@@ -608,7 +608,7 @@ void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 			assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
-                if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
+				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
 				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
 				//Inserir a conexao na rede
 					int L_or, L_de;
@@ -640,7 +640,7 @@ void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 				} else { //conexao bloqueada por OSNR
 					NslotsUsed = 0;
 					if (Esq == numEsquemasDeModulacao - 1) {
-                        AccountForBlockingOSNR(NslotsReq,NslotsUsed,Config);
+						AccountForBlockingOSNR(NslotsReq,NslotsUsed,Config);
 					}
 				}
 			}
@@ -859,7 +859,7 @@ void SimCompFFO(MAux *Aux) {
 }
 
 void Simulate(Def *Config, MAux *Aux) {
-    clearMemory(Config, Aux);
+	clearMemory(Config, Aux);
 	//Cria o primeiro evento da rede como uma requisicao:
 	Aux->firstEvent = new Event;
 	setReqEvent(Aux->firstEvent, Aux->simTime);
@@ -929,7 +929,7 @@ void Simulate_dAMP(Def *Config, MAux *Aux) {
 					}
 				}
 			} //Encontra a maior entre as menores distancias
-            OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
+			OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
 			cout << "OSNRin = " << Config->get_OSRNin() << "dB, dAmp = " << Config->get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
 			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Config->get_DistaA() << "\t" << Config->get_OSRNin() << endl;
@@ -976,7 +976,7 @@ void EncontraMultiplicador(Def *Config, MAux *Aux) {
 		RefreshNoise(Config);
 		setReqEvent(evt,0);
 		long double OSNRout;
-        OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
+		OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
 		cout << "Multiplicador = " << multiplicador << ", OSNR = " << OSNRout << "dB" << endl; //primeira rota
 	}
 	delete evt;
