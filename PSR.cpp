@@ -83,16 +83,14 @@ void PSR::PSO_configurar() {
 }
 
 void PSR::PSO() {
-    long double PbReq;
-
     PSO_configurar();
     PSO_iniciarPopulacao();
 
     for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
-#pragma omp parallel for
+#pragma omp parallel for ordered schedule(dynamic)
         for (int Part = 0; Part < PSO_P; Part++) {
-            PbReq = PSO_simulaRede(PSO_populacao + Part, new Def(), new MAux());
+            long double PbReq = PSO_simulaRede(PSO_populacao + Part, new Def(), new MAux());
             if (PbReq < (PSO_populacao + Part)->melhorInd) {
                 (PSO_populacao + Part)->melhorInd = PbReq;
                 for (int i = 0; i < N*N; i++)
@@ -105,6 +103,7 @@ void PSR::PSO() {
                         Coeficientes[i*N + j] = (PSO_populacao+Part)->x[i*N +j];
                 PSO_ImprimeCoeficientes();
             }
+#pragma omp ordered
             cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
         }
         PSO_atualizaVelocidades();
