@@ -10,7 +10,6 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 	Origem = NOrig;
 	Destino = NDest;
 	distancia = dist;
-	peso = Def::MAX_LONGDOUBLE;
 	calcula_perdas();
 	if (NOrig != NULL) { //se nao e o no "infinito"
 		calcula_num_amplificadores(MAux::Config);
@@ -94,7 +93,7 @@ void Enlace::recalcular(Def *Config) {
 }
 
 long double Enlace::get_peso(Def *Config) {
-	peso = 0;
+	long double peso = 0;
 	long double Disponibilidade;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
@@ -113,7 +112,7 @@ long double Enlace::get_peso(Def *Config) {
 }
 
 long double Enlace::get_peso(Def *Config, long double *PartCoef) {
-	peso = 0;
+	long double peso = 0;
 	long double Disponibilidade;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
@@ -128,7 +127,10 @@ long double Enlace::get_peso(Def *Config, long double *PartCoef) {
 			peso += PartCoef[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
 		}
 	}
-	return peso;
+	if (peso > 0)
+		return peso;
+	else
+		int a = 1;
 }
 
 void Enlace::recalcular_peso(long double *Coef) {

@@ -21,7 +21,6 @@ class Enlace {
 		void recalcular_peso(long double *Coef);
 	private:
 		double distancia;
-		long double peso;
 		Node *Origem, *Destino;
 		int num_amplif;
 		long double ganho_enlace;
