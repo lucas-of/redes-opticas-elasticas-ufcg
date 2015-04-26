@@ -121,7 +121,7 @@ long double Enlace::get_peso(Def *Config, long double *PartCoef) {
 	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	Disponibilidade = log(Disponibilidade);
+	if (Disponibilidade > 0) Disponibilidade = log(Disponibilidade);
 
 	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {

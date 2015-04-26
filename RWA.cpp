@@ -213,16 +213,18 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				if (Config->P == NULL) {
-					if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config) < CustoVertice[j]) {
-						CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config);
+					long double Peso = MAux::Caminho[k].at(j).get_peso(Config);
+					if(CustoVertice[k] + Peso < CustoVertice[j]) {
+						CustoVertice[j] = CustoVertice[k] + Peso;
 						Precedente[j] = k;
 					}
 				} else {
-						if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config,Config->P->x) < CustoVertice[j]) {
-							CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso(Config, Config->P->x);
-							Precedente[j] = k;
-						}
+					long double Peso = MAux::Caminho[k].at(j).get_peso(Config,Config->P->x);
+					if(CustoVertice[k] + Peso < CustoVertice[j]) {
+						CustoVertice[j] = CustoVertice[k] + Peso;
+						Precedente[j] = k;
 					}
+				}
 			}
 	}
 
@@ -241,6 +243,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 		hops = hops+1;
 		PathRev[hops] = Precedente[j];
 		j = Precedente[j];
+		assert(j!=-1);
 	}
 	vector<Node*> r;
 	r.clear();

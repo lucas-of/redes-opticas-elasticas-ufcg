@@ -4,7 +4,7 @@
 int PSR::N;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
-long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = 0;
+long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
@@ -90,7 +90,9 @@ void PSR::PSO() {
 		cout << "PSO - Repeticao " << Repeticao << "." << endl;
 #pragma omp parallel for ordered schedule(dynamic)
 		for (int Part = 0; Part < PSO_P; Part++) {
-			long double PbReq = PSO_simulaRede(PSO_populacao + Part, new Def(PSO_populacao + Part), new MAux());
+			Def *PSRDef = new Def(PSO_populacao + Part);
+			MAux *PSRAux = new MAux();
+			long double PbReq = PSO_simulaRede(PSO_populacao + Part, PSRDef, PSRAux);
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
 				for (int i = 0; i < N*N; i++)
@@ -103,6 +105,8 @@ void PSR::PSO() {
 						Coeficientes[i*N + j] = (PSO_populacao+Part)->x[i*N +j];
 				PSO_ImprimeCoeficientes();
 			}
+			delete PSRDef;
+			delete PSRAux;
 #pragma omp ordered
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
 		}
