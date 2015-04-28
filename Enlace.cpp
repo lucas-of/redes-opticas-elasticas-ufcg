@@ -98,7 +98,7 @@ long double Enlace::get_peso(Def *Config, int L) {
 	bool *SlotsDispon = new bool[Def::getSE()];
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
 		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
-	NumFormas = Heuristics::calcNumFormAloc(L,SlotsDispon);
+    NumFormas = Heuristics::calculateCostLink(SlotsDispon, L);
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
 	NumFormas = log(NumFormas);
@@ -114,10 +114,10 @@ long double Enlace::get_peso(Def *Config, int L) {
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double peso = 0;
 	long double NumFormas;
-	int SlotsDispon = 0;
-	for (int Slot = 0; Slot < Def::getSE(); Slot++)
+    bool *SlotsDispon = new bool[Def::getSE()];
+    for (int Slot = 0; Slot < Def::getSE(); Slot++)
 		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
-	NumFormas = Heuristics::calcNumFormAloc(L,SlotsDispon);
+    NumFormas = Heuristics::calculateCostLink(SlotsDispon, L);
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
 	NumFormas = log(NumFormas);
