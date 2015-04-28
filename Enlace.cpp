@@ -92,39 +92,39 @@ void Enlace::recalcular(Def *Config) {
 	}
 }
 
-long double Enlace::get_peso(Def *Config) {
+long double Enlace::get_peso(Def *Config, int L) {
 	long double peso = 0;
-	long double Disponibilidade;
-	int SlotsDispon = 0;
+	long double NumFormas;
+	bool *SlotsDispon = new bool[Def::getSE()];
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
-	Disponibilidade = (SlotsDispon+1.0)/(1.0*Def::getSE());
+		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
+	NumFormas = Heuristics::calcNumFormAloc(L,SlotsDispon);
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	Disponibilidade = log(Disponibilidade);
+	NumFormas = log(NumFormas);
 
 	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coeficientes[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
+			peso += Coeficientes[i*PSR::get_N() + j]*exp(i*logComp + j*NumFormas);
 		}
 	}
 	return peso;
 }
 
-long double Enlace::get_peso(Def *Config, long double *PartCoef) {
+long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double peso = 0;
-	long double Disponibilidade;
+	long double NumFormas;
 	int SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
-	Disponibilidade = (SlotsDispon+1.0)/(1.0*Def::getSE());
+		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
+	NumFormas = Heuristics::calcNumFormAloc(L,SlotsDispon);
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	Disponibilidade = log(Disponibilidade);
+	NumFormas = log(NumFormas);
 
 	for (int i = 0; i < PSR::get_N(); i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += PartCoef[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
+			peso += PartCoef[i*PSR::get_N() + j]*exp(i*logComp + j*NumFormas);
 		}
 	}
 	if (peso > 0)

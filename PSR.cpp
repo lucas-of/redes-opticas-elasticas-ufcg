@@ -87,7 +87,7 @@ void PSR::PSO() {
 
 	for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
 		cout << "PSO - Repeticao " << Repeticao << "." << endl;
-#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic)
 		for (int Part = 0; Part < PSO_P; Part++) {
 			Def *PSRDef = new Def(PSO_populacao + Part);
 			MAux *PSRAux = new MAux();
