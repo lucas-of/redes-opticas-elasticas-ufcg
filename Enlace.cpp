@@ -92,25 +92,6 @@ void Enlace::recalcular(Def *Config) {
 	}
 }
 
-long double Enlace::get_peso(Def *Config, int L) {
-	long double peso = 0;
-	long double NumFormas;
-	bool *SlotsDispon = new bool[Def::getSE()];
-	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
-    NumFormas = Heuristics::calculateCostLink(SlotsDispon, L);
-
-	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	NumFormas = log(NumFormas);
-
-	for (int i = 0; i < PSR::get_N(); i++) {
-		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coeficientes[i*PSR::get_N() + j]*exp(i*logComp + j*NumFormas);
-		}
-	}
-	return peso;
-}
-
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double peso = 0;
 	long double NumFormas;
@@ -122,15 +103,21 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
 	NumFormas = log(NumFormas);
 
-	for (int i = 0; i < PSR::get_N(); i++) {
-		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += PartCoef[i*PSR::get_N() + j]*exp(i*logComp + j*NumFormas);
+	assert(PSR::get_N()%2 == 1);
+	int LimitePSR = (PSR::get_N()-1)/2;
+	int contI, contJ;
+
+	for (int i = -LimitePSR; i <= LimitePSR ; i++) {
+		for (int j = -LimitePSR; j <= LimitePSR; j++) {
+			contI = i + LimitePSR;
+			contJ = j + LimitePSR;
+			if (PartCoef !=  NULL)
+				peso += PartCoef[contI*PSR::get_N()+contJ]*exp(i*logComp + j*NumFormas);
+			else
+				peso += Coeficientes[contI*PSR::get_N()+contJ]*exp(i*logComp + j*NumFormas);
 		}
 	}
-	if (peso > 0)
-		return peso;
-	else
-		int a = 1;
+	return peso;
 }
 
 void Enlace::recalcular_peso(long double *Coef) {

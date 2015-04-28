@@ -7,7 +7,6 @@ class Enlace {
 	public:
 		Enlace(Node *NOrig, Node *NDest, double dist);
 		double get_comprimento(void);
-        long double get_peso(Def*, int);
         long double get_peso(Def*, int, long double *PartCoef);
 		Node* get_NodeOrigem(void);
 		Node* get_NodeDestino(void);
