@@ -12,7 +12,7 @@ double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes;
 const int Def::numEsquemasDeModulacao = 3;
 float Def::Alfa = 10;
-float Def::Beta = 10;
+float Def::Beta = 94;
 long double Def::numReqBloqMin = 0.0;
 long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
 const int Def::numPossiveisTaxas = 5;

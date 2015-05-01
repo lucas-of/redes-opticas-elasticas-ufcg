@@ -103,18 +103,12 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
 	NumFormas = log(NumFormas);
 
-	assert(PSR::get_N()%2 == 1);
-	int LimitePSR = (PSR::get_N()-1)/2;
-	int contI, contJ;
-
-	for (int i = -LimitePSR; i <= LimitePSR ; i++) {
-		for (int j = -LimitePSR; j <= LimitePSR; j++) {
-			contI = i + LimitePSR;
-			contJ = j + LimitePSR;
+	for (int i = 0; i < PSR::get_N() ; i++) {
+		for (int j = 0; j < PSR::get_N(); j++) {
 			if (PartCoef !=  NULL)
-				peso += PartCoef[contI*PSR::get_N()+contJ]*exp(i*logComp + j*NumFormas);
+				peso += PartCoef[i*PSR::get_N()+j]*exp(i*logComp + j*NumFormas);
 			else
-				peso += Coeficientes[contI*PSR::get_N()+contJ]*exp(i*logComp + j*NumFormas);
+				peso += Coeficientes[i*PSR::get_N()+j]*exp(i*logComp + j*NumFormas);
 		}
 	}
 	delete[] SlotsDispon;
