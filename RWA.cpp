@@ -212,7 +212,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 		for(j = 0; j < Def::getNnodes(); j++)
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
-                long double Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x);
+				long double Peso;
+				if (Config->P != NULL)
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x);
+				else
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL);
 				if(CustoVertice[k] + Peso < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + Peso;
 					Precedente[j] = k;
