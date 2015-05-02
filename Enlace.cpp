@@ -94,24 +94,24 @@ void Enlace::recalcular(Def *Config) {
 
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double peso = 0;
-	long double NumFormas;
-	bool *SlotsDispon = new bool[Def::getSE()];
+	long double Dispon;
+	long double SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		SlotsDispon[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
-	NumFormas = Heuristics::calculateCostLink(SlotsDispon, L);
+		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
+			SlotsDispon += 1;
+	Dispon = (SlotsDispon+1)/Def::getSE();
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	NumFormas = log(NumFormas);
+	Dispon = log(Dispon);
 
 	for (int i = 0; i < PSR::get_N() ; i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
 			if (PartCoef !=  NULL)
-				peso += PartCoef[i*PSR::get_N()+j]*exp(i*logComp + j*NumFormas);
+				peso += PartCoef[i*PSR::get_N()+j]*exp(i*logComp + j*Dispon);
 			else
-				peso += Coeficientes[i*PSR::get_N()+j]*exp(i*logComp + j*NumFormas);
+				peso += Coeficientes[i*PSR::get_N()+j]*exp(i*logComp + j*Dispon);
 		}
 	}
-	delete[] SlotsDispon;
 	return peso;
 }
 
