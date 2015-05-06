@@ -51,7 +51,7 @@ long double Simula_Rede(Def *Config, MAux *Aux);
 void SimPbReq(MAux *Aux); /*Simulação para Probabilidade de Bloqueio*/
 void SimOSNR(MAux *Aux); /*Simulação para OSNR*/
 void SimNSlots(Def *Config);
-void SimBigode(MAux *Aux);
+void SimBigode();
 void SimAlfaBeta(MAux *Aux);
 void Sim(MAux *Aux); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(MAux *Aux); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
@@ -89,7 +89,7 @@ int main() {
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta(Aux);
     } else if (MAux::escSim == Sim_Bigode) {
-        SimBigode(Aux);
+        SimBigode();
     }
 
 	delete []MAux::Topology;
@@ -758,10 +758,17 @@ void SimPbReq(MAux *Aux) {
 	}
 }
 
-void SimBigode(MAux *Aux) {
+void SimBigode() {
+    //#pragma omp parallel for schedule(dynamic)
     for (int i = 1; i <= Def::maxSim_Bigode; i++) {
-        cout << "Simulação " << i << endl;
-        Sim(Aux);
+        MAux *BigodeAux = new MAux();
+        Def *BigodeDef = new Def(NULL);
+        clearMemory(BigodeDef,BigodeAux);
+        long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
+        cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
+        Aux->Resul << Aux->laNet << "\t " << PbReq << endl;
+        delete BigodeAux;
+        delete BigodeDef;
     }
 }
 
