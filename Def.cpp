@@ -19,6 +19,7 @@ const int Def::numPossiveisTaxas = 5;
 long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
 int Def::SE = 0;
 int Def::SR = 0;
+int Def::maxSim_Bigode = 0;
 long double Def::Pin=1.0;
 long double Def::Pref=1.0;
 long double Def::Lsss=5.0;
@@ -179,7 +180,7 @@ void Def::setLaUniform(double la) {
 	//Tráfego Uniforme entre requisições s = 1, 2, ..., SR
 	//A soma de todos os LaNet[i] deve dar la;
 
-	cout << "La_slot uniforme" << endl;
+    //cout << "La_slot uniforme" << endl;
 	assert(SR > 0);
 	LaNet.clear();
 	LaNet.push_back(-1.0); //Lr=0 não pode ser requisitado

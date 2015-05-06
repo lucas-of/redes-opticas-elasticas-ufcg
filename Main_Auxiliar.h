@@ -15,7 +15,7 @@ enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar 
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
-enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado };
+enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado, Sim_Bigode };
 enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 
 //Abre arquivos de texto para leitura ou escrita

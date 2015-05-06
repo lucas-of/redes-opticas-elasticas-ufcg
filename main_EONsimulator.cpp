@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <QThread>
 #include "Main_Auxiliar.h"
 #include "RWA.h"
 #include "PSR.h"
@@ -52,6 +51,7 @@ long double Simula_Rede(Def *Config, MAux *Aux);
 void SimPbReq(MAux *Aux); /*Simulação para Probabilidade de Bloqueio*/
 void SimOSNR(MAux *Aux); /*Simulação para OSNR*/
 void SimNSlots(Def *Config);
+void SimBigode(MAux *Aux);
 void SimAlfaBeta(MAux *Aux);
 void Sim(MAux *Aux); /*Define parâmetros anteriores à simulação. Escolher aqui como o tráfego é distribuído entre os slots e a heurística que será utilizada*/
 void SimCompFFO(MAux *Aux); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
@@ -88,7 +88,9 @@ int main() {
 		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta(Aux);
-	}
+    } else if (MAux::escSim == Sim_Bigode) {
+        SimBigode(Aux);
+    }
 
 	delete []MAux::Topology;
 	delete []MAux::Caminho;
@@ -370,9 +372,16 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">." << endl;
+    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">;" << endl << "\tBigode <" << Sim_Bigode << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
+
+    if (MAux::escSim == Sim_Bigode) {
+        cout << "Quantas repetições da simulação?" << endl;
+        cin >> aux;
+        assert(aux > 0);
+        Def::maxSim_Bigode = aux;
+    }
 
 	if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
@@ -476,7 +485,7 @@ void Load() {
 		cin >> Npontos;
 		MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
 	}
-	if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado) {
+    if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado || MAux::escSim == Sim_Bigode) {
 		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
 		cout << "LaNet = ";
 		cin >> MAux::laNet; // La = taxa de chegada das conexoes;
@@ -749,6 +758,13 @@ void SimPbReq(MAux *Aux) {
 	}
 }
 
+void SimBigode(MAux *Aux) {
+    for (int i = 1; i <= Def::maxSim_Bigode; i++) {
+        cout << "Simulação " << i << endl;
+        Sim(Aux);
+    }
+}
+
 void SimOSNR(MAux *Aux) {
 	//Simulacao para varios trafegos
 	cout << "Insira a carga da rede." << endl;
@@ -882,7 +898,7 @@ void Simulate(Def *Config, MAux *Aux) {
 
 	cout <<"Simulation Time= " << Aux->simTime << "  numReq=" << Config->numReq << endl;
 
-	if (MAux::escSim == Sim_PbReq) {
+    if (MAux::escSim == Sim_PbReq || MAux::escSim == Sim_Bigode) {
 		cout << "nu0= " << MAux::laNet << "   PbReq= " << ProbBloqueio(Config) << "   PbAc= " << ProbAceitacao(Config) << "   PbSlots= " << (long double) Config->numSlots_Bloq/Config->numSlots_Req << " HopsMed= " << (long double) Config->numHopsPerRoute/(Config->numReq-Config->numReq_Bloq) << " netOcc= " << (long double) Config->netOccupancy << endl;
 		MAux::Resul << MAux::laNet << "\t" << (long double) Config->numReq_Bloq/Config->numReq << "\t" << (long double) (1.0 - Config->numReq_Bloq/Config->numReq) << "\t" << (long double) Config->numSlots_Bloq/Config->numSlots_Req << "\t" << (long double) Config->numHopsPerRoute/(Config->numReq-Config->numReq_Bloq) << "\t" << Config->netOccupancy << endl;
 		MAux::ResulOSNR << MAux::laNet << "\t" << Config->numReq_BloqPorOSNR/Config->numReq_Bloq << endl;

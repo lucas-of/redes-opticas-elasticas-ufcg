@@ -61,6 +61,7 @@ class Def {
 		static float Beta; //RuidoNormalizadoeFormas
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
+        static int maxSim_Bigode;
 		static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
 		long double netOccupancy; //ocupação da rede
 		long double numHopsPerRoute; //número de nós por rota
