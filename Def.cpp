@@ -11,8 +11,6 @@ int Def::MAX_INT = std::numeric_limits<int>::max();
 double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes;
 const int Def::numEsquemasDeModulacao = 3;
-float Def::Alfa = 10;
-float Def::Beta = 94;
 long double Def::numReqBloqMin = 0.0;
 long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
 const int Def::numPossiveisTaxas = 5;
@@ -180,7 +178,7 @@ void Def::setLaUniform(double la) {
 	//Tráfego Uniforme entre requisições s = 1, 2, ..., SR
 	//A soma de todos os LaNet[i] deve dar la;
 
-    //cout << "La_slot uniforme" << endl;
+	//cout << "La_slot uniforme" << endl;
 	assert(SR > 0);
 	LaNet.clear();
 	LaNet.push_back(-1.0); //Lr=0 não pode ser requisitado
