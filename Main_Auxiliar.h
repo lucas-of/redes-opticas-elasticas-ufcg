@@ -21,9 +21,9 @@ enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
 	public:
-        MAux();
-        ~MAux();
-        static Def *Config;
+		MAux();
+		~MAux();
+		static Def *Config;
 		static ofstream Resul;
 		static ofstream Metrica;
 		static ofstream ResulOSNR;
@@ -70,13 +70,13 @@ class MAux {
 		static long double *MinimasDistancias;
 		TIME simTime;
 		static vector<int> **FFlists;
-        vector<Route*> *AllRoutes;
+		vector<Route*> *AllRoutes;
 		static vector<Node> Rede;
 		static vector<Enlace> *Caminho;
 		static Respostas AvaliaOsnr;
 		static Topologia escTop;
 		static Simulacao escSim;
-        static SimOtimizacao escOtim;
+		static SimOtimizacao escOtim;
 };
 
 #endif // MAIN_AUXILIAR_H

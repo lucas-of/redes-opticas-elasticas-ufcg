@@ -47,7 +47,7 @@ void RequestCon(Event*, Def *Config, MAux *Aux); /*Cria uma conexão. Dados dois
 void ScheduleEvent(Event*, MAux *Aux); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
-long double Simula_Rede(Def *Config, MAux *Aux);
+long double Simula_Rede(Def *Config, MAux *MainAux);
 void SimPbReq(MAux *Aux); /*Simulação para Probabilidade de Bloqueio*/
 void SimOSNR(MAux *Aux); /*Simulação para OSNR*/
 void SimNSlots(Def *Config);
@@ -88,9 +88,9 @@ int main() {
 		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta(Aux);
-    } else if (MAux::escSim == Sim_Bigode) {
-        SimBigode();
-    }
+	} else if (MAux::escSim == Sim_Bigode) {
+		SimBigode();
+	}
 
 	delete []MAux::Topology;
 	delete []MAux::Caminho;
@@ -372,16 +372,16 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
-    cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">;" << endl << "\tBigode <" << Sim_Bigode << ">." << endl;
+	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">;" << endl << "\tBigode <" << Sim_Bigode << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
-    if (MAux::escSim == Sim_Bigode) {
-        cout << "Quantas repetições da simulação?" << endl;
-        cin >> aux;
-        assert(aux > 0);
-        Def::maxSim_Bigode = aux;
-    }
+	if (MAux::escSim == Sim_Bigode) {
+		cout << "Quantas repetições da simulação?" << endl;
+		cin >> aux;
+		assert(aux > 0);
+		Def::maxSim_Bigode = aux;
+	}
 
 	if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
@@ -485,7 +485,7 @@ void Load() {
 		cin >> Npontos;
 		MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
 	}
-    if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado || MAux::escSim == Sim_Bigode) {
+	if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado || MAux::escSim == Sim_Bigode) {
 		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
 		cout << "LaNet = ";
 		cin >> MAux::laNet; // La = taxa de chegada das conexoes;
@@ -706,25 +706,31 @@ void setReqEvent(Event* evt, TIME t) {
 	}
 }
 
-long double Simula_Rede(Def *Config, MAux *Aux) {
-	clearMemory(Config, Aux);
+long double Simula_Rede(Def *Config, MAux *MainAux) {
+	clearMemory(Config, MainAux);
+	Config->setLaUniform(MAux::laNet);
 	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++) {
-		while (!Aux->AllRoutes[i].empty()) {
-			delete Aux->AllRoutes[i].back();
-			Aux->AllRoutes[i].pop_back();
+		while (!MainAux->AllRoutes[i].empty()) {
+			delete MainAux->AllRoutes[i].back();
+			MainAux->AllRoutes[i].pop_back();
 		}
-		vector<Route*> ().swap(Aux->AllRoutes[i]);
+		vector<Route*> ().swap(MainAux->AllRoutes[i]);
 	}
-	delete[] Aux->AllRoutes;
-	Aux->AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
-	Aux->firstEvent = new Event;
-	setReqEvent(Aux->firstEvent, Aux->simTime);
+	delete[] MainAux->AllRoutes;
+	MainAux->AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
+	MainAux->firstEvent = new Event;
+
+	if (MAux::Alg_Routing == MH || MAux::Alg_Routing == SP || MAux::Alg_Routing == OSNRR)
+		for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++)
+			MainAux->AllRoutes[i] = Aux->AllRoutes[i];
+
+	setReqEvent(MainAux->firstEvent, MainAux->simTime);
 	while((Config->numReq_Bloq < Def::getNumReqBloqMin()) && (Config->numReq < Def::getNumReqMax())) {
-		Event *curEvent = Aux->firstEvent;
-		Aux->firstEvent = Aux->firstEvent->nextEvent;
-		Aux->simTime = curEvent->time;
+		Event *curEvent = MainAux->firstEvent;
+		MainAux->firstEvent = MainAux->firstEvent->nextEvent;
+		MainAux->simTime = curEvent->time;
 		if(curEvent->type == Req) {
-			RequestCon(curEvent, Config, Aux);
+			RequestCon(curEvent, Config, MainAux);
 		} else if(curEvent->type == Desc) {
 			RemoveCon(curEvent, Config);
 		}
@@ -759,17 +765,16 @@ void SimPbReq(MAux *Aux) {
 }
 
 void SimBigode() {
-    //#pragma omp parallel for schedule(dynamic)
-    for (int i = 1; i <= Def::maxSim_Bigode; i++) {
-        MAux *BigodeAux = new MAux();
-        Def *BigodeDef = new Def(NULL);
-        clearMemory(BigodeDef,BigodeAux);
-        long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
-        cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
-        Aux->Resul << Aux->laNet << "\t " << PbReq << endl;
-        delete BigodeAux;
-        delete BigodeDef;
-    }
+	#pragma omp parallel for schedule(dynamic)
+	for (int i = 1; i <= Def::maxSim_Bigode; i++) {
+		MAux *BigodeAux = new MAux();
+		Def *BigodeDef = new Def(NULL);
+		long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
+		cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
+		Aux->Resul << Aux->laNet << "\t " << PbReq << endl;
+		delete BigodeAux;
+		delete BigodeDef;
+	}
 }
 
 void SimOSNR(MAux *Aux) {
@@ -805,7 +810,7 @@ void SimNSlots(Def *Config) {
 
 void Sim(MAux *Aux) {
 	//Indica como o trafego e distribuido entre s = 1, 2, ..., SE
-	MAux::Config->setLaUniform(MAux::laNet);
+	Aux->Config->setLaUniform(MAux::laNet);
 	//Def::setLaRandom(laNet);
 
 	if(MAux::Alg_Aloc == FFO) {
@@ -815,7 +820,7 @@ void Sim(MAux *Aux) {
 		//Heuristics::FFO_invertido(FFlists);
 		//Heuristics::FFO_metrica(FFlists);
 	}
-	Simulate(MAux::Config, Aux);
+	Simulate(Aux->Config, Aux);
 }
 
 void SimCompFFO(MAux *Aux) {
@@ -905,7 +910,7 @@ void Simulate(Def *Config, MAux *Aux) {
 
 	cout <<"Simulation Time= " << Aux->simTime << "  numReq=" << Config->numReq << endl;
 
-    if (MAux::escSim == Sim_PbReq || MAux::escSim == Sim_Bigode) {
+	if (MAux::escSim == Sim_PbReq || MAux::escSim == Sim_Bigode) {
 		cout << "nu0= " << MAux::laNet << "   PbReq= " << ProbBloqueio(Config) << "   PbAc= " << ProbAceitacao(Config) << "   PbSlots= " << (long double) Config->numSlots_Bloq/Config->numSlots_Req << " HopsMed= " << (long double) Config->numHopsPerRoute/(Config->numReq-Config->numReq_Bloq) << " netOcc= " << (long double) Config->netOccupancy << endl;
 		MAux::Resul << MAux::laNet << "\t" << (long double) Config->numReq_Bloq/Config->numReq << "\t" << (long double) (1.0 - Config->numReq_Bloq/Config->numReq) << "\t" << (long double) Config->numSlots_Bloq/Config->numSlots_Req << "\t" << (long double) Config->numHopsPerRoute/(Config->numReq-Config->numReq_Bloq) << "\t" << Config->netOccupancy << endl;
 		MAux::ResulOSNR << MAux::laNet << "\t" << Config->numReq_BloqPorOSNR/Config->numReq_Bloq << endl;
