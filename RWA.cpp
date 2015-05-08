@@ -2,21 +2,21 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 
-long double AvaliarOSNR(const Route *Rota);
+long double AvaliarOSNR(const Route*, Def*);
 
-bool RWA::CheckSlotAvailability(const Route* route, const int s) {
+bool RWA::CheckSlotAvailability(const Route* route, const int s, Def *Config) {
 	assert(s >=0 && s < Def::getSE());
 	int L_or, L_de;
 	for(unsigned int c = 0; c < route->getNhops(); c++) {
 		L_or = route->getNode(c);
 		L_de = route->getNode(c+1);
-		if(MAux::Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true)
+		if(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true)
 			return false; //Basta o slot s nao estar disponivel em uma das fibras da rota;
 	}
 	return true; //O slot s esta disponivel em todas as fibras da rota;
 }
 
-void RWA::Dijkstra() {
+void RWA::Dijkstra(MAux *Aux) {
 	int orN, deN, VA, i, j, k=0, path, h, hops;
 	long double min;
 	vector<Node*> r;
@@ -54,11 +54,11 @@ void RWA::Dijkstra() {
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			while (!MAux::AllRoutes[path].empty()) {
-				delete MAux::AllRoutes[path].back();
-				MAux::AllRoutes[path].pop_back();
+			while (!Aux->AllRoutes[path].empty()) {
+				delete Aux->AllRoutes[path].back();
+				Aux->AllRoutes[path].pop_back();
 			}
-			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			vector<Route*> ().swap(Aux->AllRoutes[path]);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
@@ -71,7 +71,7 @@ void RWA::Dijkstra() {
 				r.clear();
 				for(h = 0; h <= hops; h++)
 					r.push_back(&MAux::Rede.at(PathRev[hops-h]));
-				MAux::AllRoutes[path].push_back(new Route(r));
+				Aux->AllRoutes[path].push_back(new Route(r));
 			}
 		}
 	}
@@ -82,11 +82,11 @@ void RWA::Dijkstra() {
 			if(orN != deN) {
 				cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
 				path = orN*Def::getNnodes()+deN;
-				hops = MAux::AllRoutes[path].at(0)->getNhops();
+				hops = Aux->AllRoutes[path].at(0)->getNhops();
 				cout << hops << " hops: ";
 				if(hops != 0)
 					for(h = 0; h <= hops; h++)
-						cout<<MAux::AllRoutes[path].at(0)->getNode(h)<<"-";
+						cout<<Aux->AllRoutes[path].at(0)->getNode(h)<<"-";
 			}
 	cout<<endl<<endl;
 	delete []CustoVertice;
@@ -95,7 +95,7 @@ void RWA::Dijkstra() {
 	delete []PathRev;
 }
 
-void RWA::DijkstraSP() {
+void RWA::DijkstraSP(MAux *Aux) {
 	int orN, deN, VA, i, j, k=0, path, h, hops;
 	long double min;
 	vector<Node*> r;
@@ -137,11 +137,11 @@ void RWA::DijkstraSP() {
 
 		for(deN = 0; deN < Def::getNnodes(); deN++) {
 			path = orN*Def::getNnodes()+deN;
-			while (!MAux::AllRoutes[path].empty()) {
-				delete MAux::AllRoutes[path].back();
-				MAux::AllRoutes[path].pop_back();
+			while (!Aux->AllRoutes[path].empty()) {
+				delete Aux->AllRoutes[path].back();
+				Aux->AllRoutes[path].pop_back();
 			}
-			vector<Route*> ().swap(MAux::AllRoutes[path]);
+			vector<Route*> ().swap(Aux->AllRoutes[path]);
 			if(deN != orN) {
 				PathRev[0] = deN;
 				hops = 0;
@@ -154,7 +154,7 @@ void RWA::DijkstraSP() {
 				r.clear();
 				for(h = 0; h <= hops; h++)
 					r.push_back(&MAux::Rede.at(PathRev[hops-h]));
-				MAux::AllRoutes[path].push_back(new Route(r));
+				Aux->AllRoutes[path].push_back(new Route(r));
 			}
 		}
 	}
@@ -165,11 +165,11 @@ void RWA::DijkstraSP() {
 			if(orN != deN) {
 				cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
 				path = orN*Def::getNnodes()+deN;
-				hops = MAux::AllRoutes[path].at(0)->getNhops();
+				hops = Aux->AllRoutes[path].at(0)->getNhops();
 				cout << hops << " hops: ";
 				if(hops != 0)
 					for(h = 0; h <= hops; h++)
-						cout<<MAux::AllRoutes[path].at(0)->getNode(h)<<"-";
+						cout<<Aux->AllRoutes[path].at(0)->getNode(h)<<"-";
 			}
 	cout<<endl<<endl;
 	delete []CustoVertice;
@@ -178,7 +178,7 @@ void RWA::DijkstraSP() {
 	delete []PathRev;
 }
 
-void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
+void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -212,11 +212,13 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 		for(j = 0; j < Def::getNnodes(); j++)
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
-				//Calcula O vetor de disponibilidade do enlace entre k e j
-				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				if(CustoVertice[k] + MAux::Caminho[k].at(j).get_peso() < CustoVertice[j]) {
-					CustoVertice[j] = CustoVertice[k] + MAux::Caminho[k].at(j).get_peso();
+				long double Peso;
+				if (Config->P != NULL)
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x);
+				else
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL);
+				if(CustoVertice[k] + Peso < CustoVertice[j]) {
+					CustoVertice[j] = CustoVertice[k] + Peso;
 					Precedente[j] = k;
 				}
 			}
@@ -224,11 +226,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
 
 	PathRev[0] = deN;
 	hops = 0;
@@ -243,7 +245,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->whoami == orN && r.at(hops)->whoami == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	Aux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;
@@ -252,7 +254,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
+void RWA::DijkstraAcum(const int orN, const int deN, const int L, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(deN != orN);
 	int VA, i, j, s, k=0, h, path, hops, hopsAux;
@@ -301,7 +303,7 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade em j por uma rota proveniente de k
 				for(s = 0; s < Def::getSE(); s++)
-					DispAux[s] = DispVertice[k][s] * !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispAux[s] = DispVertice[k][s] * !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				//Calcula o numero de hops em j por uma rota proveniente de k
 				hopsAux = HopsVertice[k]+1;
 				//Checa se o custo em j deve ser atualizado
@@ -337,15 +339,15 @@ void RWA::DijkstraAcum(const int orN, const int deN, const int L) {
 
 	//Insere a rota nova em AllRoutes
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
+	Aux->AllRoutes[path].push_back(new Route(r));
 }
 
-void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
+void RWA::DijkstraFormas(const int orN, const int deN, const int L, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -382,7 +384,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -393,11 +395,11 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -411,7 +413,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	Aux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;
@@ -420,7 +422,7 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa) {
+void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	assert(alfa >= 0);
@@ -468,7 +470,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = alfa*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alfa)*Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -479,11 +481,11 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -497,7 +499,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	Aux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;
@@ -506,7 +508,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 	delete []DispLink;
 }
 
-void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao) {
+void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	assert(beta >= 0);
@@ -546,10 +548,10 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
-				RuidoLimiar = Def::get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
-                custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
+				RuidoLimiar = Config->get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
+				custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
 				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
 
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
@@ -561,11 +563,11 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -579,7 +581,7 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	Aux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;
@@ -588,14 +590,14 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 	delete []DispLink;
 }
 
-void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	si = -1;
 	NslotsUsed = 0; //Valores nao permitidos
 	int sum;
 	for(int s = 0; s <= Def::getSE() - NslotsReq; s++) {
 		sum = 0;
 		for(int se = s; se < s + NslotsReq; se++) {
-			if(CheckSlotAvailability(route, se))
+			if(CheckSlotAvailability(route, se, Config))
 				sum++;
 			else
 				break;
@@ -608,7 +610,7 @@ void RWA::FirstFit(const Route* route, const int NslotsReq, int& NslotsUsed, int
 	}
 }
 
-void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	assert( (si == -1) && (NslotsUsed == 0) );
 	int s, sum=0;
 	for(int sOrd = 0; sOrd < Def::getSE(); sOrd++) {
@@ -617,7 +619,7 @@ void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, 
 			//si e capaz de suportar a requisicao;
 			sum = 0;
 			for(int se = s; se < s + NslotsReq; se++)
-				if(CheckSlotAvailability(route, se))
+				if(CheckSlotAvailability(route, se,Config))
 					sum++;
 				else
 					break;
@@ -630,19 +632,19 @@ void RWA::FirstFitOpt(const Route* route, const int NslotsReq, int& NslotsUsed, 
 	}
 }
 
-void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	int *vetSlotsUsed = new int[Def::getSE()];
 	bool *vetDisp = new bool[Def::getSE()];
 
 	//Checa a disponibilidade no caminho 'path' para cada slot s;
 	for(int s = 0; s < Def::getSE(); s++)
-		vetDisp[s] = RWA::CheckSlotAvailability(route, s);
+		vetDisp[s] = RWA::CheckSlotAvailability(route, s, Config);
 
 	//Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
 	int soma;
 	for(int s = 0; s < Def::getSE(); s++) {
 		if(vetDisp[s] == true)
-			vetSlotsUsed[s] = sumOccupation(s);
+			vetSlotsUsed[s] = sumOccupation(s, Config);
 		else
 			vetSlotsUsed[s] = -1;
 	}
@@ -673,7 +675,7 @@ void RWA::MostUsed(const Route* route, const int NslotsReq, int& NslotsUsed, int
 	delete []vetDisp;
 }
 
-void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si) {
+void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config) {
 	int soma=0, somaAlocacao=0, alocarSlot;
 	bool *vetDisp = new bool[Def::getSE()];
 	int *vetAloc = new int[Def::getSE()];
@@ -682,7 +684,7 @@ void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
 
 	//Checa a disponibilidade no caminho 'path' para cada slot s;
 	for(int s = 0; s < Def::getSE(); s++)
-		vetDisp[s] = CheckSlotAvailability(route, s);
+		vetDisp[s] = CheckSlotAvailability(route, s, Config);
 	//Carrega vetSlotsUsed com o numero de enlaces ocupados em cada slot;
 	bool fit;
 	NslotsUsed = 0;
@@ -724,17 +726,17 @@ void RWA::Random(const Route* route, const int NslotsReq, int& NslotsUsed, int& 
 	delete []vetAloc;
 }
 
-int RWA::sumOccupation(int s) {
+int RWA::sumOccupation(int s, Def *Config) {
 	int soma=0;
 	for(int origem = 0; origem < Def::getNnodes(); origem++)
 		for(int destino = 0; destino < Def::getNnodes(); destino++)
-			if( (MAux::Topology[origem*Def::Nnodes+destino] > 0.0) && (MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+origem*Def::Nnodes+destino] == true) )
+			if( (MAux::Topology[origem*Def::Nnodes+destino] > 0.0) && (Config->Topology_S[s*Def::Nnodes*Def::Nnodes+origem*Def::Nnodes+destino] == true) )
 				//Se houver enlace entre origem e destino e o slot 's' estiver livre neste enlace
 				soma++;
 	return soma;
 }
 
-void RWA::LORModificado(const int orN, const int deN, const int L) {
+void RWA::LORModificado(const int orN, const int deN, const int L, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -780,7 +782,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 				//O no j e nao marcado e vizinho do no k
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
-					DispLink[s] = !MAux::Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
+					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 				custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace - Heuristics::calculateCostLink(DispLink, L) + 1;
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
@@ -791,11 +793,11 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!MAux::AllRoutes[path].empty()) {
-		delete MAux::AllRoutes[path].back();
-		MAux::AllRoutes[path].pop_back();
+	while (!Aux->AllRoutes[path].empty()) {
+		delete Aux->AllRoutes[path].back();
+		Aux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(MAux::AllRoutes[path]);
+	vector<Route*> ().swap(Aux->AllRoutes[path]);
 	PathRev[0] = deN;
 	hops = 0;
 	j = deN;
@@ -809,7 +811,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->get_whoami() == orN && r.at(hops)->get_whoami() == deN);
-	MAux::AllRoutes[path].push_back(new Route(r));
+	Aux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;
@@ -818,7 +820,7 @@ void RWA::LORModificado(const int orN, const int deN, const int L) {
 	delete []DispLink;
 }
 
-void RWA::OSNRR() {
+void RWA::OSNRR(MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	int orN, deN;
 	long double *BestOSNR = new long double[Def::Nnodes*Def::Nnodes];
@@ -829,32 +831,32 @@ void RWA::OSNRR() {
 			if (orN == deN) continue;
 			cout << endl << "[orN="<<orN<<"  deN="<<deN<<"]  route = ";
 			BestOSNR[Def::Nnodes*orN + deN] = 0;
-			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR);
-			if(MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() != 0) {
-				cout << MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() << " hops: ";
-				for(int h = 0; h <= MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops(); h++)
-					cout<<MAux::AllRoutes[Def::Nnodes*orN + deN].at(0)->getNode(h)<<"-";
+			ProcurarRota(&MAux::Rede.at(orN), &MAux::Rede.at(orN), &MAux::Rede.at(deN), &Visitados, BestOSNR, MAux::Config, Aux);
+			if(Aux->AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() != 0) {
+				cout << Aux->AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops() << " hops: ";
+				for(int h = 0; h <= Aux->AllRoutes[Def::Nnodes*orN + deN].at(0)->getNhops(); h++)
+					cout<<Aux->AllRoutes[Def::Nnodes*orN + deN].at(0)->getNode(h)<<"-";
 			}
 		}
 	}
 	cout << endl;
 }
 
-void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR) {
+void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *Visitados, long double *BestOSNR, Def *Config, MAux *Aux) {
 	Visitados->push_back(Current);
 
 	if (Current->whoami == deN->whoami) { //Encontrou uma rota
 		Route *R = new Route(*Visitados);
-        long double OSNRRota = AvaliarOSNR(R);
+		long double OSNRRota = AvaliarOSNR(R, Config);
 		int path = orN->whoami*Def::getNnodes()+deN->whoami;
 		if (OSNRRota > BestOSNR[path]) { //rota tem maior OSNR que a melhor temporária
 			BestOSNR[path] = OSNRRota;
-			while (!MAux::AllRoutes[path].empty()) {
-				delete MAux::AllRoutes[path].back();
-				MAux::AllRoutes[path].pop_back();
+			while (!Aux->AllRoutes[path].empty()) {
+				delete Aux->AllRoutes[path].back();
+				Aux->AllRoutes[path].pop_back();
 			}
-			vector<Route*> ().swap(MAux::AllRoutes[path]);
-			MAux::AllRoutes[path].push_back(new Route(*Visitados));
+			vector<Route*> ().swap(Aux->AllRoutes[path]);
+			Aux->AllRoutes[path].push_back(new Route(*Visitados));
 			//cout << "Encontrou rota entre " << orN->whoami << " e " << deN->whoami << " com OSNR " << OSNRRota << endl;
 		}
 		delete R;
@@ -862,7 +864,7 @@ void RWA::ProcurarRota(Node *orN, Node *Current, Node *deN, std::vector<Node*> *
 
 	for (int i = 0; i < Def::Nnodes; i++) {
 		if ((MAux::Topology[(Current->whoami)*Def::Nnodes + i] == 1) && !(VerificarInclusao(&MAux::Rede.at(i), Visitados)))
-			ProcurarRota(orN, &MAux::Rede.at(i), deN, Visitados, BestOSNR);
+			ProcurarRota(orN, &MAux::Rede.at(i), deN, Visitados, BestOSNR, Config, Aux);
 	}
 
 	Visitados->pop_back(); //Remover no da Lista

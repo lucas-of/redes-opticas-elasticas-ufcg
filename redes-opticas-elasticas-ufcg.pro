@@ -1,7 +1,5 @@
 TEMPLATE = app
 CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
 
 SOURCES += \
     Conexao.cpp \
@@ -47,3 +45,6 @@ HEADERS += \
 
 INSTALLS += \
     install_it
+
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp

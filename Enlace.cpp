@@ -10,19 +10,18 @@ Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 	Origem = NOrig;
 	Destino = NDest;
 	distancia = dist;
-	peso = Def::MAX_LONGDOUBLE;
 	calcula_perdas();
 	if (NOrig != NULL) { //se nao e o no "infinito"
-		calcula_num_amplificadores();
+		calcula_num_amplificadores(MAux::Config);
 		calcula_ganho_enlace();
 		calcula_ruido_enlace();
-		calcula_preamplif();
+		calcula_preamplif(MAux::Config);
 	}
 }
 
-void Enlace::calcula_num_amplificadores() {
-	num_amplif = floor(distancia/Def::get_DistaA());
-	if (ceil(distancia/Def::get_DistaA()) == num_amplif) num_amplif--;
+void Enlace::calcula_num_amplificadores(Def *Config) {
+	num_amplif = floor(distancia/Config->get_DistaA());
+	if (ceil(distancia/Config->get_DistaA()) == num_amplif) num_amplif--;
 }
 
 void Enlace::calcula_ganho_enlace() {
@@ -70,43 +69,47 @@ long double Enlace::get_ruido_preamplif() {
 	return ruido_preamplif;
 }
 
-void Enlace::calcula_preamplif() {
+void Enlace::calcula_preamplif(Def *Config) {
 	calcula_perdas();
 	long double freq = Def::get_freq();
 
 	if (Def::get_Arquitetura() == Def::SS) {
 		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + Def::get_Lsss());
 	} else if (Def::get_Arquitetura() == Def::BS) {
-		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10.0*log10( Def::getGrauNo(Destino->whoami) + 1 ));
+		ganho_preamplif = General::dB((General::lin(L_FB)/(num_amplif + 1.0)) + 10.0*log10( Config->getGrauNo(Destino->whoami) + 1 ));
 	}
 
 	ruido_preamplif = Def::get_Famp()*(ganho_preamplif - 1.0)*Constante::h*freq*Def::get_Bref();
 }
 
-void Enlace::recalcular() {
+void Enlace::recalcular(Def *Config) {
 	calcula_perdas();
 	if (Origem != NULL) { //se nao e o no "infinito"
-		calcula_num_amplificadores();
+		calcula_num_amplificadores(Config);
 		calcula_ganho_enlace();
 		calcula_ruido_enlace();
-		calcula_preamplif();
+		calcula_preamplif(Config);
 	}
 }
 
-long double Enlace::get_peso() {
-	peso = 0;
-	long double Disponibilidade;
-	int SlotsDispon = 0;
+long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
+	long double peso = 0;
+	long double Dispon;
+	long double SlotsDispon = 0;
 	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!MAux::Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami]) SlotsDispon++;
-	Disponibilidade = SlotsDispon/(1.0*Def::getSE());
+		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
+			SlotsDispon += 1;
+	Dispon = (SlotsDispon+1)/Def::getSE();
 
 	long double logComp = log(PSR::ComprimentosNormalizados[Origem->whoami*Def::Nnodes + Destino->whoami]);
-	Disponibilidade = log(Disponibilidade);
+	Dispon = log(Dispon);
 
-	for (int i = 0; i < PSR::get_N(); i++) {
+	for (int i = 0; i < PSR::get_N() ; i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			peso += Coeficientes[i*PSR::get_N() + j]*exp(i*logComp + j*Disponibilidade);
+			if (PartCoef !=  NULL)
+				peso += PartCoef[i*PSR::get_N()+j]*exp(i*logComp + j*Dispon);
+			else
+				peso += Coeficientes[i*PSR::get_N()+j]*exp(i*logComp + j*Dispon);
 		}
 	}
 	return peso;

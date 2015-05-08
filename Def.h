@@ -15,8 +15,18 @@ typedef long double TIME;
 
 #include "General.h"
 
+struct Particula {
+		long double *x;
+		long double *v;
+		long double *p;
+		long double melhorInd = 1;
+		Particula *Vizinha1, *Vizinha2;
+};
+
 class Def {
 	public:
+		Def(Particula *);
+		~Def();
 		enum Arquitetura {
 			BS, SS
 		}; /* Broadcast-and-Select ou Switch-and-Select*/
@@ -26,7 +36,7 @@ class Def {
 
 	private:
 		static vector<int> GrauNo; //O grau de cada no
-		static vector<double> LaNet; //La é o tráfego por cada slot
+		vector<double> LaNet; //La é o tráfego por cada slot
 		static long double numReqBloqMin; //é o número minimo de requisições bloqueadas
 		static long double numReqMax; //numero maximo de requisições
 		static int SE; //S é o número de slots por Enlace
@@ -34,48 +44,49 @@ class Def {
 
 		static long double Pin;//Pin potencia de entrada
 		static long double Pref;//Pref potencia de referencia
-		static long double OSNRin;//OSNRin OSNR de entrada
+		long double OSNRin;//OSNRin OSNR de entrada
 		static long double Lsss;//Lsssm perdas nos dispositivos
-		static long double DistA;//DistA distancia entre os amplificadores de linha
+		long double DistA;//DistA distancia entre os amplificadores de linha
 		static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
 		static long double lambda;//comprimento de onda (em metros)
 		static long double Bslot;//largura de banda do slot
 		static long double Bref;//largura de linha de referencia
 		static long double Famp;//fator do ruido amplificador
-		static long double Dcr; //relacionado a dispersao cromatica
-		static long double DDCF; //coeficiente de dispersao
 		static long double freq; //frequencia
 		static long double get_snrb(EsquemaDeModulacao); /*retorna a SNR de qualidade, por bit*/
 
 	public:
-		static float Alfa; //SPeFormas
-		static float Beta; //RuidoNormalizadoeFormas
+		Particula *P;
+		float Alfa; //SPeFormas
+		float Beta; //RuidoNormalizadoeFormas
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
+		static int maxSim_Bigode;
 		static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
-		static long double netOccupancy; //ocupação da rede
-		static long double numHopsPerRoute; //número de nós por rota
-		static long double numReq; //número de requisições
-		static long double numReq_Bloq; //número de requisições bloqueadas
-		static long double numReq_BloqPorOSNR; //número de requisições bloqueadas por OSNR
+		long double netOccupancy; //ocupação da rede
+		long double numHopsPerRoute; //número de nós por rota
+		long double numReq; //número de requisições
+		long double numReq_Bloq; //número de requisições bloqueadas
+		long double numReq_BloqPorOSNR; //número de requisições bloqueadas por OSNR
 		static const int numEsquemasDeModulacao;
-		static long double numSlots_Bloq; //número de slots bloqueados
-		static long double numSlots_Req; //número de slots requisitados
-		static long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
-		static long double numReq_Taxa[];
-		static long double numReqBloq_Taxa[];
-		static long double numReqAceit_Esquema[];
-		static long double tempoTotal_Taxa[];
-		static long double taxaTotal_Esquema[];
-		static long double taxaTotal;
+		long double numSlots_Bloq; //número de slots bloqueados
+		long double numSlots_Req; //número de slots requisitados
+		long double numSlots_BloqPorOSNR; //número de slots bloqueados por OSNR
+		long double *numReq_Taxa;
+		long double *numReqBloq_Taxa;
+		long double *numReqAceit_Esquema;
+		long double *tempoTotal_Taxa;
+		long double *taxaTotal_Esquema;
+		long double taxaTotal;
+		bool *Topology_S;
 
-		static void clearGrauNo();
+		void clearGrauNo();
 		static void setPossiveisTaxas();
 		static long double get_Bslot();
 		static long double get_Bref();
 		static int getGrauNo(int);
 		static long double getlambda(void);
-		static double getLaNet(int);
+		double getLaNet(int);
 		static double getlimiarOSNR(EsquemaDeModulacao, long double);
 		static int getNnodes();
 		static long double getNumReqBloqMin();
@@ -84,28 +95,28 @@ class Def {
 		static int getSE();
 		static int getSR();
 		static void set_Arquitetura(Arquitetura);
-		static void set_DistaA(long double);
-		static void set_Lsss(long double);
-		static void set_Pin(long double);
-		static void set_Pref(long double);
+		void set_DistaA(long double);
+		void set_Lsss(long double);
+		void set_Pin(long double);
+		void set_Pref(long double);
 
 		static void setBslot(double);
 		static void setBref(double);
 		static void setGrauNo(int Grau);
-		static void setLaCheck(double); //confirma que a soma do tráfego é normalizado
-		static void setLaRandom(double); //tráfego aleatório entre slots
-		static void setLaUniform(double); //tráfego uniforme entre enlaces
+		void setLaCheck(double); //confirma que a soma do tráfego é normalizado
+		void setLaRandom(double); //tráfego aleatório entre slots
+		void setLaUniform(double); //tráfego uniforme entre enlaces
 		static void setNumReqBloqMin(long double);
 		static void setSE(int);
 		static void setSR(int);
-		static void setOSNR(long double);
+		void setOSNR(long double);
 
 		static Arquitetura get_Arquitetura();
-		static long double get_Pin();
-		static long double get_Pref();
-		static long double get_OSRNin();
+		long double get_Pin();
+		long double get_Pref();
+		long double get_OSRNin();
 		static long double get_Lsss();
-		static long double get_DistaA();
+		long double get_DistaA();
 		static long double get_Famp();
 		static long double get_freq();
 		static long double get_DDCF();

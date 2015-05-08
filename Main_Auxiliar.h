@@ -15,12 +15,15 @@ enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar 
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
-enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado };
+enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado, Sim_Bigode };
 enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
 	public:
+		MAux();
+		~MAux();
+		static Def *Config;
 		static ofstream Resul;
 		static ofstream Metrica;
 		static ofstream ResulOSNR;
@@ -46,8 +49,7 @@ class MAux {
 
 		//Variáveis necessárias em main_EONsimulator.cpp
 		static bool ExpComp;
-		static bool *Topology_S;
-		static Event *firstEvent;
+		Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
 		static long double laE;
@@ -66,15 +68,15 @@ class MAux {
 		static long double *Coeficientes;
 		static long double *Topology;
 		static long double *MinimasDistancias;
-		static TIME simTime;
+		TIME simTime;
 		static vector<int> **FFlists;
-		static vector<Route*> *AllRoutes;
+		vector<Route*> *AllRoutes;
 		static vector<Node> Rede;
 		static vector<Enlace> *Caminho;
 		static Respostas AvaliaOsnr;
 		static Topologia escTop;
 		static Simulacao escSim;
-        static SimOtimizacao escOtim;
+		static SimOtimizacao escOtim;
 };
 
 #endif // MAIN_AUXILIAR_H
