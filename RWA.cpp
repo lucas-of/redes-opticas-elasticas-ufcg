@@ -178,7 +178,7 @@ void RWA::DijkstraSP(MAux *Aux) {
 	delete []PathRev;
 }
 
-void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MAux *Aux) {
+void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MAux *MainAux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -226,11 +226,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 
 	//Formar a rota:
 	path = orN*Def::getNnodes()+deN;
-	while (!Aux->AllRoutes[path].empty()) {
-		delete Aux->AllRoutes[path].back();
-		Aux->AllRoutes[path].pop_back();
+	while (!MainAux->AllRoutes[path].empty()) {
+		delete MainAux->AllRoutes[path].back();
+		MainAux->AllRoutes[path].pop_back();
 	}
-	vector<Route*> ().swap(Aux->AllRoutes[path]);
+	vector<Route*> ().swap(MainAux->AllRoutes[path]);
 
 	PathRev[0] = deN;
 	hops = 0;
@@ -245,7 +245,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 	for(h = 0; h <= hops; h++)
 		r.push_back(&MAux::Rede.at(PathRev[hops-h]));
 	assert(r.at(0)->whoami == orN && r.at(hops)->whoami == deN);
-	Aux->AllRoutes[path].push_back(new Route(r));
+	MainAux->AllRoutes[path].push_back(new Route(r));
 
 	delete []CustoVertice;
 	delete []Precedente;

@@ -15,10 +15,15 @@ class PSR{
 		const static int get_N();
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
+		static void criarCache();
+		static long double get_Disponibilidade(int NSlots, int N);
+		static long double get_Distancia(int WhoAmI1, int WhoAmI2, int N);
 		static long double *ComprimentosNormalizados;
 		static ifstream PSO_Coeficientes_R;
 
 	private:
+		static long double *CacheDistancias;
+		static long double *CacheDisponibilidade;
 		static int N; //ponto de truncamento
 		static long double *Coeficientes;
 		static long double MaiorEnlace;
