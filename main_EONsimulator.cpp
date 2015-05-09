@@ -719,11 +719,9 @@ long double Simula_Rede(Def *Config, MAux *MainAux) {
 		}
 		vector<Route*> ().swap(MainAux->AllRoutes[i]);
 	}
-	delete[] MainAux->AllRoutes;
-	MainAux->AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
 	MainAux->firstEvent = new Event;
 
-	if (MAux::Alg_Routing == MH || MAux::Alg_Routing == SP || MAux::Alg_Routing == OSNRR)
+	if (((MAux::Alg_Routing == MH) || (MAux::Alg_Routing == SP) || (MAux::Alg_Routing == OSNRR)) && (MAux::escSim != Sim_TreinoPSR))
 		for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++)
 			MainAux->AllRoutes[i] = Aux->AllRoutes[i];
 
