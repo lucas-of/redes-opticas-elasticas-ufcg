@@ -100,6 +100,7 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
         for (int Slot = 0; Slot < Def::getSE(); Slot++)
             Disp[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
         SlotsDispon = Heuristics::calcNumFormAloc(L,Disp);
+        delete[] Disp;
     } else if (PSR::C == PSR::Disponibilidade)
         for (int Slot = 0; Slot < Def::getSE(); Slot++)
             if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
