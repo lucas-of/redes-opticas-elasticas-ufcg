@@ -796,7 +796,7 @@ void SimBigode() {
 		Def *BigodeDef = new Def(NULL);
 		long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
 		cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
-		Aux->Resul << Aux->laNet << "\t " << PbReq << endl;
+		Aux->Resul << PbReq << endl;
 		delete BigodeAux;
 		delete BigodeDef;
 	}
