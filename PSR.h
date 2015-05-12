@@ -12,6 +12,8 @@
 class PSR{
 	public:
 		PSR(int);
+        enum Custo{ Disponibilidade, NumFormas };
+        static Custo C;
 		const static int get_N();
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();

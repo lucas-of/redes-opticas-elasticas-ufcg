@@ -95,9 +95,15 @@ void Enlace::recalcular(Def *Config) {
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
 	long double peso = 0;
 	long double SlotsDispon = 0;
-	for (int Slot = 0; Slot < Def::getSE(); Slot++)
-		if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
-			SlotsDispon += 1;
+    if (PSR::C == PSR::NumFormas) {
+        bool *Disp = new bool[Def::getSE()];
+        for (int Slot = 0; Slot < Def::getSE(); Slot++)
+            Disp[Slot] = Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
+        SlotsDispon = Heuristics::calcNumFormAloc(L,Disp);
+    } else if (PSR::C == PSR::Disponibilidade)
+        for (int Slot = 0; Slot < Def::getSE(); Slot++)
+            if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
+                SlotsDispon += 1;
 
 	for (int i = 0; i < PSR::get_N() ; i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
