@@ -40,4 +40,20 @@ long double Node::get_ruido_pot(int) {
 void Node::set_potenciatx(long double potencia) {
 	//Potencia em dBm
 	potencia_tx = potencia;
+    
+}
+
+int Node::regenerador(int x){
+    //vai dizer se o nó tem regenerador ou não
+            if(x%2!=0){
+                reg=1;
+
+    }
+    return reg;
+   }
+
+int Node::contador(int c){
+      while(c!=0){
+      return 1;
+      }
 }

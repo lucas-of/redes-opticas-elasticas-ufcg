@@ -59,6 +59,8 @@ int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
+void FLRRA(int Br, const Route*route, int NslotsUsed); //mudou
+
 int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
@@ -96,6 +98,34 @@ int main() {
 	cin.get();
 	cin.get();
 	return 0;
+}
+
+void FLRRA(int Br, const Route*route, int NslotsUsed){
+    int r=0;
+    int s,x;
+    int c=17;
+    for(s=0; s<route->getNhops()-1; s++ ){
+        for(x=s+1; x<route->getNhops()-1;x++){
+            if((MAux::Rede.at(x).regenerador(x))&&(MAux::Rede.at(x).contador(c))){
+                if(//AvaliarOSNR){
+                    if(MAux::Rede.at(getNhops()-1)){
+                        //Faz as coisas
+                        c=c-1;
+                    } else {
+                        r=x;
+                      }
+                else if(r!=s) {
+                        //armazena
+                        s=r;
+                        x=r;
+                } else {
+                        NslotsUsed= 0;
+
+                }
+                }
+            }
+        }
+    }
 }
 
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {

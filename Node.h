@@ -7,6 +7,8 @@ class Node {
 		long double gain_pot;
 		long double ruido_pot;
 		long double potencia_tx;
+        int cont;
+        int reg;
 		void calcula_ganho_pot();
 		void calcula_ruido_pot();
 	public:
