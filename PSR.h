@@ -12,8 +12,8 @@
 class PSR{
 	public:
 		PSR(int);
-        enum Custo{ Disponibilidade, NumFormas };
-        static Custo C;
+		enum Custo{ Disponibilidade, NumFormas };
+		static Custo C;
 		const static int get_N();
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
@@ -24,8 +24,8 @@ class PSR{
 		static ifstream PSO_Coeficientes_R;
 
 	private:
-		static long double *CacheDistancias;
-		static long double *CacheDisponibilidade;
+		static long double ***CacheDistancias;
+		static long double **CacheDisponibilidade;
 		static int N; //ponto de truncamento
 		static long double *Coeficientes;
 		static long double MaiorEnlace;
