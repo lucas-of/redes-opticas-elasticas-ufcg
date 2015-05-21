@@ -59,7 +59,7 @@ int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
-void FLRRA(int Br, const Route*route, int NslotsUsed); //mudou
+void FLRRA(int Br, const Route*rout); //mudou
 
 int main() {
 	Load();
@@ -100,30 +100,43 @@ int main() {
 	return 0;
 }
 
-void FLRRA(int Br, const Route*route, int NslotsUsed){
+void FLRRA(int Br, const Route*route){//Br=100;
     int r=0;
     int s,x;
-    int c=17;
-    for(s=0; s<route->getNhops()-1; s++ ){
-        for(x=s+1; x<route->getNhops()-1;x++){
-            if((MAux::Rede.at(x).regenerador(x))&&(MAux::Rede.at(x).contador(c))){
-                if(//AvaliarOSNR){
-                    if(MAux::Rede.at(getNhops()-1)){
-                        //Faz as coisas
-                        c=c-1;
-                    } else {
-                        r=x;
-                      }
-                else if(r!=s) {
-                        //armazena
-                        s=r;
-                        x=r;
-                } else {
-                        NslotsUsed= 0;
+    int c=18;
+    for(s=0; s<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN()); s++ ){
+        for(x=s+1; x<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN());x++){
+            if(((MAux::Rede.at(x).get_regenerador(x))&&(MAux::Rede.at(x).available_regenerators(c)))||(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())){
+                if(MAux::AvaliaOsnr.at(x) && RWA::FirstFit.at(x)){
+                  if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())){
+                    //falta fazer
 
+
+                    else {
+                        break;//Conexão bloqueada por solicitação de regeneradores superior ao valor disponível
+                    }
                 }
+                }
+                else {
+                    r=x;
+                    if(c>MAux::Rede.at(x).get_n_used_regenerators()){
+                        c=c-MAux::Rede.at(x).get_n_used_regenerators();
+                    }
                 }
             }
+            else if(r!=s) {
+                Node::set_transp_seg(int s, int r, int x);
+                Node::get_transp_seg();
+                //armazena
+
+
+                s=r;
+                x=r;
+            }
+                  else {
+                    break; //Conexão bloqueada
+
+                  }
         }
     }
 }
@@ -600,7 +613,8 @@ void RequestCon(Event* evt) {
 			route = MAux::AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
 			NslotsUsed = 0;
 			si = -1;
-			TryToConnect(route, NslotsReq, NslotsUsed, si);
+/*tem que mudar isso tudo*/
+            TryToConnect(route, NslotsReq, NslotsUsed, si);
 			assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
