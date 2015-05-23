@@ -58,9 +58,10 @@ void NSGA2::criar_GeracaoInicial() {
 }
 
 void NSGA2::evalFuncoesCusto(Individuo *I) {
-	I->CapEx = evalCapEx(I);
-	I->NNT = evalNNT(I);
-	I->PbReq = evalPbReq(I);
+	I->Objetivos[PbReq] = evalPbReq(I);
+	I->Objetivos[OpEx] = evalOpEx(I);
+	I->Objetivos[CapEx] = evalCapEx(I);
+	I->Objetivos[Energia] = evalEnergia(I);
 }
 
 long double NSGA2::evalCapEx(Individuo *I) {
@@ -70,11 +71,12 @@ long double NSGA2::evalCapEx(Individuo *I) {
 	return capex;
 }
 
-long double NSGA2::evalNNT(Individuo *I) {
-	int nnt = 0;
-	for (int i = 0; i < T; i++)
-		if (I->Gene[i] != 0) nnt++;
-	return nnt;
+long double NSGA2::evalOpEx(Individuo *I) {
+	return 0; //esperando helder
+}
+
+long double NSGA2::evalEnergia(Individuo *I) {
+	return 0; //esperando helder
 }
 
 long double NSGA2::evalPbReq(Individuo *I) {
@@ -82,12 +84,15 @@ long double NSGA2::evalPbReq(Individuo *I) {
 }
 
 bool NSGA2::A_Domina_B(Individuo *A, Individuo *B) {
-	if (A->CapEx < B->CapEx)
-		if ((A->NNT <= B->NNT) && (A->PbReq <= B->PbReq)) return true;
-	if (A->NNT < B->NNT)
-		if ((A->CapEx <= B->CapEx) && (A->PbReq <= B->PbReq)) return true;
-	if (A->PbReq < B->PbReq)
-		if ((A->CapEx <= B->CapEx) && (A->NNT <= B->NNT)) return true;
+	for (int i = 0; i < ParamMAX; i++)
+		if (A->Objetivos[i] < B->Objetivos[i]) {
+			bool Domina = true;
+			for (int j = 0; j < ParamMAX; j++) {
+				if (i == j) continue;
+				Domina &= (A->Objetivos[j] <= B->Objetivos[j]);
+			}
+			if (Domina) return true;
+		}
 	return false;
 }
 

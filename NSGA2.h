@@ -3,9 +3,12 @@
 
 class NSGA2 {
 	private:
+		enum Parametros{
+			PbReq, CapEx, OpEx, Energia, ParamMAX
+		};
 		struct Individuo {
 			long double *Gene;
-			long double PbReq, CapEx, NNT;
+			long double Objetivos[ParamMAX];
 			int Aptidao;
 		};
 		struct Geracao {
@@ -32,9 +35,10 @@ class NSGA2 {
 		bool A_Domina_B(Individuo *A, Individuo *B);
 
 		void evalFuncoesCusto(Individuo *);
-		long double evalCapEx(Individuo*);
 		long double evalPbReq(Individuo*);
-		long double evalNNT(Individuo*);
+		long double evalCapEx(Individuo*);
+		long double evalOpEx(Individuo*);
+		long double evalEnergia(Individuo *);
 	public:
 		NSGA2();
 		~NSGA2();
