@@ -52,6 +52,11 @@ SimOtimizacao MAux::escOtim;
 
 MAux::MAux(){
 	AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
+	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++)
+		while (!AllRoutes[i].empty()) {
+			delete AllRoutes[i].back();
+			AllRoutes[i].pop_back();
+		}
 	firstEvent = NULL;
 }
 

@@ -43,7 +43,7 @@ void Load(); /*Função que lê os dados relativos à simulação. Realiza taref
 void RefreshNoise(Def *Config); /*atualiza os ruídos dos enlaces*/
 bool ReleaseSlot(const Route* route, int s, Def *Config); /*Libera o slot s em todos os enlaces da Rota route*/
 void RemoveCon(Event*, Def *Config); /*Retira uma conexão da rede - liberando todos os seus slots*/
-void RequestCon(Event*, Def *Config, MAux *Aux); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
+void RequestCon(Event*, Def *Config, MAux *MainAux); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void ScheduleEvent(Event*, MAux *Aux); /*Programa evento para execução, criando a fila*/
 void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleatoriamente*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
@@ -573,7 +573,7 @@ void RemoveCon(Event* evt, Def *Config) {
 	delete evt;
 }
 
-void RequestCon(Event* evt, Def *Config, MAux *Aux) {
+void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
@@ -598,22 +598,22 @@ void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 		NslotsReq = SlotsReq(nTaxa, evt);
 
 		if(MAux::Alg_Routing == CSP)
-			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, Aux);
+			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == CSP_Acum)
-			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, Aux);
+			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Config->Alfa, Config, Aux);
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Config->Alfa, Config, MainAux);
 		if(MAux::Alg_Routing == LOR_Modificado)
-			RWA::LORModificado(orN, deN, NslotsReq, Config, Aux);
+			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == PSO)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, Aux);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::escSim == Sim_TreinoPSR)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, Aux);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, Aux);
+			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 
-		for(unsigned int i = 0; i < Aux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
-			route = Aux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
+		for(unsigned int i = 0; i < MainAux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
+			route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
 			NslotsUsed = 0;
 			si = -1;
 			TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
@@ -639,12 +639,12 @@ void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 
 					//Cria uma nova conexao
 					long double Tempo = General::exponential(MAux::mu);
-					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, Aux->simTime + Tempo);
+					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, MainAux->simTime + Tempo);
 					//Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
 					Event *evt = new Event;
 					evt->conexao = newConexao;
-					DefineNextEventOfCon(evt, Aux);
-					ScheduleEvent(evt, Aux);
+					DefineNextEventOfCon(evt, MainAux);
+					ScheduleEvent(evt, MainAux);
 					Config->tempoTotal_Taxa[nTaxa] += Tempo;
 					Config->numReqAceit_Esquema[Esq] += 1;
 					Config->taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
@@ -665,9 +665,9 @@ void RequestCon(Event* evt, Def *Config, MAux *Aux) {
 	AccountForBlocking(NslotsReq, NslotsUsed, nTaxa, Config);
 	//Define o novo evento de chegada de requisicao
 	long double IAT = General::exponential(MAux::laNet); //Inter-arrival time
-	setReqEvent(evt, Aux->simTime + IAT);
+	setReqEvent(evt, MainAux->simTime + IAT);
 	assert(evt->type == Req);
-	ScheduleEvent(evt, Aux); //Reusa este mesmo objeto evt
+	ScheduleEvent(evt, MainAux); //Reusa este mesmo objeto evt
 }
 
 void ScheduleEvent(Event *evt, MAux *Aux) {
@@ -719,11 +719,9 @@ long double Simula_Rede(Def *Config, MAux *MainAux) {
 		}
 		vector<Route*> ().swap(MainAux->AllRoutes[i]);
 	}
-	delete[] MainAux->AllRoutes;
-	MainAux->AllRoutes = new vector<Route*> [Def::Nnodes*Def::Nnodes];
 	MainAux->firstEvent = new Event;
 
-	if (MAux::Alg_Routing == MH || MAux::Alg_Routing == SP || MAux::Alg_Routing == OSNRR)
+	if (((MAux::Alg_Routing == MH) || (MAux::Alg_Routing == SP) || (MAux::Alg_Routing == OSNRR)) && (MAux::escSim != Sim_TreinoPSR))
 		for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++)
 			MainAux->AllRoutes[i] = Aux->AllRoutes[i];
 
@@ -791,13 +789,14 @@ void SimPbReq(MAux *Aux) {
 }
 
 void SimBigode() {
+	srand(time(NULL));
 	#pragma omp parallel for schedule(dynamic)
 	for (int i = 1; i <= Def::maxSim_Bigode; i++) {
 		MAux *BigodeAux = new MAux();
 		Def *BigodeDef = new Def(NULL);
 		long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
 		cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
-		Aux->Resul << Aux->laNet << "\t " << PbReq << endl;
+		Aux->Resul << PbReq << endl;
 		delete BigodeAux;
 		delete BigodeDef;
 	}

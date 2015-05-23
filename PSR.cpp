@@ -2,12 +2,14 @@
 #include "Main_Auxiliar.h"
 
 int PSR::N;
+long double **PSR::CacheDisponibilidade, ***PSR::CacheDistancias;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
 long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
+PSR::Custo PSR::C = PSR::Disponibilidade;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -22,7 +24,39 @@ PSR::PSR(int NewN) {
 
 	Coeficientes = new long double[PSR::get_N()*PSR::get_N()];
 	ComprimentosNormalizados = new long double[Def::getNnodes()*Def::getNnodes()];
+	CacheDistancias = new long double**[PSR::get_N()];
+	CacheDisponibilidade = new long double*[Def::getSE()+1];
+	for (int i = 0; i < PSR::get_N(); i++) {
+		CacheDistancias[i] = new long double*[Def::Nnodes];
+		for (int j = 0; j < Def::Nnodes; j++)
+			CacheDistancias[i][j] = new long double[Def::Nnodes];
+	}
+	for (int i = 0; i < Def::getSE()+1; i++)
+		CacheDisponibilidade[i] = new long double[PSR::get_N()];
 	Normalizacao();
+	criarCache();
+}
+
+void PSR::criarCache() {
+	long double aux;
+	for (int i = 0; i < Def::getNnodes(); i++) {
+		for (int j = 0; j < Def::getNnodes(); j++) {
+			aux = MAux::Caminho[i].at(j).get_comprimento();
+			for (int k = 0; k < PSR::get_N(); k++) {
+				if (MAux::Topology[Def::getNnodes()*i + j] == 0)
+					CacheDistancias[k][i][j] = Def::MAX_DOUBLE;
+				else
+					CacheDistancias[k][i][j] = pow( aux/get_MaiorEnlace(), k );
+			}
+		}
+	}
+
+	for (int i = 0; i <= Def::getSE(); i++) {
+		if (C == Disponibilidade) aux = (i + 1.0)/Def::getSE();
+		else if (C == NumFormas) aux = (1.0)/(i + 1);
+		for (int j = 0; j < PSR::get_N(); j++)
+			CacheDisponibilidade[i][j] = pow(aux, j);
+	}
 }
 
 const int PSR::get_N() {
@@ -192,4 +226,19 @@ void PSR::PSO_ImprimeCoeficientes() {
 		PSO_Coeficientes_W << endl;
 	}
 	PSO_Coeficientes_W << endl << PSO_MelhorPbReq << endl;
+}
+
+long double PSR::get_Disponibilidade(int NSlots, int N) {
+	assert(N < PSR::get_N());
+	assert(NSlots <= Def::getSE());
+
+	return CacheDisponibilidade[NSlots][N];
+}
+
+long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
+	assert(WhoAmI1 < Def::getNnodes());
+	assert(WhoAmI2 < Def::getNnodes());
+	assert(N < PSR::get_N());
+
+	return CacheDistancias[N][WhoAmI1][WhoAmI2];
 }
