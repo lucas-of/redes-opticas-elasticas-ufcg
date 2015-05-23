@@ -5,12 +5,17 @@
 int NSGA2::G;
 int NSGA2::S;
 int NSGA2::T;
+long double NSGA2::Pc;
+long double NSGA2::Pm;
 NSGA2::Geracao* NSGA2::Evolucao;
 
 NSGA2::NSGA2() {
 	G = 300;
 	S = 100;
 	T = Def::getNnodes();
+
+	Pm = 0.1;
+	Pc = 1;
 
 	g = 0;
 
@@ -74,4 +79,43 @@ long double NSGA2::evalNNT(Individuo *I) {
 
 long double NSGA2::evalPbReq(Individuo *I) {
 	return 0; //esperando as meninas
+}
+
+bool NSGA2::A_Domina_B(Individuo *A, Individuo *B) {
+	if (A->CapEx < B->CapEx)
+		if ((A->NNT <= B->NNT) && (A->PbReq <= B->PbReq)) return true;
+	if (A->NNT < B->NNT)
+		if ((A->CapEx <= B->CapEx) && (A->PbReq <= B->PbReq)) return true;
+	if (A->PbReq < B->PbReq)
+		if ((A->CapEx <= B->CapEx) && (A->NNT <= B->NNT)) return true;
+	return false;
+}
+
+void NSGA2::evalPareto(Geracao *G) {
+	int nVisitados = 0;
+	int nFrentes = 0;
+	bool Visitados[S];
+	for (int i = 0; i < S; i++) Visitados[i] = false;
+
+	while (nVisitados != S) {
+		for (int i = 0;	i < S; i++) {
+			bool NaoDominado = true;
+			for (int j = 0; j < S; j++) {
+				if (j == i) continue;
+				if (Visitados[j]) continue;
+				NaoDominado &= !A_Domina_B(&G->Populacao[j], &G->Populacao[i]);
+			}
+
+			if (NaoDominado) {
+				Visitados[i] = true;
+				nVisitados++;
+				G->Populacao[i].Aptidao = nFrentes;
+			}
+		}
+
+		for (int i = 0; i < S; i++)
+			if (G->Populacao[i].Aptidao == nFrentes) Visitados[i] = true;
+		nFrentes++;
+	}
+
 }

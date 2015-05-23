@@ -68,7 +68,6 @@ int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
 	createStructures();
-	NSGA2();
 	if (MAux::Alg_Routing == MH)
 		RWA::Dijkstra(Aux);
 	else if (MAux::Alg_Routing == SP)
