@@ -25,36 +25,35 @@ NSGA2::NSGA2() {
 
 NSGA2::~NSGA2() {
 	for (int i = 0; i < G; i++) {
-		for (int j = 0; j < S; j++) {
-			if (Evolucao[i].Populacao != NULL)
-				delete[] Evolucao[i].Populacao[j].Gene;
+		for (int j = 0; j < Evolucao[i].Populacao.size(); j++) {
+			delete[] Evolucao[i].Populacao.at(j)->Gene;
 		}
-		delete[] Evolucao[i].Populacao;
 	}
 	delete[] Evolucao;
 }
 
 void NSGA2::criar_GeracaoInicial() {
 	long double Rand1, Rand2;
-	Evolucao[0].Populacao = new Individuo[S];
+	for (int i = 0; i < S; i++)
+		Evolucao[0].Populacao.push_back(new Individuo);
 	Evolucao[0].idGeracao = 0;
 	for (int i = 0; i < S; i++)
-		Evolucao[0].Populacao[i].Gene = new long double[T];
+		Evolucao[0].Populacao.at(i)->Gene = new long double[T];
 
 	for (int i = 0; i < S; i++) {
 		for (int j = 0; j < T; j++) {
 			long double Rand1 = General::uniforme(0,1);
 			if (Rand1 < 0.5)
-				Evolucao[0].Populacao[i].Gene[j] = 0;
+				Evolucao[0].Populacao.at(i)->Gene[j] = 0;
 			else {
 				int RiMax = Def::getGrauNo(j)*Def::getSE();
-				Evolucao[0].Populacao[i].Gene[j] = ceil(General::uniforme(0,RiMax));
+				Evolucao[0].Populacao.at(i)->Gene[j] = ceil(General::uniforme(0,RiMax));
 			}
 		}
 	}
 
 	for (int i = 0; i < S; i++)
-		evalFuncoesCusto(&Evolucao[0].Populacao[i]);
+		evalFuncoesCusto(Evolucao[0].Populacao.at(i));
 }
 
 void NSGA2::evalFuncoesCusto(Individuo *I) {
@@ -72,7 +71,10 @@ long double NSGA2::evalCapEx(Individuo *I) {
 }
 
 long double NSGA2::evalOpEx(Individuo *I) {
-	return 0; //esperando helder
+	int opex = 0;
+	for (int i = 0; i < T; i++)
+		if (I->Gene[i] != 0) opex++;
+	return opex;
 }
 
 long double NSGA2::evalEnergia(Individuo *I) {
@@ -108,19 +110,29 @@ void NSGA2::evalPareto(Geracao *G) {
 			for (int j = 0; j < S; j++) {
 				if (j == i) continue;
 				if (Visitados[j]) continue;
-				NaoDominado &= !A_Domina_B(&G->Populacao[j], &G->Populacao[i]);
+				NaoDominado &= !A_Domina_B(G->Populacao.at(j), G->Populacao.at(i));
 			}
 
 			if (NaoDominado) {
 				Visitados[i] = true;
 				nVisitados++;
-				G->Populacao[i].Aptidao = nFrentes;
+				G->Populacao.at(i)->Aptidao = nFrentes;
 			}
 		}
 
 		for (int i = 0; i < S; i++)
-			if (G->Populacao[i].Aptidao == nFrentes) Visitados[i] = true;
+			if (G->Populacao.at(i)->Aptidao == nFrentes) Visitados[i] = true;
 		nFrentes++;
 	}
+	G->nFrentesPareto = nFrentes;
+}
+
+void NSGA2::evalcrowdDistance(Geracao *G) {
+	for (int i = 0; i <= G->nFrentesPareto; i++) {
+
+	}
+}
+
+void NSGA2::criar_Geracao(Geracao *G) {
 
 }

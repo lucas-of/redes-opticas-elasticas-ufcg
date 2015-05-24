@@ -1,6 +1,8 @@
 #ifndef NSGA2_H
 #define NSGA2_H
 
+#include <vector>
+
 class NSGA2 {
 	private:
 		enum Parametros{
@@ -10,10 +12,12 @@ class NSGA2 {
 			long double *Gene;
 			long double Objetivos[ParamMAX];
 			int Aptidao;
+			long double crowdDistance;
 		};
 		struct Geracao {
-			Individuo *Populacao;
+			std::vector <Individuo*> Populacao;
 			int idGeracao;
+			int nFrentesPareto;
 		};
 
 		int g; //geracao atual
@@ -32,6 +36,7 @@ class NSGA2 {
 		void executarNSGA2();
 
 		void evalPareto(Geracao *G);
+		void evalcrowdDistance(Geracao *G);
 		bool A_Domina_B(Individuo *A, Individuo *B);
 
 		void evalFuncoesCusto(Individuo *);
