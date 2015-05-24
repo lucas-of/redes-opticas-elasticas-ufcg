@@ -9,6 +9,7 @@ class NSGA2 {
 			PbReq, CapEx, OpEx, Energia, ParamMAX
 		};
 		struct Individuo {
+			int id;
 			long double *Gene;
 			long double Objetivos[ParamMAX];
 			int Aptidao;
@@ -21,6 +22,7 @@ class NSGA2 {
 		};
 
 		int g; //geracao atual
+		int k; //parametro para o torneio binario
 		static int G; //numero de geracoes
 		static int S; //numero de individuos
 		static int T; //numero de genes
@@ -32,6 +34,11 @@ class NSGA2 {
 		void criar_Geracao(Geracao *);
 		void criar_Populacao(Geracao);
 		void criar_Individuo(Individuo);
+
+		void Crumento(int I1, int I2, Geracao *);
+		void Mutacao(int I1, Geracao *);
+		Geracao* Selecao(Geracao *);
+		Individuo* TorneioBinario(Geracao *);
 
 		void executarNSGA2();
 

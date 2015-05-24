@@ -18,6 +18,7 @@ NSGA2::NSGA2() {
 	Pc = 1;
 
 	g = 0;
+	k = 2;
 
 	Evolucao = new Geracao[G];
 	criar_GeracaoInicial();
@@ -33,16 +34,16 @@ NSGA2::~NSGA2() {
 }
 
 void NSGA2::criar_GeracaoInicial() {
-	long double Rand1, Rand2;
+	long double Rand1;
 	for (int i = 0; i < S; i++)
-		Evolucao[0].Populacao.push_back(new Individuo);
+		Evolucao[0].Populacao.push_back(new Individuo{i});
 	Evolucao[0].idGeracao = 0;
 	for (int i = 0; i < S; i++)
 		Evolucao[0].Populacao.at(i)->Gene = new long double[T];
 
 	for (int i = 0; i < S; i++) {
 		for (int j = 0; j < T; j++) {
-			long double Rand1 = General::uniforme(0,1);
+			Rand1 = General::uniforme(0,1);
 			if (Rand1 < 0.5)
 				Evolucao[0].Populacao.at(i)->Gene[j] = 0;
 			else {
@@ -101,13 +102,13 @@ bool NSGA2::A_Domina_B(Individuo *A, Individuo *B) {
 void NSGA2::evalPareto(Geracao *G) {
 	int nVisitados = 0;
 	int nFrentes = 0;
-	bool Visitados[S];
+	bool Visitados[G->Populacao.size()];
 	for (int i = 0; i < S; i++) Visitados[i] = false;
 
-	while (nVisitados != S) {
-		for (int i = 0;	i < S; i++) {
+	while (nVisitados != G->Populacao.size()) {
+		for (int i = 0;	i < G->Populacao.size(); i++) {
 			bool NaoDominado = true;
-			for (int j = 0; j < S; j++) {
+			for (int j = 0; j < G->Populacao.size(); j++) {
 				if (j == i) continue;
 				if (Visitados[j]) continue;
 				NaoDominado &= !A_Domina_B(G->Populacao.at(j), G->Populacao.at(i));
@@ -120,7 +121,7 @@ void NSGA2::evalPareto(Geracao *G) {
 			}
 		}
 
-		for (int i = 0; i < S; i++)
+		for (int i = 0; i < G->Populacao.size(); i++)
 			if (G->Populacao.at(i)->Aptidao == nFrentes) Visitados[i] = true;
 		nFrentes++;
 	}
@@ -135,4 +136,23 @@ void NSGA2::evalcrowdDistance(Geracao *G) {
 
 void NSGA2::criar_Geracao(Geracao *G) {
 
+}
+
+NSGA2::Geracao* NSGA2::Selecao(Geracao *G) {
+	Geracao P, Q;
+	P = *G;
+	while (Q.Populacao.size() < S)
+		Q.Populacao.push_back( TorneioBinario(&P) );
+	return &Q;
+}
+
+NSGA2::Individuo* NSGA2::TorneioBinario(Geracao *G) {
+	Individuo *I = G->Populacao.at( General::uniforme(0,G->Populacao.size()-1) );
+	Individuo *J;
+	for (int i = 1; i < k; i++) {
+		J = G->Populacao.at( General::uniforme(0,G->Populacao.size()-1) );
+		if (I->Aptidao > J->Aptidao)
+			I = J;
+	}
+	G->Populacao.erase( G->Populacao.begin() + I->id );
 }
