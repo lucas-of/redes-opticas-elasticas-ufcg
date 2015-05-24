@@ -31,13 +31,13 @@ class NSGA2 {
 		static long double Pm; //probabilidade de mutacao
 
 		void criar_GeracaoInicial();
-		void criar_Geracao(Geracao *);
+		Geracao criar_Geracao(Geracao *);
 		void criar_Populacao(Geracao);
 		void criar_Individuo(Individuo);
 
-		void Crumento(int I1, int I2, Geracao *);
+		void Cruzamento(int I1, int I2, Geracao *G, Geracao *Q);
 		void Mutacao(int I1, Geracao *);
-		Geracao* Selecao(Geracao *);
+		void Selecao(Geracao *, Geracao *Q);
 		Individuo* TorneioBinario(Geracao *);
 
 		void executarNSGA2();
@@ -51,6 +51,8 @@ class NSGA2 {
 		long double evalCapEx(Individuo*);
 		long double evalOpEx(Individuo*);
 		long double evalEnergia(Individuo *);
+
+		void ajustarIds(Geracao *);
 	public:
 		NSGA2();
 		~NSGA2();

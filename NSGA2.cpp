@@ -21,7 +21,7 @@ NSGA2::NSGA2() {
 	k = 2;
 
 	Evolucao = new Geracao[G];
-	criar_GeracaoInicial();
+	executarNSGA2();
 }
 
 NSGA2::~NSGA2() {
@@ -134,25 +134,101 @@ void NSGA2::evalcrowdDistance(Geracao *G) {
 	}
 }
 
-void NSGA2::criar_Geracao(Geracao *G) {
+NSGA2::Geracao NSGA2::criar_Geracao(Geracao *G) {
+	Geracao Q, R;
 
+	ajustarIds(G);
+	Selecao(G, &R);
+
+	while( Q.Populacao.size() != 0 ) {
+		int I1 = floor(General::uniforme(0, R.Populacao.size()));
+		int I2 = floor(General::uniforme(0, R.Populacao.size()));
+		while (I1 == I2) I2 = floor(General::uniforme(0, R.Populacao.size()));
+		Cruzamento(I1, I2, &R, &Q);
+	}
+
+	for (int Ind = 0; Ind < S; Ind++) Mutacao(Ind, &Q);
+
+	for (int Ind = 0; Ind < S; Ind++) evalFuncoesCusto( Q.Populacao.at(Ind) );
+	return Q;
 }
 
-NSGA2::Geracao* NSGA2::Selecao(Geracao *G) {
-	Geracao P, Q;
+void NSGA2::Selecao(Geracao *G, Geracao *Q) {
+	Geracao P;
 	P = *G;
-	while (Q.Populacao.size() < S)
-		Q.Populacao.push_back( TorneioBinario(&P) );
-	return &Q;
+	while (Q->Populacao.size() < S)
+		Q->Populacao.push_back( TorneioBinario(&P) );
 }
 
 NSGA2::Individuo* NSGA2::TorneioBinario(Geracao *G) {
-	Individuo *I = G->Populacao.at( General::uniforme(0,G->Populacao.size()-1) );
+	Individuo *I = G->Populacao.at( floor(General::uniforme(0,G->Populacao.size())) );
 	Individuo *J;
 	for (int i = 1; i < k; i++) {
-		J = G->Populacao.at( General::uniforme(0,G->Populacao.size()-1) );
+		J = G->Populacao.at( floor(General::uniforme(0,G->Populacao.size())) );
 		if (I->Aptidao > J->Aptidao)
 			I = J;
 	}
 	G->Populacao.erase( G->Populacao.begin() + I->id );
+}
+
+void NSGA2::executarNSGA2() {
+	criar_GeracaoInicial();
+
+	for (int Ger = 0; Ger < G; Ger++) {
+		for (int Ind = 0; Ind < S; Ind++) evalFuncoesCusto( Evolucao[Ger].Populacao.at(Ind) );
+		evalPareto( Evolucao + Ger );
+		evalcrowdDistance( Evolucao + Ger );
+
+		Geracao Q = criar_Geracao(Evolucao + Ger);
+	}
+}
+
+void NSGA2::Cruzamento(int I1, int I2, Geracao *G, Geracao *Q) {
+	if (General::uniforme(0,1) < Pc) { //realiza cruzamento
+
+		Individuo ind1, ind2;
+		ind1.Gene = new long double[T];
+		ind2.Gene = new long double[T];
+
+		for (int gene = 0; gene < T; gene++) {
+			if (General::uniforme(0,1) < 0.5) {
+				ind1.Gene[gene] = G->Populacao.at(I1)->Gene[gene];
+				ind2.Gene[gene] = G->Populacao.at(I2)->Gene[gene];
+			} else {
+				ind1.Gene[gene] = G->Populacao.at(I2)->Gene[gene];
+				ind2.Gene[gene] = G->Populacao.at(I1)->Gene[gene];
+			}
+		}
+
+		Q->Populacao.push_back( &ind1 );
+		Q->Populacao.push_back( &ind2 );
+	} else {
+		Q->Populacao.push_back( G->Populacao.at(I1) );
+		Q->Populacao.push_back( Q->Populacao.at(I2) );
+	}
+
+	if (I1 < I2) {
+		G->Populacao.erase( G->Populacao.begin() + I2 );
+		G->Populacao.erase( G->Populacao.begin() + I1 );
+	} else {
+		G->Populacao.erase( G->Populacao.begin() + I1 );
+		G->Populacao.erase( G->Populacao.begin() + I2 );
+	}
+}
+
+void NSGA2::Mutacao(int I1, Geracao *Q) {
+	for (int gene = 0; gene < T; gene++) {
+		if (General::uniforme(0,1) < Pm) //realiza mutacao
+			if (General::uniforme(0,1) < 0.5)
+				Q->Populacao.at(I1)->Gene[gene] = 0;
+			else {
+				int RiMax = Def::getGrauNo(gene)*Def::getSE();
+				Q->Populacao.at(I1)->Gene[gene] = ceil(General::uniforme(0,RiMax));
+			}
+	}
+}
+
+void NSGA2::ajustarIds(Geracao *G) {
+	for (int i = 0; i < G->Populacao.size(); i++)
+		G->Populacao.at(i)->id = i;
 }
