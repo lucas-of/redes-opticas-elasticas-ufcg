@@ -783,7 +783,10 @@ void RWA::LORModificado(const int orN, const int deN, const int L, Def *Config, 
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
 					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace - Heuristics::calculateCostLink(DispLink, L) + 1;
+				if (MAux::Alg_Routing == LOR_NF)
+					custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + Heuristics::calculateCostLink(DispLink, L) + 1;
+				else if (MAux::Alg_Routing == LOR_A)
+					custoLink = MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace - Heuristics::calcNumFormAloc(1,DispLink)/Def::getSE() + 1;
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
 					Precedente[j] = k;

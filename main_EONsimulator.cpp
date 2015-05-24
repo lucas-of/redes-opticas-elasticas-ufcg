@@ -443,7 +443,7 @@ void Load() {
 	Aux = new MAux();
 
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
-		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
+		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_NF << " - LOR Num. Formas\n\t" << LOR_A << " - LOR Disponibilidade\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
 	}
@@ -604,7 +604,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == DJK_SPeFormas)
 			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Config->Alfa, Config, MainAux);
-		if(MAux::Alg_Routing == LOR_Modificado)
+		if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
 			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == PSO)
 			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);

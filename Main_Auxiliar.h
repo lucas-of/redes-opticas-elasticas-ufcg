@@ -11,7 +11,7 @@
 #include "Constantes.h"
 
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
-enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar slots requisitados no enlace como custo*/, CSP_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/, DJK_RuidoEFormas /*DJK considerando ruido normalizado do enlace e número de formas possíveis de alocação*/, LOR_Modificado /*LOR Modificado*/, PSO /*PSO*/, OSNRR /*OSNR-R*/};
+enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar slots requisitados no enlace como custo*/, CSP_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/, DJK_RuidoEFormas /*DJK considerando ruido normalizado do enlace e número de formas possíveis de alocação*/, LOR_NF /*LOR com Num Formas de Alocacao*/, LOR_A /*LOR com Dispobilidade*/, PSO /*PSO*/, OSNRR /*OSNR-R*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
