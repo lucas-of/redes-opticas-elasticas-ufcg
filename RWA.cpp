@@ -178,7 +178,7 @@ void RWA::DijkstraSP(MAux *Aux) {
 	delete []PathRev;
 }
 
-void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MAux *MainAux) {
+void RWA::DijkstraPSR(const int orN, const int deN, const int L, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config, MAux *MainAux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
 	int VA, i, j, k=0, path, h, hops;
@@ -213,10 +213,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, Def *Config, MA
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				long double Peso;
+                long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao))/Config->get_Pin();
 				if (Config->P != NULL)
-					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x);
+                    Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x,Noise);
 				else
-					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL);
+                    Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL,Noise);
 				if(CustoVertice[k] + Peso < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + Peso;
 					Precedente[j] = k;

@@ -607,9 +607,9 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 		if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
 			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == PSO)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
+            RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 		if(MAux::escSim == Sim_TreinoPSR)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
+            RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
 			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 

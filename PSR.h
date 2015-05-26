@@ -12,7 +12,7 @@
 class PSR{
 	public:
 		PSR(int);
-		enum Custo{ Disponibilidade, NumFormas };
+        enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas };
 		static Custo C;
 		const static int get_N();
 		static void executar_PSR(MAux *Aux);

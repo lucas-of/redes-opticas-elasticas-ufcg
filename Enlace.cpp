@@ -92,26 +92,33 @@ void Enlace::recalcular(Def *Config) {
 	}
 }
 
-long double Enlace::get_peso(Def *Config, int L, long double *PartCoef) {
+long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long double Noise) {
 	long double peso = 0;
 	long double SlotsDispon = 0;
-	if (PSR::C == PSR::NumFormas) {
+	if (PSR::C == PSR::DistanciaNumFormas) {
 		bool *Disp = new bool[Def::getSE()];
 		for (int Slot = 0; Slot < Def::getSE(); Slot++)
 			Disp[Slot] = !Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami];
 		SlotsDispon = Heuristics::calcNumFormAloc(L,Disp);
 		delete[] Disp;
-	} else if (PSR::C == PSR::Disponibilidade)
+	} else if (PSR::C == PSR::DistanciaDisponibilidade)
 		for (int Slot = 0; Slot < Def::getSE(); Slot++)
 			if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
 				SlotsDispon += 1;
 
 	for (int i = 0; i < PSR::get_N() ; i++) {
 		for (int j = 0; j < PSR::get_N(); j++) {
-			if (PartCoef !=  NULL)
-				peso += PartCoef[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-			else
-				peso += Coeficientes[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+            if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas))
+                if (PartCoef !=  NULL)
+                    peso += PartCoef[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+                else
+                    peso += Coeficientes[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+            else {
+                if (PartCoef !=  NULL)
+                    peso += PartCoef[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
+                else
+                    peso += Coeficientes[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
+            }
 		}
 	}
 	return peso;
