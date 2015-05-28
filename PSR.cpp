@@ -9,7 +9,7 @@ long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::P
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
-PSR::Custo PSR::C = PSR::RuidoDisponibilidade;
+PSR::Custo PSR::C = PSR::DistanciaDisponibilidade;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -144,8 +144,8 @@ void PSR::PSO() {
 			delete PSRDef;
 			delete PSRAux;
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
-            MAux::PSRLog << Repeticao << "\t" << PSO_MelhorPbReq << endl;
 		}
+	        MAux::PSRLog << Repeticao+1 << "\t" << PSO_MelhorPbReq << endl;
 		PSO_atualizaVelocidades();
 	}
 }

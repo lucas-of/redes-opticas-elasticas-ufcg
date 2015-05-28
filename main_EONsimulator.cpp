@@ -88,7 +88,7 @@ int main() {
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
-		PSR(5);
+		PSR(2);
 		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta();
