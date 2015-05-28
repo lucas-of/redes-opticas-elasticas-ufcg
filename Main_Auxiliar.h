@@ -38,6 +38,7 @@ class MAux {
 		static ofstream ResulFFOext_FFOconv;
 		static ofstream ResultDAmpMaiorQueLimiar;
 		static ofstream ResultDAmpMenorQueLimiar;
+        static ofstream PSRLog;
 		static ifstream Topol;
 		static ifstream Topol2;
 		static ifstream Topol3;

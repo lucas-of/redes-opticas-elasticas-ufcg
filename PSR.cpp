@@ -144,6 +144,7 @@ void PSR::PSO() {
 			delete PSRDef;
 			delete PSRAux;
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
+            MAux::PSRLog << Repeticao << "\t" << PSO_MelhorPbReq << endl;
 		}
 		PSO_atualizaVelocidades();
 	}
