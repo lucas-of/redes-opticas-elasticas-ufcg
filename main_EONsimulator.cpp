@@ -104,15 +104,16 @@ void FLRRA(int Br, const Route*route){//Br=100;
     int r=0;
     int s,x;
     int c=18;
-    for(s=0; s<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN()); s++ ){
-        for(x=s+1; x<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN());x++){
+    for(s=0; s<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN()); s++){
+        /*(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())*/
+        for(x=s+1; x<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN());x++){
             if(((MAux::Rede.at(x).get_regenerador(x))&&(MAux::Rede.at(x).available_regenerators(c)))||(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())){
-                if(MAux::AvaliaOsnr.at(x) && RWA::FirstFit.at(x)){
-                  if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())){
+                TryToConnect(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7), NslotsReq, NslotsUsed, si);
+                  if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
                     //falta fazer
+                    evt->Esquema = Esquemas[0];
 
-
-                    else {
+                  }else {
                         break;//Conexão bloqueada por solicitação de regeneradores superior ao valor disponível
                     }
                 }
@@ -125,7 +126,7 @@ void FLRRA(int Br, const Route*route){//Br=100;
                 }
             }
             else if(r!=s) {
-                Node::set_transp_seg(int s, int r, int x);
+                Node::set_transp_seg(s, r, x);
                 Node::get_transp_seg();
                 //armazena
 
@@ -272,7 +273,8 @@ void createStructures() {
 				case PontoaPonto4: MAux::Topol4>>MAux::Topology[orN*Def::Nnodes+deN]; break;
 				case Top1: MAux::Topol6>>MAux::Topology[orN*Def::Nnodes+deN]; break;
 				case Top2: MAux::Topol7>>MAux::Topology[orN*Def::Nnodes+deN]; break;
-			}
+                case Top3: MAux::Topol8>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+            }
 			cout<<MAux::Topology[orN*Def::Nnodes+deN]<<" ";
 		}
 		cout << endl;
@@ -298,6 +300,7 @@ void createStructures() {
 				case PontoaPonto4: MAux::Topol4>>distancia_temp; break;
 				case Top1: MAux::Topol6>>distancia_temp; break;
 				case Top2: MAux::Topol7>>distancia_temp; break;
+                case Top3: MAux::Topol8>>distancia_temp;break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
 				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),distancia_temp));
@@ -402,7 +405,7 @@ void Load() {
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
 
-	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
+    cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << "\tTop3 <" << Top3 << ">;" << endl;
 	cin>>aux;
 	MAux::escTop = (Topologia)aux;
 
@@ -415,6 +418,7 @@ void Load() {
 		case PontoaPonto8: MAux::Topol3>>aux; break;
 		case Top1: MAux::Topol6>>aux; break;
 		case Top2: MAux::Topol7>>aux; break;
+        case Top3: MAux::Topol8>>aux; break;
 	}
 
 	Def::setNnodes(aux);
@@ -438,6 +442,7 @@ void Load() {
 		case PontoaPonto8: MAux::Topol3>>aux; break;
 		case Top1: MAux::Topol6>>aux; break;
 		case Top2: MAux::Topol7>>aux; break;
+        case Top3: MAux::Topol8>>aux; break;
 	}
 	Def::setSE(aux); //o enlace tem 100GHz de banda
 	cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;

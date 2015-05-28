@@ -11,7 +11,8 @@ class Node {
         int reg;
         int transp;
         int ur;
-        int segmento[tamanho];
+        //int tamanho;
+        //int segmento[tamanho];
 		void calcula_ganho_pot();
 		void calcula_ruido_pot();
 	public:

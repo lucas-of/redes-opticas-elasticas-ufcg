@@ -14,7 +14,7 @@
 enum Dijkstra { DJK /*considera custo fixo*/, DJK_Formas /*considera maneiras de alocar slots requisitados no enlace como custo*/, DJK_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/, LOR_Modificado /*LOR Modificado*/, PSO /*PSO*/};
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
-enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
+enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2, Top3 };
 enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaOtimizado };
 
 //Abre arquivos de texto para leitura ou escrita
@@ -41,6 +41,7 @@ class MAux {
 		static ifstream Topol5;
 		static ifstream Topol6;
 		static ifstream Topol7;
+        static ifstream Topol8;
 
 
 		//Variáveis necessárias em main_EONsimulator.cpp
