@@ -106,19 +106,19 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
 			if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
 				SlotsDispon += 1;
 
-	for (int i = 0; i < PSR::get_N() ; i++) {
-		for (int j = 0; j < PSR::get_N(); j++) {
-            if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas))
-                if (PartCoef !=  NULL)
-                    peso += PartCoef[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-                else
-                    peso += Coeficientes[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-            else {
-                if (PartCoef !=  NULL)
-                    peso += PartCoef[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
-                else
-                    peso += Coeficientes[i*PSR::get_N()+j]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
-            }
+	for (int i = PSR::get_NMin(); i <= PSR::get_NMax() ; i++) {
+		for (int j = PSR::get_NMin(); j <= PSR::get_NMax(); j++) {
+			if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas))
+				if (PartCoef !=  NULL)
+					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+				else
+					peso += Coeficientes[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+			else {
+				if (PartCoef !=  NULL)
+					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
+				else
+					peso += Coeficientes[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i)*pow(Noise,j);
+			}
 		}
 	}
 	return peso;

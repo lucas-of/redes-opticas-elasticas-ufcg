@@ -88,7 +88,7 @@ int main() {
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
-		PSR(2);
+		PSR(-1, 1);
 		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta();
@@ -119,9 +119,11 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
 }
 
 void CarregaCoeficientes() {
-	int N;
-	PSR::PSO_Coeficientes_R >> N;
-	PSR PSR_Auxiliar(N);
+	int Nm, NM, N;
+	PSR::PSO_Coeficientes_R >> Nm >> NM;
+	PSR PSR_Auxiliar(Nm, NM);
+
+	N = NM - Nm + 1;
 
 	MAux::Coeficientes = new long double[N*N];
 		for (int i = 0; i < N; i++) {
@@ -607,9 +609,9 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 		if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
 			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == PSO)
-            RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 		if(MAux::escSim == Sim_TreinoPSR)
-            RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+			RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 		if(MAux::Alg_Routing == DJK_RuidoEFormas)
 			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 

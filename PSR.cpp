@@ -1,7 +1,7 @@
 #include "PSR.h"
 #include "Main_Auxiliar.h"
 
-int PSR::N;
+int PSR::N, PSR::maxN, PSR::minN;
 long double **PSR::CacheDisponibilidade, ***PSR::CacheDistancias;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
@@ -17,10 +17,12 @@ void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algo
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 long double Simula_Rede(Def *Config, MAux *Aux);
 
-PSR::PSR(int NewN) {
-	assert(NewN > 0);
+PSR::PSR(int Nmin, int Nmax) {
+	assert(Nmax > Nmin);
 	MaiorEnlace = 0;
-	N = NewN;
+	N = Nmax - Nmin + 1;
+	maxN = Nmax;
+	minN = Nmin;
 
 	Coeficientes = new long double[PSR::get_N()*PSR::get_N()];
 	ComprimentosNormalizados = new long double[Def::getNnodes()*Def::getNnodes()];
@@ -42,28 +44,36 @@ void PSR::criarCache() {
 	for (int i = 0; i < Def::getNnodes(); i++) {
 		for (int j = 0; j < Def::getNnodes(); j++) {
 			aux = MAux::Caminho[i].at(j).get_comprimento();
-			for (int k = 0; k < PSR::get_N(); k++) {
+			for (int k = minN; k <= maxN; k++) {
 				if (MAux::Topology[Def::getNnodes()*i + j] == 0)
-					CacheDistancias[k][i][j] = Def::MAX_DOUBLE;
+					CacheDistancias[k-minN][i][j] = Def::MAX_DOUBLE;
 				else
-                    if ((C == DistanciaDisponibilidade) || (C == DistanciaNumFormas))
-                        CacheDistancias[k][i][j] = pow( aux/get_MaiorEnlace(), k );
-                    else if ((C == RuidoDisponibilidade) || (C == RuidoNumFormas))
-                        CacheDistancias[k][i][j] = Def::MAX_DOUBLE;
+					if ((C == DistanciaDisponibilidade) || (C == DistanciaNumFormas))
+						CacheDistancias[k-minN][i][j] = pow( aux/get_MaiorEnlace(), k );
+					else if ((C == RuidoDisponibilidade) || (C == RuidoNumFormas))
+						CacheDistancias[k-minN][i][j] = Def::MAX_DOUBLE;
 			}
 		}
 	}
 
 	for (int i = 0; i <= Def::getSE(); i++) {
-        if ((C == DistanciaDisponibilidade) || (C == RuidoDisponibilidade)) aux = i*1.0/Def::getSE();
-        else if ((C == DistanciaNumFormas) || (C == RuidoNumFormas)) aux = (1.0)/(i + 1);
-		for (int j = 0; j < PSR::get_N(); j++)
-			CacheDisponibilidade[i][j] = pow(aux, j);
+		if ((C == DistanciaDisponibilidade) || (C == RuidoDisponibilidade)) aux = (i+1.0)/Def::getSE();
+		else if ((C == DistanciaNumFormas) || (C == RuidoNumFormas)) aux = (1.0)/(i + 1);
+		for (int j = minN; j <= maxN; j++)
+			CacheDisponibilidade[i][j-minN] = pow(aux, j);
 	}
 }
 
 const int PSR::get_N() {
 	return PSR::N;
+}
+
+const int PSR::get_NMax() {
+	return maxN;
+}
+
+const int PSR::get_NMin() {
+	return minN;
 }
 
 long double PSR::get_coeficiente(int i, int j) {
@@ -145,7 +155,7 @@ void PSR::PSO() {
 			delete PSRAux;
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
 		}
-	        MAux::PSRLog << Repeticao+1 << "\t" << PSO_MelhorPbReq << endl;
+			MAux::PSRLog << Repeticao+1 << "\t" << PSO_MelhorPbReq << endl;
 		PSO_atualizaVelocidades();
 	}
 }
@@ -222,7 +232,7 @@ void PSR::PSO_atualizaVelocidades() {
 
 void PSR::PSO_ImprimeCoeficientes() {
 	ofstream PSO_Coeficientes_W("PSOCoeficientes.txt");
-	PSO_Coeficientes_W << N << endl;
+	PSO_Coeficientes_W << minN << "\t" << maxN << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			PSO_Coeficientes_W << Coeficientes[i*PSR::N+j] << "\t";
@@ -233,16 +243,18 @@ void PSR::PSO_ImprimeCoeficientes() {
 }
 
 long double PSR::get_Disponibilidade(int NSlots, int N) {
-	assert(N < PSR::get_N());
+	assert(N <= PSR::get_NMax());
+	assert(N >= PSR::get_NMin());
 	assert(NSlots <= Def::getSE());
 
-	return CacheDisponibilidade[NSlots][N];
+	return CacheDisponibilidade[NSlots][N-minN];
 }
 
 long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
 	assert(WhoAmI1 < Def::getNnodes());
 	assert(WhoAmI2 < Def::getNnodes());
-	assert(N < PSR::get_N());
+	assert(N <= PSR::get_NMax());
+	assert(N >= PSR::get_NMin());
 
-	return CacheDistancias[N][WhoAmI1][WhoAmI2];
+	return CacheDistancias[N-minN][WhoAmI1][WhoAmI2];
 }
