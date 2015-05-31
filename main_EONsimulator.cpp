@@ -797,6 +797,8 @@ void SimBigode() {
 	for (int i = 1; i <= Def::maxSim_Bigode; i++) {
 		MAux *BigodeAux = new MAux();
 		Def *BigodeDef = new Def(NULL);
+		BigodeDef->Alfa = Aux->Config->Alfa;
+		BigodeDef->Beta = Aux->Config->Beta;
 		long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
 		cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
 		Aux->Resul << PbReq << endl;
