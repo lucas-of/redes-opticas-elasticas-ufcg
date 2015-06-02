@@ -11,8 +11,9 @@
 
 class PSR{
 	public:
-		PSR(int Nmin, int Nmax);
+        PSR(int Nmin, int Nmax, MAux*);
 		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas };
+        static Respostas OtimizarComAWR;
 		static Custo C;
 		const static int get_N();
 		const static int get_NMin();
@@ -32,6 +33,7 @@ class PSR{
 		static int maxN, minN;
 		static long double *Coeficientes;
 		static long double MaiorEnlace;
+        static MAux *Aux;
 
 		static int PSO_P; //numero de partículas
 		static int PSO_G; //numero de iterações

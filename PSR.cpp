@@ -2,6 +2,8 @@
 #include "Main_Auxiliar.h"
 
 int PSR::N, PSR::maxN, PSR::minN;
+MAux *PSR::Aux;
+Respostas PSR::OtimizarComAWR;
 long double **PSR::CacheDisponibilidade, ***PSR::CacheDistancias;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
@@ -9,20 +11,22 @@ long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::P
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
-PSR::Custo PSR::C = PSR::DistanciaDisponibilidade;
+PSR::Custo PSR::C = PSR::DistanciaNumFormas;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 long double Simula_Rede(Def *Config, MAux *Aux);
+void SimAlfaBeta();
 
-PSR::PSR(int Nmin, int Nmax) {
+PSR::PSR(int Nmin, int Nmax, MAux *A = 0) {
 	assert(Nmax > Nmin);
 	MaiorEnlace = 0;
 	N = Nmax - Nmin + 1;
 	maxN = Nmax;
 	minN = Nmin;
+    Aux = A;
 
 	Coeficientes = new long double[PSR::get_N()*PSR::get_N()];
 	ComprimentosNormalizados = new long double[Def::getNnodes()*Def::getNnodes()];
@@ -108,7 +112,7 @@ void PSR::Normalizacao() {
 
 void PSR::PSO_configurar() {
 	PSO_P = 50;
-	PSO_G = 500;
+    PSO_G = 100;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
@@ -169,6 +173,35 @@ void PSR::PSO_iniciarPopulacao() {
 			}
 		}
 	}
+
+    if (OtimizarComAWR == SIM) {
+        assert( PSR::C != DistanciaDisponibilidade );
+        assert( PSR::C != RuidoDisponibilidade );
+        if (PSR::C == DistanciaNumFormas) MAux::escOtim = OtimizarAlfa;
+        else if (PSR::C == RuidoNumFormas) MAux::escOtim = OtimizarBeta;
+
+        if (MAux::escOtim == OtimizarAlfa)
+            MAux::Alg_Routing = DJK_SPeFormas;
+        else if (MAux::escOtim == OtimizarBeta)
+            MAux::Alg_Routing = DJK_RuidoEFormas;
+
+        SimAlfaBeta();
+
+        for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+                PSO_populacao[0].x[j*N+k] = 0;
+            }
+        }
+
+        if (MAux::escOtim == OtimizarAlfa) {
+            PSO_populacao[0].x[1] = 0.01*Aux->Config->Alfa;
+            PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Alfa;
+        } else {
+            PSO_populacao[0].x[1] = 0.01*Aux->Config->Beta;
+            PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Beta;
+        }
+    }
+    MAux::Alg_Routing = Dij_PSO;
 }
 
 void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
