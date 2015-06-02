@@ -61,7 +61,7 @@ void PSR::criarCache() {
 	}
 
 	for (int i = 0; i <= Def::getSE(); i++) {
-		if ((C == DistanciaDisponibilidade) || (C == RuidoDisponibilidade)) aux = (i+1.0)/Def::getSE();
+		if ((C == DistanciaDisponibilidade) || (C == RuidoDisponibilidade)) aux = (i*1.0)/Def::getSE();
 		else if ((C == DistanciaNumFormas) || (C == RuidoNumFormas)) aux = (1.0)/(i + 1);
 		for (int j = minN; j <= maxN; j++)
 			CacheDisponibilidade[i][j-minN] = pow(aux, j);
