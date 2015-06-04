@@ -20,6 +20,7 @@
 #include "Enlace.h"
 #include "ASE_Noise.cpp"
 #include "Metricas.cpp"
+#include "NSGA2.h"
 
 using namespace std;
 
@@ -87,7 +88,7 @@ int main() {
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
-		PSR(5);
+		PSR(0, 3, Aux);
 		PSR::executar_PSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta();
@@ -118,9 +119,11 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
 }
 
 void CarregaCoeficientes() {
-	int N;
-	PSR::PSO_Coeficientes_R >> N;
-	PSR PSR_Auxiliar(N);
+	int Nm, NM, N;
+	PSR::PSO_Coeficientes_R >> Nm >> NM;
+	PSR PSR_Auxiliar(Nm, NM, Aux);
+
+	N = NM - Nm + 1;
 
 	MAux::Coeficientes = new long double[N*N];
 		for (int i = 0; i < N; i++) {
@@ -284,7 +287,7 @@ void createStructures() {
 		}
 	}
 
-	if (MAux::Alg_Routing == PSO) CarregaCoeficientes();
+	if (MAux::Alg_Routing == Dij_PSO) CarregaCoeficientes();
 }
 
 void DefineNextEventOfCon (Event* evt, MAux *Aux) {
@@ -393,6 +396,14 @@ void Load() {
 		MAux::escOtim = (SimOtimizacao)aux;
 	}
 
+	if (MAux::escSim == Sim_TreinoPSR) {
+		if ((PSR::C == PSR::RuidoNumFormas) || (PSR::C == PSR::DistanciaNumFormas)) {
+			cout<<"Considera partícula do AWR para Otimizar? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
+			cin>>aux;
+			PSR::OtimizarComAWR = (Respostas)aux;
+		}
+	}
+
 	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
 	cin>>aux;
 	MAux::escTop = (Topologia)aux;
@@ -442,7 +453,7 @@ void Load() {
 	Aux = new MAux();
 
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
-		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_Modificado << " - LOR Modificado\n\t" << PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
+		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_NF << " - LOR Num. Formas\n\t" << LOR_A << " - LOR Disponibilidade\n\t" << Dij_PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
 	}
@@ -601,16 +612,14 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
 		if(MAux::Alg_Routing == CSP_Acum)
 			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, 0.01*Config->Alfa, Config, MainAux);
-		if(MAux::Alg_Routing == LOR_Modificado)
+		if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
 			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::Alg_Routing == PSO)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::escSim == Sim_TreinoPSR)
-			RWA::DijkstraPSR(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, 0.01*Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+		if(MAux::Alg_Routing == DJK_SPeFormas)
+			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Config->Alfa, Config, MainAux);
+		else if(MAux::Alg_Routing == DJK_RuidoEFormas)
+			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+		else if((MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO))
+			RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 
 		for(unsigned int i = 0; i < MainAux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 			route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -745,7 +754,7 @@ void SimAlfaBeta() {
 	long double melhorAlfa = 0, melhorPbReq = 1;
 	if (MAux::escOtim == OtimizarAlfa) {
 		#pragma omp parallel for schedule(dynamic)
-		for (int Alfa = 0; Alfa <= 100; Alfa += 2) {
+		for (int Alfa = 0; Alfa <= 90; Alfa += 1) {
 			MAux *AlfaAux = new MAux();
 			Def *AlfaDef = new Def(NULL);
 			AlfaDef->Alfa = Alfa;
@@ -754,15 +763,16 @@ void SimAlfaBeta() {
 			if (PbReq < melhorPbReq) {
 				melhorAlfa = Alfa;
 				melhorPbReq = PbReq;
+				Aux->Config->Alfa = Alfa;
 			}
-			cout << "Alfa " << 0.01*Alfa << "\tPbReq " << PbReq << endl;
-			MAux::Resul << 0.01*Alfa << "\t" << PbReq << endl;
+			cout << "Alfa " << Alfa << "\tPbReq " << PbReq << endl;
+			MAux::Resul << Alfa << "\t" << PbReq << endl;
 			delete AlfaDef;
 			delete AlfaAux;
 		}
 	} else if (MAux::escOtim == OtimizarBeta) {
 		#pragma omp parallel for schedule(dynamic)
-		for (int Beta = 0; Beta <= 100; Beta += 2) {
+		for (int Beta = 0; Beta <= 90; Beta += 1) {
 			MAux *BetaAux = new MAux();
 			Def *BetaDef = new Def(NULL);
 			BetaDef->Beta = Beta;
@@ -771,9 +781,10 @@ void SimAlfaBeta() {
 			if (PbReq < melhorPbReq) {
 				melhorAlfa = Beta;
 				melhorPbReq = PbReq;
+				Aux->Config->Beta = Beta;
 			}
-			cout << "Beta " << 0.01*Beta << "\tPbReq " << PbReq << endl;
-			MAux::Resul << 0.01*Beta << "\t" << PbReq << endl;
+			cout << "Beta " << Beta << "\tPbReq " << PbReq << endl;
+			MAux::Resul << Beta << "\t" << PbReq << endl;
 			delete BetaDef;
 			delete BetaAux;
 		}
@@ -794,6 +805,8 @@ void SimBigode() {
 	for (int i = 1; i <= Def::maxSim_Bigode; i++) {
 		MAux *BigodeAux = new MAux();
 		Def *BigodeDef = new Def(NULL);
+		BigodeDef->Alfa = Aux->Config->Alfa;
+		BigodeDef->Beta = Aux->Config->Beta;
 		long double PbReq = Simula_Rede(BigodeDef,BigodeAux);
 		cout << "Simulação " << i << "\tPbReq " << PbReq << endl;
 		Aux->Resul << PbReq << endl;
