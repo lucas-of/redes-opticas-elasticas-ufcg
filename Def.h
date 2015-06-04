@@ -57,8 +57,8 @@ class Def {
 
 	public:
 		Particula *P;
-		float Alfa; //SPeFormas
-		float Beta; //RuidoNormalizadoeFormas
+		long double Alfa; //SPeFormas
+		long double Beta; //RuidoNormalizadoeFormas
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
 		static int maxSim_Bigode;

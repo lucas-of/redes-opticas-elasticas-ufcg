@@ -11,10 +11,13 @@
 
 class PSR{
 	public:
-		PSR(int);
-		enum Custo{ Disponibilidade, NumFormas };
+		PSR(int Nmin, int Nmax, MAux*);
+		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas };
+		static Respostas OtimizarComAWR;
 		static Custo C;
 		const static int get_N();
+		const static int get_NMin();
+		const static int get_NMax();
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
 		static void criarCache();
@@ -27,8 +30,10 @@ class PSR{
 		static long double ***CacheDistancias;
 		static long double **CacheDisponibilidade;
 		static int N; //ponto de truncamento
+		static int maxN, minN;
 		static long double *Coeficientes;
 		static long double MaiorEnlace;
+		static MAux *Aux;
 
 		static int PSO_P; //numero de partículas
 		static int PSO_G; //numero de iterações

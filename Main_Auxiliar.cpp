@@ -15,6 +15,7 @@ ofstream MAux::ResulFFOext_FFOconv("ResultFFOext_FFOconv.txt");
 ofstream MAux::ResultDAmpMaiorQueLimiar("DAmpMaiorQueLimiar.txt");
 ofstream MAux::ResultDAmpMenorQueLimiar("DAmpMenorQueLimiar.txt");
 ofstream MAux::ResultEsquemas("ResultEsquemas.txt");
+ofstream MAux::PSRLog("PSRLog.txt");
 ifstream MAux::Topol("TopologyNFS.txt");
 ifstream MAux::Topol2("TopologyPBell.txt");
 ifstream MAux::Topol3("TopologyRed8.txt");
