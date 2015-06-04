@@ -3,6 +3,7 @@
 #include "Main_Auxiliar.h"
 
 long double AvaliarOSNR(const Route*, Def*);
+#define PI acos(-1)
 
 bool RWA::CheckSlotAvailability(const Route* route, const int s, Def *Config) {
 	assert(s >=0 && s < Def::getSE());
@@ -213,11 +214,11 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, EsquemaDeModula
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				long double Peso;
-                long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao))/Config->get_Pin();
+				long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao))/Config->get_Pin();
 				if (Config->P != NULL)
-                    Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x,Noise);
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x,Noise);
 				else
-                    Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL,Noise);
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL,Noise);
 				if(CustoVertice[k] + Peso < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + Peso;
 					Precedente[j] = k;
@@ -423,11 +424,9 @@ void RWA::DijkstraFormas(const int orN, const int deN, const int L, Def *Config,
 	delete []DispLink;
 }
 
-void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alfa, Def *Config, MAux *Aux) {
+void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, long double alfa, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
-	assert(alfa >= 0);
-	assert(alfa <= 1);
 	int VA, i, j, k=0, path, h, hops;
 	long double min;
 	bool *DispLink = new bool[Def::getSE()];
@@ -472,7 +471,7 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 				//Calcula O vetor de disponibilidade do enlace entre k e j
 				for(int s = 0; s < Def::getSE(); s++)
 					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
-				custoLink = alfa*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + (1.0-alfa)*Heuristics::calculateCostLink(DispLink, L);
+				custoLink = cos(alfa*PI/180.0)*MAux::Caminho[k].at(j).get_comprimento()/MaiorComprimentoEnlace + sin(alfa*PI/180.0)*Heuristics::calculateCostLink(DispLink, L);
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
 					Precedente[j] = k;
@@ -509,11 +508,9 @@ void RWA::DijkstraSPeFormas(const int orN, const int deN, const int L, float alf
 	delete []DispLink;
 }
 
-void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config, MAux *Aux) {
+void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, long double beta, EsquemaDeModulacao Esquema, long double TaxaDeTransmissao, Def *Config, MAux *Aux) {
 	//L e a largura de banda (em numero de slots) da requisicao
 	assert(orN != deN);
-	assert(beta >= 0);
-	assert(beta <= 1);
 	int VA, i, j, k=0, path, h, hops;
 	long double min;
 	bool *DispLink = new bool[Def::getSE()];
@@ -552,8 +549,8 @@ void RWA::DijkstraRuidoeFormas(const int orN, const int deN, const int L, float 
 					DispLink[s] = !Config->Topology_S[s*Def::Nnodes*Def::Nnodes+k*Def::Nnodes + j];
 
 				RuidoLimiar = Config->get_Pin()/General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao));
-				custoLink = beta*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
-				custoLink += (1.0-beta)*Heuristics::calculateCostLink(DispLink, L);
+				custoLink = cos(beta*PI/180.0)*MAux::Caminho[k].at(j).get_ruido_enlace()/RuidoLimiar;
+				custoLink += sin(beta*PI/180.0)*Heuristics::calculateCostLink(DispLink, L);
 
 				if(CustoVertice[k] + custoLink < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + custoLink;
