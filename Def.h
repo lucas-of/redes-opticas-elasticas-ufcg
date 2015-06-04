@@ -19,6 +19,7 @@ struct Particula {
 		long double *x;
 		long double *v;
 		long double *p;
+		long double *geratriz;
 		long double melhorInd = 1;
 		Particula *Vizinha1, *Vizinha2;
 };

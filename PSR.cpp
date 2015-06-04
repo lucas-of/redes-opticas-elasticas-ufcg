@@ -12,6 +12,7 @@ int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
 PSR::Custo PSR::C = PSR::DistanciaNumFormas;
+PSR::Tipo PSR::T = PSR::Tensorial;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void RemoveCon(Event*); /*Retira uma conexão da rede - liberando todos os seus slots*/
@@ -26,7 +27,7 @@ PSR::PSR(int Nmin, int Nmax, MAux *A = 0) {
 	N = Nmax - Nmin + 1;
 	maxN = Nmax;
 	minN = Nmin;
-    Aux = A;
+	Aux = A;
 
 	Coeficientes = new long double[PSR::get_N()*PSR::get_N()];
 	ComprimentosNormalizados = new long double[Def::getNnodes()*Def::getNnodes()];
@@ -112,7 +113,7 @@ void PSR::Normalizacao() {
 
 void PSR::PSO_configurar() {
 	PSO_P = 50;
-    PSO_G = 100;
+	PSO_G = 100;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
@@ -120,15 +121,29 @@ void PSR::PSO_configurar() {
 	PSO_chi = -2.0/(2 - phi - sqrt(phi*phi - 4*phi));
 
 	PSO_populacao = new Particula[PSO_P];
-	for (int i = 0; i < PSO_P; i++) {
-		if (i!=0) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
-		else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
-		if(i!=PSO_P-1) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
-		else PSO_populacao[i].Vizinha2 = PSO_populacao;
+	if (PSR::T == PSR::Matricial)
+		for (int i = 0; i < PSO_P; i++) {
+			if (i!=0) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
+			else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
+			if(i!=PSO_P-1) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
+			else PSO_populacao[i].Vizinha2 = PSO_populacao;
 
-		PSO_populacao[i].x = new long double[N*N];
-		PSO_populacao[i].v = new long double[N*N];
-		PSO_populacao[i].p = new long double[N*N];
+			PSO_populacao[i].x = new long double[N*N];
+			PSO_populacao[i].v = new long double[N*N];
+			PSO_populacao[i].p = new long double[N*N];
+		}
+	else if (PSR::T == PSR::Tensorial) {
+		for (int i = 0; i < PSO_P; i++) {
+			if (i!=0) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
+			else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
+			if(i!=PSO_P-1) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
+			else PSO_populacao[i].Vizinha2 = PSO_populacao;
+
+			PSO_populacao[i].x = new long double[N*N];
+			PSO_populacao[i].v = new long double[N*2];
+			PSO_populacao[i].p = new long double[N*2];
+			PSO_populacao[i].geratriz = new long double[N*2];
+		}
 	}
 }
 
@@ -145,8 +160,12 @@ void PSR::PSO() {
 			long double PbReq = PSO_simulaRede(PSO_populacao + Part, PSRDef, PSRAux);
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
-				for (int i = 0; i < N*N; i++)
-				(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->x[i];
+				if (PSR::T == PSR::Matricial)
+					for (int i = 0; i < N*N; i++)
+						(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->x[i];
+				else if (PSR::T == PSR::Tensorial)
+					for (int i = 0; i < 2*N; i++)
+						(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->geratriz[i];
 			}
 			if (PbReq < PSR::PSO_MelhorPbReq) {
 				PSR::PSO_MelhorPbReq = PbReq;
@@ -165,43 +184,54 @@ void PSR::PSO() {
 }
 
 void PSR::PSO_iniciarPopulacao() {
-	for (int i = 0; i < PSO_P; i++) {
-		for (int j = 0; j < N; j++) {
-			for (int k = 0; k < N; k++) {
-				PSO_populacao[i].v[j*N+k] = 0;
-				PSO_populacao[i].x[j*N+k] = General::uniforme(0,PSR::PSO_Xmax);
+	if (PSR::T == PSR::Matricial) {
+		for (int i = 0; i < PSO_P; i++) {
+			for (int j = 0; j < N; j++) {
+				for (int k = 0; k < N; k++) {
+					PSO_populacao[i].v[j*N+k] = 0;
+					PSO_populacao[i].x[j*N+k] = General::uniforme(0,PSR::PSO_Xmax);
+				}
+			}
+		}
+
+		if (OtimizarComAWR == SIM) {
+			assert( PSR::C != DistanciaDisponibilidade );
+			assert( PSR::C != RuidoDisponibilidade );
+			if (PSR::C == DistanciaNumFormas) MAux::escOtim = OtimizarAlfa;
+			else if (PSR::C == RuidoNumFormas) MAux::escOtim = OtimizarBeta;
+
+			if (MAux::escOtim == OtimizarAlfa)
+				MAux::Alg_Routing = DJK_SPeFormas;
+			else if (MAux::escOtim == OtimizarBeta)
+				MAux::Alg_Routing = DJK_RuidoEFormas;
+
+			SimAlfaBeta();
+
+			for (int j = 0; j < N; j++) {
+				for (int k = 0; k < N; k++) {
+					PSO_populacao[0].x[j*N+k] = 0;
+				}
+			}
+
+			if (MAux::escOtim == OtimizarAlfa) {
+				PSO_populacao[0].x[1] = 0.01*Aux->Config->Alfa;
+				PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Alfa;
+			} else {
+				PSO_populacao[0].x[1] = 0.01*Aux->Config->Beta;
+				PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Beta;
+			}
+		}
+	} else if (PSR::T == PSR::Tensorial) {
+		for (int i = 0; i < PSO_P; i++) {
+			for (int k = 0; k < 2*N; k++) {
+				PSO_populacao[i].v[k] = 0;
+				PSO_populacao[i].geratriz[k] = General::uniforme(0,PSR::PSO_Xmax);
+				PSO_gerarPosicao(&PSO_populacao[i]);
 			}
 		}
 	}
 
-    if (OtimizarComAWR == SIM) {
-        assert( PSR::C != DistanciaDisponibilidade );
-        assert( PSR::C != RuidoDisponibilidade );
-        if (PSR::C == DistanciaNumFormas) MAux::escOtim = OtimizarAlfa;
-        else if (PSR::C == RuidoNumFormas) MAux::escOtim = OtimizarBeta;
-
-        if (MAux::escOtim == OtimizarAlfa)
-            MAux::Alg_Routing = DJK_SPeFormas;
-        else if (MAux::escOtim == OtimizarBeta)
-            MAux::Alg_Routing = DJK_RuidoEFormas;
-
-        SimAlfaBeta();
-
-        for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-                PSO_populacao[0].x[j*N+k] = 0;
-            }
-        }
-
-        if (MAux::escOtim == OtimizarAlfa) {
-            PSO_populacao[0].x[1] = 0.01*Aux->Config->Alfa;
-            PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Alfa;
-        } else {
-            PSO_populacao[0].x[1] = 0.01*Aux->Config->Beta;
-            PSO_populacao[0].x[N] = 1.0 - 0.01*Aux->Config->Beta;
-        }
-    }
-    MAux::Alg_Routing = Dij_PSO;
+	MAux::Alg_Routing = Dij_PSO;
 }
 
 void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
@@ -248,23 +278,39 @@ void PSR::PSO_atualizaVelocidades() {
 		else
 			Fitter = PSO_populacao[i].Vizinha2;
 
-		for (int j = 0; j < N; j++) {
-			for (int k = 0; k < N; k++) {
+		if (PSR::T == PSR::Matricial)
+			for (int j = 0; j < N; j++) {
+				for (int k = 0; k < N; k++) {
+					eps1 = General::uniforme(0,1);
+					eps2 = General::uniforme(0,1);
+					PSO_populacao[i].v[j*N+k] = PSO_chi * ( PSO_populacao[i].v[j*N+k] + PSO_c1*eps1*( PSO_populacao[i].p[j*N+k] - PSO_populacao[i].x[j*N+k] ) + PSO_c2*eps2*( Fitter->p[j*N+k] - PSO_populacao[i].x[j*N+k] ) );
+					if (PSO_populacao[i].v[j*N+k] > PSO_Vmax) PSO_populacao[i].v[j*N+k] = PSO_Vmax;
+					if (PSO_populacao[i].v[j*N+k] < PSO_Vmin) PSO_populacao[i].v[j*N+k] = PSO_Vmin;
+					PSO_populacao[i].x[j*N+k] += PSO_populacao[i].v[j*N+k];
+					if (PSO_populacao[i].x[j*N+k] > PSO_Xmax) PSO_populacao[i].x[j*N+k] = PSO_Xmax;
+					if (PSO_populacao[i].x[j*N+k] < PSO_Xmin) PSO_populacao[i].x[j*N+k] = PSO_Xmin;
+				}
+			}
+		else if (PSR::T == PSR::Tensorial) {
+			for (int j = 0; j < 2*N; j++) {
 				eps1 = General::uniforme(0,1);
 				eps2 = General::uniforme(0,1);
-				PSO_populacao[i].v[j*N+k] = PSO_chi * ( PSO_populacao[i].v[j*N+k] + PSO_c1*eps1*( PSO_populacao[i].p[j*N+k] - PSO_populacao[i].x[j*N+k] ) + PSO_c2*eps2*( Fitter->p[j*N+k] - PSO_populacao[i].x[j*N+k] ) );
-				if (PSO_populacao[i].v[j*N+k] > PSO_Vmax) PSO_populacao[i].v[j*N+k] = PSO_Vmax;
-				if (PSO_populacao[i].v[j*N+k] < PSO_Vmin) PSO_populacao[i].v[j*N+k] = PSO_Vmin;
-				PSO_populacao[i].x[j*N+k] += PSO_populacao[i].v[j*N+k];
-				if (PSO_populacao[i].x[j*N+k] > PSO_Xmax) PSO_populacao[i].x[j*N+k] = PSO_Xmax;
-				if (PSO_populacao[i].x[j*N+k] < PSO_Xmin) PSO_populacao[i].x[j*N+k] = PSO_Xmin;
+				PSO_populacao[i].v[j] = PSO_chi * ( PSO_populacao[i].v[j] + PSO_c1*eps1*( PSO_populacao[i].p[j] - PSO_populacao[i].geratriz[j] ) + PSO_c2*eps2*( Fitter->p[j] - PSO_populacao[i].geratriz[j] ) );
+				if (PSO_populacao[i].v[j] > PSO_Vmax) PSO_populacao[i].v[j] = PSO_Vmax;
+				if (PSO_populacao[i].v[j] < PSO_Vmin) PSO_populacao[i].v[j] = PSO_Vmin;
+				PSO_populacao[i].geratriz[j] += PSO_populacao[i].v[j];
+				if (PSO_populacao[i].geratriz[j] > PSO_Xmax) PSO_populacao[i].geratriz[j] = PSO_Xmax;
+				if (PSO_populacao[i].geratriz[j] < PSO_Xmin) PSO_populacao[i].geratriz[j] = PSO_Xmin;
 			}
+			PSO_gerarPosicao(&PSO_populacao[i]);
 		}
 	}
 }
 
 void PSR::PSO_ImprimeCoeficientes() {
 	ofstream PSO_Coeficientes_W("PSOCoeficientes.txt");
+	PSO_Coeficientes_W << PSR::C << endl;
+	PSO_Coeficientes_W << PSR::T << endl;
 	PSO_Coeficientes_W << minN << "\t" << maxN << endl;
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
@@ -290,4 +336,13 @@ long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
 	assert(N >= PSR::get_NMin());
 
 	return CacheDistancias[N-minN][WhoAmI1][WhoAmI2];
+}
+
+void PSR::PSO_gerarPosicao(Particula *P) {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			P->x[i*N + j] = P->geratriz[i]*P->geratriz[j+N];
+			cout << i << "\t" << j << "\t" << P->geratriz[i] << "\t" << P->geratriz[j+N] << "\t" << P->x[i*N + j] << endl;
+		}
+	}
 }

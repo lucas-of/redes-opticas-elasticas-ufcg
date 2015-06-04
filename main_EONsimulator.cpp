@@ -120,7 +120,12 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
 
 void CarregaCoeficientes() {
 	int Nm, NM, N;
+	int Custo, Tipo;
+	PSR::PSO_Coeficientes_R >> Custo;
+	PSR::PSO_Coeficientes_R >> Tipo;
 	PSR::PSO_Coeficientes_R >> Nm >> NM;
+	PSR::C = (PSR::Custo)Custo;
+	PSR::T = (PSR::Tipo)Tipo;
 	PSR PSR_Auxiliar(Nm, NM, Aux);
 
 	N = NM - Nm + 1;
@@ -397,7 +402,7 @@ void Load() {
 	}
 
 	if (MAux::escSim == Sim_TreinoPSR) {
-		if ((PSR::C == PSR::RuidoNumFormas) || (PSR::C == PSR::DistanciaNumFormas)) {
+		if (((PSR::C == PSR::RuidoNumFormas) || (PSR::C == PSR::DistanciaNumFormas)) && (PSR::T == PSR::Matricial)) {
 			cout<<"Considera partícula do AWR para Otimizar? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
 			cin>>aux;
 			PSR::OtimizarComAWR = (Respostas)aux;

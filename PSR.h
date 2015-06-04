@@ -13,8 +13,10 @@ class PSR{
 	public:
 		PSR(int Nmin, int Nmax, MAux*);
 		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas };
+		enum Tipo { Matricial, Tensorial };
 		static Respostas OtimizarComAWR;
 		static Custo C;
+		static Tipo T;
 		const static int get_N();
 		const static int get_NMin();
 		const static int get_NMax();
@@ -55,6 +57,7 @@ class PSR{
 		static void PSO();
 		static void PSO_configurar();
 		static void PSO_iniciarPopulacao();
+		static void PSO_gerarPosicao(Particula *P);
 		static void PSO_atualizaCustoEnlaces(Particula *P);
 		static long double PSO_simulaRede(Particula *P, Def *Config, MAux *Aux);
 		static void PSO_atualizaVelocidades();
