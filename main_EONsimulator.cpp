@@ -124,9 +124,9 @@ void CarregaCoeficientes() {
 	PSR::PSO_Coeficientes_R >> Custo;
 	PSR::PSO_Coeficientes_R >> Tipo;
 	PSR::PSO_Coeficientes_R >> Nm >> NM;
-	PSR::C = (PSR::Custo)Custo;
-	PSR::T = (PSR::Tipo)Tipo;
-	PSR PSR_Auxiliar(Nm, NM, Aux);
+    assert (Custo == PSR::C);
+    assert (Tipo == PSR::T);
+    PSR PSR_Auxiliar(Nm, NM, Aux);
 
 	N = NM - Nm + 1;
 
@@ -470,6 +470,14 @@ void Load() {
 	}
 	if (MAux::Alg_Routing == OSNRR)
 		MAux::AvaliaOsnr = SIM;
+    if ((MAux::Alg_Routing == Dij_PSO) || (MAux::escSim == Sim_TreinoPSR)) {
+        cout << "\t" << PSR::Matricial << " - Matricial\n\t" << PSR::Tensorial << " - Tensorial\nEntre com o paradigma para o PSR: ";
+        cin >> aux;
+        PSR::T = (PSR::Tipo)aux;
+        cout << "\t" << PSR::DistanciaDisponibilidade << " - Distância e Disponibilidade\n\t" << PSR::DistanciaNumFormas << " - Distância e Num. de Formas\n\t" << PSR::RuidoDisponibilidade << " - Ruido e Disponibilidade\n\t" << PSR::RuidoNumFormas << " - Ruido e Num. de Formas\nEntre com o custo para o PSR: ";
+        cin >> aux;
+        PSR::C = (PSR::Custo)aux;
+    }
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
 	cout << "Entre com o Algoritmo de Alocacao: ";

@@ -113,7 +113,7 @@ void PSR::Normalizacao() {
 
 void PSR::PSO_configurar() {
 	PSO_P = 50;
-	PSO_G = 100;
+    PSO_G = 500;
 	PSO_c1 = 2.05;
 	PSO_c2 = 2.05;
 
