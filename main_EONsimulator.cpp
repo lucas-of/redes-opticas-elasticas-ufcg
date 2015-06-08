@@ -50,6 +50,7 @@ void SDPairReq(int &orN, int &deN); /*cria um par de nó origem e destino, aleat
 void setReqEvent(Event*, TIME); /*Cria um evento de requisição a partir do instante de criação (TIME)*/
 long double Simula_Rede(Def *Config, MAux *MainAux);
 void SimPbReq(MAux *Aux); /*Simulação para Probabilidade de Bloqueio*/
+void SimPSR(MAux *Aux);
 void SimOSNR(MAux *Aux); /*Simulação para OSNR*/
 void SimNSlots(Def *Config);
 void SimBigode();
@@ -88,8 +89,7 @@ int main() {
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
-		PSR(0, 3, Aux);
-		PSR::executar_PSR(Aux);
+        SimPSR(Aux);
 	} else if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		SimAlfaBeta();
 	} else if (MAux::escSim == Sim_Bigode) {
@@ -810,6 +810,16 @@ void SimPbReq(MAux *Aux) {
 		Sim(Aux);
 		//SimCompFFO(); Simula usando as listas FF otimizadas
 	}
+}
+
+void SimPSR(MAux *Aux) {
+    int NMin, NMax;
+    cout << "Entre com o N Minimo: ";
+    cin >> NMin;
+    cout << "Entre com o N Maximo: ";
+    cin >> NMax;
+    PSR(NMin, NMax, Aux);
+    PSR::executar_PSR(Aux);
 }
 
 void SimBigode() {
