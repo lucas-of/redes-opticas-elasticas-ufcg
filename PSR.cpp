@@ -342,7 +342,6 @@ void PSR::PSO_gerarPosicao(Particula *P) {
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			P->x[i*N + j] = P->geratriz[i]*P->geratriz[j+N];
-			cout << i << "\t" << j << "\t" << P->geratriz[i] << "\t" << P->geratriz[j+N] << "\t" << P->x[i*N + j] << endl;
 		}
 	}
 }
