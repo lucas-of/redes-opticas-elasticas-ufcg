@@ -29,6 +29,7 @@ class Node {
         void set_n_used_regenerators(int Br);
         int get_n_used_regenerators();
         void set_transp_seg(int, int, int);
+        int get_transp_seg();
 };
 
 #endif //NODE_H

@@ -26,7 +26,7 @@ using namespace std;
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
-long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
+long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da rota passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void CarregaCoeficientes();
@@ -59,7 +59,7 @@ int SlotsReq(int Ran, Event *evt); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
-void FLRRA(int Br, const Route*rout); //mudou
+void FLRRA(int nTaxa, const Route*rout,int& si,int NslotsUsed,int NslotsReq, int deN, int orN); //função de alocação de regeneradores (RA)
 
 int main() {
 	Load();
@@ -100,46 +100,56 @@ int main() {
 	return 0;
 }
 
-void FLRRA(int Br, const Route*route){//Br=100;
+void FLRRA(int nTaxa, const Route*route, int& si, int NslotsUsed,int NslotsReq, int deN, int orN){
     int r=0;
     int s,x;
-    int c=18;
-    for(s=0; s<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN()); s++){
-        /*(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())*/
-        for(x=s+1; x<route->(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN());x++){
-            if(((MAux::Rede.at(x).get_regenerador(x))&&(MAux::Rede.at(x).available_regenerators(c)))||(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(1).getDeN())){
-                TryToConnect(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7), NslotsReq, NslotsUsed, si);
-                  if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
-                    //falta fazer
-                    evt->Esquema = Esquemas[0];
-
-                  }else {
+    int c=18;//número de regeneradores por nó par
+    int transparente[5] = {0,0,0,0,0};
+    // RequestCon(Event* evt);
+    for(s=0; s<route->Route::getDeN(); s++){
+        for(x=s+1; x<route->Route::getDeN();x++){
+            MAux::Rede.at(x).set_regenerador(x);
+            if(((MAux::Rede.at(x).get_regenerador())&&(MAux::Rede.at(x).available_regenerators(c)))||(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
+                //TryToConnect(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7), NslotsReq, NslotsUsed, si);
+                TryToConnect(route, NslotsReq, NslotsUsed, si);
+                if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
+                    //assign modulation.....
+                    RequestCon(Event* evt) ; // ERRADO!
+                  } else {
                         break;//Conexão bloqueada por solicitação de regeneradores superior ao valor disponível
-                    }
-                }
-                }
-                else {
+                        }
+            } else {
                     r=x;
-                    if(c>MAux::Rede.at(x).get_n_used_regenerators()){
-                        c=c-MAux::Rede.at(x).get_n_used_regenerators();
+                    MAux::Rede.at(x).set_n_used_regenerators(nTaxa);
+                        if(c>MAux::Rede.at(x).get_n_used_regenerators()){
+                            c=c-MAux::Rede.at(x).get_n_used_regenerators();
+                        } else {
+                            NslotsUsed=0;
+                        }
+                    }
+            }
+    }
+            if(r!=s) {
+                /*
+                 * for (int i=0;i < Def::getNnodes() ; i++) {
+        MAux::Rede.push_back(Node(i));
+    }
+                 */
+                for(int i=0; i<(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN()); i++){
+                    if(x%2 == 0){
+                        if(x>=s && x<=r){
+                            transparente[i] = MAux::Rede.push_back(Node(i));
+                        }
                     }
                 }
-            }
-            else if(r!=s) {
-                Node::set_transp_seg(s, r, x);
-                Node::get_transp_seg();
-                //armazena
-
-
+               /* MAux::Rede.at(x).set_transp_seg(s, r, x);
+                MAux::Rede.at(x).get_transp_seg(); //lógica errada! Não armazena!
+                */
                 s=r;
                 x=r;
-            }
-                  else {
-                    break; //Conexão bloqueada
-
+            } else {
+                    NslotsUsed=0; //Conexão bloqueada
                   }
-        }
-    }
 }
 
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa) {
@@ -578,6 +588,7 @@ void RemoveCon(Event* evt) {
 }
 
 void RequestCon(Event* evt) {
+
 	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
 	SDPairReq(orN, deN);
 	nTaxa = TaxaReq();
@@ -596,7 +607,7 @@ void RequestCon(Event* evt) {
 	Def::numReq++;
 	Def::numReq_Taxa[nTaxa]++;
 
-	EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM/*, _16QAM, _4QAM */};
 	for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
 		evt->Esquema = Esquemas[Esq];
 		NslotsReq = SlotsReq(nTaxa, evt);
@@ -619,7 +630,10 @@ void RequestCon(Event* evt) {
 			NslotsUsed = 0;
 			si = -1;
 /*tem que mudar isso tudo*/
-            TryToConnect(route, NslotsReq, NslotsUsed, si);
+            //TryToConnect(route, NslotsReq, NslotsUsed, si);
+            /*cout << "Insira a taxa de bits." << endl;
+            cin >> MAux::Br;*/
+            FLRRA(nTaxa, route, si, NslotsUsed,NslotsReq);
 			assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
@@ -979,3 +993,4 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 			cout<<"Algoritmo nao definido"<<endl;
 	}
 }
+

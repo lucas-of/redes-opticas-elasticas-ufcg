@@ -50,6 +50,7 @@ class MAux {
 		static Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
+        static int Br;
 		static long double laE;
 		static long double laNet;
 		static long double OSNRMin;

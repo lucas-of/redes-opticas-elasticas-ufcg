@@ -28,6 +28,7 @@ bool *MAux::Topology_S;
 Event *MAux::firstEvent;
 int MAux::Alg_Aloc;
 int MAux::Alg_Routing;
+int MAux::Br;
 long double MAux::laE;
 long double MAux::laNet;
 long double MAux::OSNRMin;
