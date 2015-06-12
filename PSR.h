@@ -12,7 +12,7 @@
 class PSR{
 	public:
 		PSR(int Nmin, int Nmax, MAux*);
-		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas };
+		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas, DistanciaFormasNormalizado, RuidoFormasNormalizado };
 		enum Tipo { Matricial, Tensorial };
 		static Respostas OtimizarComAWR;
 		static Custo C;
@@ -23,7 +23,7 @@ class PSR{
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
 		static void criarCache();
-		static long double get_Disponibilidade(int NSlots, int N);
+		static long double get_Disponibilidade(int NSlots, int N, int L);
 		static long double get_Distancia(int WhoAmI1, int WhoAmI2, int N);
 		static long double *ComprimentosNormalizados;
 		static ifstream PSO_Coeficientes_R;
