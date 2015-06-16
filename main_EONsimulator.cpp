@@ -27,7 +27,7 @@ using namespace std;
 //Protótipos de Funções
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
 void AccountForBlockingOSNR(int NslotsReq, int NslotsUsed); /*Realiza ações necessárias para quando uma conexão foi bloqueada*/
-long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da routa passada como parâmetro*/
+long double AvaliarOSNR(const Route *Rota, int NSlotsUsed); /*avalia a ONSR da rota passada como parâmetro*/
 bool checkFitSi(const bool* vetDisp, int s, int NslotsReq); /*Indica se a conexao pode ser inserida em [s:s+NslotsReq]*/
 void clearMemory(Def *Config, MAux *Aux); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
 void CarregaCoeficientes();
@@ -65,6 +65,8 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 
 MAux *Aux;
 
+void FLRRA(int nTaxa, const Route*rout,int& si,int NslotsUsed,int NslotsReq, int deN, int orN); //função de alocação de regeneradores (RA)
+
 int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
@@ -80,12 +82,12 @@ int main() {
 	Aux->Config->Beta = 10;
 
 	if (MAux::escSim == Sim_PbReq)
-		SimPbReq(Aux);
+                SimPbReq(Aux);
 	else if (MAux::escSim == Sim_OSNR)
-		SimOSNR(Aux);
+                SimOSNR(Aux);
 	else if (MAux::escSim == Sim_DAmp) {
-		Simulate_dAMP(MAux::Config, Aux);
-		//EncontraMultiplicador();
+                Simulate_dAMP(MAux::Config, Aux);
+		//Encontramultiplicador();
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);
 	else if (MAux::escSim == Sim_TreinoPSR) {
@@ -108,6 +110,58 @@ int main() {
 	cin.get();
 	cin.get();
 	return 0;
+}
+
+void FLRRA(int nTaxa, const Route*route, int& si, int NslotsUsed,int NslotsReq, int deN, int orN){
+	int r=0;
+	int s,x;
+	int c=18;//número de regeneradores por nó par
+	int transparente[5] = {0,0,0,0,0};
+	// RequestCon(Event* evt);
+	for(s=0; s<route->Route::getDeN(); s++){
+		for(x=s+1; x<route->Route::getDeN();x++){
+			MAux::Rede.at(x).set_regenerador(x);
+			if(((MAux::Rede.at(x).get_regenerador())&&(MAux::Rede.at(x).available_regenerators(c)))||(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
+				//TryToConnect(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7), NslotsReq, NslotsUsed, si);
+				TryToConnect(route, NslotsReq, NslotsUsed, si);
+				if(x = (MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN())){
+					//assign modulation.....
+					RequestCon(Event* evt) ; // ERRADO!
+				} else {
+					break;//Conexão bloqueada por solicitação de regeneradores superior ao valor disponível
+				}
+			} else {
+				r=x;
+				MAux::Rede.at(x).set_n_used_regenerators(nTaxa);
+				if(c>MAux::Rede.at(x).get_n_used_regenerators()){
+					c=c-MAux::Rede.at(x).get_n_used_regenerators();
+				} else {
+					NslotsUsed=0;
+				}
+			}
+		}
+	}
+	if(r!=s) {
+		/*
+		 * for (int i=0;i < Def::getNnodes() ; i++) {
+		 MAux::Rede.push_back(Node(i));
+		 }
+		*/
+		for(int i=0; i<(MAux::AllRoutes[orN*Def::getNnodes()+deN].at(7).getDeN()); i++){
+			if(x%2 == 0){
+				if(x>=s && x<=r){
+					transparente[i] = MAux::Rede.push_back(Node(i));
+				}
+			}
+		}
+		/* MAux::Rede.at(x).set_transp_seg(s, r, x);
+		   MAux::Rede.at(x).get_transp_seg(); //lógica errada! Não armazena!
+		*/
+		s=r;
+		x=r;
+	} else {
+		NslotsUsed=0; //Conexão bloqueada
+	}
 }
 
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
@@ -242,7 +296,8 @@ void createStructures() {
 				case PontoaPonto4: MAux::Topol4>>MAux::Topology[orN*Def::Nnodes+deN]; break;
 				case Top1: MAux::Topol6>>MAux::Topology[orN*Def::Nnodes+deN]; break;
 				case Top2: MAux::Topol7>>MAux::Topology[orN*Def::Nnodes+deN]; break;
-			}
+                case Top3: MAux::Topol8>>MAux::Topology[orN*Def::Nnodes+deN]; break;
+            }
 			cout<<MAux::Topology[orN*Def::Nnodes+deN]<<" ";
 		}
 		cout << endl;
@@ -283,6 +338,7 @@ void createStructures() {
 				case PontoaPonto4: MAux::Topol4>>distancia_temp; break;
 				case Top1: MAux::Topol6>>distancia_temp; break;
 				case Top2: MAux::Topol7>>distancia_temp; break;
+                case Top3: MAux::Topol8>>distancia_temp;break;
 			}
 			if(MAux::Topology[i*Def::Nnodes + j] == 1){
 				MAux::Caminho[i].push_back(Enlace(&MAux::Rede.at(i),&MAux::Rede.at(j),multiplicador*distancia_temp));
@@ -395,7 +451,7 @@ void Load() {
 	}
 
 	if (MAux::escSim == Sim_AlfaBetaOtimizado) {
-		cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
+	        cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
 		cout << OtimizarAlfa << " - Distancia\n\t" << OtimizarBeta << " - Ruido\n";
 		cin >> aux;
 		MAux::escOtim = (SimOtimizacao)aux;
@@ -409,7 +465,7 @@ void Load() {
 		}
 	}
 
-	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
+	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << "\tTop3 <" << Top3 << ">;" << endl;
 	cin>>aux;
 	MAux::escTop = (Topologia)aux;
 
@@ -422,6 +478,7 @@ void Load() {
 		case PontoaPonto8: MAux::Topol3>>aux; break;
 		case Top1: MAux::Topol6>>aux; break;
 		case Top2: MAux::Topol7>>aux; break;
+        case Top3: MAux::Topol8>>aux; break;
 	}
 
 	Def::setNnodes(aux);
@@ -445,6 +502,7 @@ void Load() {
 		case PontoaPonto8: MAux::Topol3>>aux; break;
 		case Top1: MAux::Topol6>>aux; break;
 		case Top2: MAux::Topol7>>aux; break;
+        case Top3: MAux::Topol8>>aux; break;
 	}
 	Def::setSE(aux); //o enlace tem 100GHz de banda
 	cout << "Numero de Slots por Enlace: " << Def::getSE() << endl;
@@ -536,14 +594,14 @@ void Load() {
 		cin>>op;
 		MAux::Config->set_Pref(op);
 		if (MAux::escSim != Sim_DAmp) {
-			cout<<"Entre com distancia entre os amplificadores (em km)."<<endl;
-			cin>>op;
-			MAux::Config->set_DistaA(op);
+		    cout<<"Entre com distancia entre os amplificadores (em km)."<<endl;
+		    cin>>op;
+		    MAux::Config->set_DistaA(op);
 		}
 		cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
 		cin>>aux;
 		if (aux == 1)
-			Def::set_Arquitetura(Def::BS);
+		    Def::set_Arquitetura(Def::BS);
 		else if (aux == 2)
 			Def::set_Arquitetura(Def::SS);
 	}
@@ -598,53 +656,53 @@ void RemoveCon(Event* evt, Def *Config) {
 }
 
 void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
-	int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
-	SDPairReq(orN, deN);
-	nTaxa = TaxaReq();
-	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
-		nTaxa = Def::get_numPossiveisTaxas() - 1;
-	}
-	Config->taxaTotal += Def::PossiveisTaxas[nTaxa];
-
-   /*if (MAux::escSim == Sim_AlfaOtimizado)
-		nTaxa = 4;*/
-
-	//Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
-	Route *route;
-	long double OSNR = 0;
-
-	Config->numReq++;
-	Config->numReq_Taxa[nTaxa]++;
-
-	EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
-	for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
-		evt->Esquema = Esquemas[Esq];
-		NslotsReq = SlotsReq(nTaxa, evt);
-
-		if(MAux::Alg_Routing == CSP)
-			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::Alg_Routing == CSP_Acum)
-			RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
-		if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
-			RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
-		if(MAux::Alg_Routing == DJK_SPeFormas)
-			RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Config->Alfa, Config, MainAux);
-		else if(MAux::Alg_Routing == DJK_RuidoEFormas)
-			RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
-		else if((MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO))
-			RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
-
-		for(unsigned int i = 0; i < MainAux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
-			route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
-			NslotsUsed = 0;
-			si = -1;
-			TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
-			assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
+        int orN, deN, NslotsReq, NslotsUsed, si, nTaxa;
+        SDPairReq(orN, deN);
+        nTaxa = TaxaReq();
+        if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
+                nTaxa = Def::get_numPossiveisTaxas() - 1;
+        }
+        Config->taxaTotal += Def::PossiveisTaxas[nTaxa];
+        
+        /*if (MAux::escSim == Sim_AlfaOtimizado)
+          nTaxa = 4;*/
+        
+        //Para o conjunto de rotas fornecida pelo roteamento, tenta alocar a requisicao:
+        Route *route;
+        long double OSNR = 0;
+        
+        Config->numReq++;
+        Config->numReq_Taxa[nTaxa]++;
+        
+        EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM/*, _16QAM, _4QAM */};
+        for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
+                evt->Esquema = Esquemas[Esq];
+                NslotsReq = SlotsReq(nTaxa, evt);
+                
+                if(MAux::Alg_Routing == CSP)
+                        RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
+                if(MAux::Alg_Routing == CSP_Acum)
+                        RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
+                if((MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF))
+                        RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
+                if(MAux::Alg_Routing == DJK_SPeFormas)
+                        RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Config->Alfa, Config, MainAux);
+                else if(MAux::Alg_Routing == DJK_RuidoEFormas)
+                        RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+                else if((MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO))
+                        RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+                
+                for(unsigned int i = 0; i < MainAux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
+                        route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
+                        NslotsUsed = 0;
+                        si = -1;
+                        FLRRA(nTaxa, route, si, NslotsUsed,NslotsReq);
+                        assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
 				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
 				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
-				//Inserir a conexao na rede
+                                        //Inserir a conexao na rede
 					int L_or, L_de;
 					for(unsigned c = 0; c < route->getNhops(); c++) {
 						L_or = route->getNode(c);
@@ -655,10 +713,10 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 							//Os slots sao marcados como ocupados
 						}
 					}
-
+                                        
 					Config->numHopsPerRoute += route->getNhops();
 					Config->netOccupancy += NslotsUsed*route->getNhops();
-
+                                        
 					//Cria uma nova conexao
 					long double Tempo = General::exponential(MAux::mu);
 					Conexao *newConexao = new Conexao(*route, si, si + NslotsUsed - 1, MainAux->simTime + Tempo);
@@ -1100,3 +1158,4 @@ void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int&
 			cout<<"Algoritmo nao definido"<<endl;
 	}
 }
+

@@ -23,10 +23,12 @@ ifstream MAux::Topol4("TopologyRed4.txt");
 ifstream MAux::Topol5("TopologyNFSMod.txt");
 ifstream MAux::Topol6("TopologyTop1.txt");
 ifstream MAux::Topol7("TopologyTop2.txt");
+ifstream MAux::Topol8("TopologyTop3.txt");//Topologia para testar FLRRA
 
 bool MAux::ExpComp;
 int MAux::Alg_Aloc;
 int MAux::Alg_Routing;
+int MAux::Br;
 long double MAux::laE;
 long double MAux::laNet;
 long double MAux::OSNRMin;

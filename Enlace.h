@@ -18,6 +18,7 @@ class Enlace {
 		void set_distancia(long double);
 		void recalcular(Def *Config);
 		void recalcular_peso(long double *Coef);
+        int get_distancia();
 	private:
 		double distancia;
 		Node *Origem, *Destino;

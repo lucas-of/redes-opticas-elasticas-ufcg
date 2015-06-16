@@ -13,7 +13,7 @@
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
 enum Respostas{ NAO, SIM };
-enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2 };
+enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2, Top3 };
 enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado, Sim_Bigode };
 enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
 enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar slots requisitados no enlace como custo*/, CSP_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/, DJK_RuidoEFormas /*DJK considerando ruido normalizado do enlace e número de formas possíveis de alocação*/, LOR_NF /*LOR com Num Formas de Alocacao*/, LOR_A /*LOR com Dispobilidade*/, Dij_PSO /*PSO*/, OSNRR /*OSNR-R*/};
@@ -38,7 +38,7 @@ class MAux {
 		static ofstream ResulFFOext_FFOconv;
 		static ofstream ResultDAmpMaiorQueLimiar;
 		static ofstream ResultDAmpMenorQueLimiar;
-        static ofstream PSRLog;
+		static ofstream PSRLog;
 		static ifstream Topol;
 		static ifstream Topol2;
 		static ifstream Topol3;
@@ -46,6 +46,7 @@ class MAux {
 		static ifstream Topol5;
 		static ifstream Topol6;
 		static ifstream Topol7;
+		static ifstream Topol8;
 
 
 		//Variáveis necessárias em main_EONsimulator.cpp
@@ -53,6 +54,7 @@ class MAux {
 		Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
+		static int Br;
 		static long double laE;
 		static long double laNet;
 		static long double OSNRMin;

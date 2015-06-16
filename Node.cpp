@@ -40,4 +40,45 @@ long double Node::get_ruido_pot(Def *Config) {
 void Node::set_potenciatx(long double potencia) {
 	//Potencia em dBm
 	potencia_tx = potencia;
+    
+}
+
+void Node::set_regenerador(int x){
+    if(x%2!=0){
+        reg=1;
+    }
+}
+
+int Node::get_regenerador(){
+    return reg;
+}
+
+
+int Node::available_regenerators(int c){
+      while(c!=0){
+      return 1;
+      }
+}
+
+void Node::set_n_used_regenerators(int Br){
+    ur = Br/100; //Considerando-se a taxa de 100Gb/s para regeneradores
+}
+
+int Node::get_n_used_regenerators(){// Retorna numero de regeneradores utilizados
+    return ur;
+}
+
+void Node::set_transp_seg(int s, int r, int x){
+    if(x%2 == 0){
+        if(x>=s && x<=r){
+            if(MAux::Topology[orN*Def::getNnodes()+deN] == 1){
+      transp = 1;
+            }
+
+        }
+    }
+}
+
+int Node::get_transp_seg (){
+    return transp;
 }
