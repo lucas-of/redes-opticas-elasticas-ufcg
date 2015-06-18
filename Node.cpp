@@ -7,6 +7,7 @@ Node::Node(int who) {
 	assert (who>=0);
 	whoami = who;
 	loss = General::dB(-1*Def::get_Lsss());
+	TipoNo = Transparente;
 }
 
 int Node::get_whoami() {

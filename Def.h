@@ -34,9 +34,9 @@ class Def {
 		static long double PossiveisTaxas[];
 		const static int numPossiveisTaxas;
 		static int Nnodes; // N é o número de nós;
+		static vector<int> GrauNo; //O grau de cada no
 
 	private:
-		static vector<int> GrauNo; //O grau de cada no
 		vector<double> LaNet; //La é o tráfego por cada slot
 		static long double numReqBloqMin; //é o número minimo de requisições bloqueadas
 		static long double numReqMax; //numero maximo de requisições

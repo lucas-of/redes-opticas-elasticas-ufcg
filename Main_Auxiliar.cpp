@@ -52,6 +52,7 @@ Respostas MAux::AvaliaOsnr;
 Topologia MAux::escTop;
 Simulacao MAux::escSim;
 SimOtimizacao MAux::escOtim;
+TipoDeRede MAux::escTipoRede;
 
 MAux::MAux(){
 	AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];

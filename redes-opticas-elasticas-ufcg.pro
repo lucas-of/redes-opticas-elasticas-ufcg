@@ -15,7 +15,8 @@ SOURCES += \
     RWA.cpp \
     PSR.cpp \
     Main_Auxiliar.cpp \
-    NSGA2.cpp
+    NSGA2.cpp \
+    Regeneradores.cpp
 
 OTHER_FILES += \
     README.md \
@@ -40,7 +41,8 @@ HEADERS += \
     Constantes.h \
     RWA.h \
     PSR.h \
-    NSGA2.h
+    NSGA2.h \
+    Regeneradores.h
 
     install_it.path = $$OUT_PWD
     install_it.files = TopologyNFS.txt TopologyPBell.txt TopologyRed8.txt TopologyRed4.txt TopologyNFSMod.txt TopologyTop1.txt TopologyTop2.txt

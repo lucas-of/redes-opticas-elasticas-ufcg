@@ -12,6 +12,7 @@
 
 //Definição de variáveis que virão a ser usadas em main_EONsimulator.cpp
 enum AlocacaoEspectro { RD /*random*/, FF /*first-fit*/, MU /*most-used*/, FFO /*first-fit with optimized list*/};
+enum TipoDeRede { Transparente, Translucida };
 enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2, Top3 };
 enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado, Sim_Bigode };
@@ -21,7 +22,7 @@ enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar 
 //Abre arquivos de texto para leitura ou escrita
 class MAux {
 	public:
-        MAux();
+		MAux();
 		~MAux();
 		static Def *Config;
 		static ofstream Resul;
@@ -78,6 +79,7 @@ class MAux {
 		static vector<Enlace> *Caminho;
 		static Respostas AvaliaOsnr;
 		static Topologia escTop;
+		static TipoDeRede escTipoRede;
 		static Simulacao escSim;
 		static SimOtimizacao escOtim;
 };
