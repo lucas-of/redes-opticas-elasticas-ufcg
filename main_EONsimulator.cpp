@@ -664,6 +664,11 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 						}
 					}
 
+					if (Aux->FlagRP_TLP) {
+						for (int i = 0; i <= route->getNhops(); i++)
+							Aux->RP_TLP_NodeUsage[ route->getNode(i) ]++;
+					}
+
 					Config->numHopsPerRoute += route->getNhops();
 					Config->netOccupancy += NslotsUsed*route->getNhops();
 

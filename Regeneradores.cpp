@@ -3,6 +3,8 @@
 #include "Main_Auxiliar.h"
 #include "RWA.h"
 
+long double Simula_Rede(Def *Config, MAux *Aux);
+
 Regeneradores::Regeneradores() {};
 
 void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo) {
@@ -22,6 +24,9 @@ void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 
 		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
 		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
+		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
+
+		GrauNo.at(NoEscolhido) = -1;
 	}
 }
 
@@ -55,5 +60,35 @@ void Regeneradores::RP_CNF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 
 		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
 		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
+		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
+		CentralidadeNo.at(NoEscolhido) = -1;
 	}
+}
+
+void Regeneradores::RP_TLP(int NumTotalRegeneradores, int NumRegeneradoresPorNo) {
+	assert (NumTotalRegeneradores % NumRegeneradoresPorNo == 0);
+	int NumNoTransparentes = NumTotalRegeneradores/NumRegeneradoresPorNo;
+	assert(NumNoTransparentes <= Def::Nnodes);
+
+	MAux::FlagRP_TLP = true;
+	MAux MainAux;
+	Def Config(NULL);
+	Simula_Rede(&Config, &MainAux);
+
+	for (int i = 0; i < NumNoTransparentes; i++) {
+		int MaiorGrau = MainAux.RP_TLP_NodeUsage[0];
+		for (int j = 0; j < Def::Nnodes; j++)
+			if (MaiorGrau < MainAux.RP_TLP_NodeUsage[j]) MaiorGrau = MainAux.RP_TLP_NodeUsage[j];
+
+		vector<int> NosMaximos;
+		for (int j = 0; j < Def::Nnodes; j++)
+			if (MainAux.RP_TLP_NodeUsage[j] == MaiorGrau) NosMaximos.push_back(j);
+
+		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
+		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
+		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
+		MainAux.RP_TLP_NodeUsage[NoEscolhido] = -1;
+	}
+
+	MAux::FlagRP_TLP = false;
 }

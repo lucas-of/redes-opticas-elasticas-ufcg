@@ -72,6 +72,8 @@ class MAux {
 		static long double *Coeficientes;
 		static long double *Topology;
 		static long double *MinimasDistancias;
+		static bool FlagRP_TLP; //Se estiver fazendo uma simulacao para o algoritmo TLP, flag marcada como true.
+		static int *RP_TLP_NodeUsage;
 		TIME simTime;
 		static vector<int> **FFlists;
 		vector<Route*> *AllRoutes;

@@ -51,3 +51,19 @@ void Node::set_TipoNo(TiposDeNo Tipo) {
 Node::TiposDeNo Node::get_TipoNo() {
 	return TipoNo;
 }
+
+void Node::set_NumRegeneradores(int NR) {
+	assert(NR > 0);
+	assert(TipoNo == Translucido);
+
+	NumRegeneradores = NR;
+	NumRegeneradoresDisponiveis = NR;
+}
+
+int Node::get_NumRegeneradores() {
+	return NumRegeneradores;
+}
+
+int Node::get_NumRegeneradoresDisponiveis() {
+	return NumRegeneradoresDisponiveis;
+}

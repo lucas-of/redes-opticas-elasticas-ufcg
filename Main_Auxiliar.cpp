@@ -45,6 +45,8 @@ long double MAux::muC;
 long double *MAux::Topology;
 long double *MAux::Coeficientes;
 long double *MAux::MinimasDistancias;
+bool MAux::FlagRP_TLP = false;
+int *MAux::RP_TLP_NodeUsage;
 vector<int> **MAux::FFlists = NULL;
 vector<Node> MAux::Rede;
 vector<Enlace> *MAux::Caminho;
@@ -62,8 +64,11 @@ MAux::MAux(){
 			AllRoutes[i].pop_back();
 		}
 	firstEvent = NULL;
+	RP_TLP_NodeUsage = new int[Def::Nnodes];
+	for (int i = 0; i < Def::Nnodes; i++) RP_TLP_NodeUsage[i] = 0;
 }
 
 MAux::~MAux() {
 	delete[] AllRoutes;
+	delete[] RP_TLP_NodeUsage;
 }
