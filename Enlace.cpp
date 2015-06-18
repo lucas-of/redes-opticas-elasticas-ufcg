@@ -137,7 +137,3 @@ void Enlace::set_distancia(long double dist) {
 	assert (dist > 0);
 	distancia = dist;
 }
-
-{
-    return distancia;
-}
