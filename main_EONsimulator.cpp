@@ -21,6 +21,7 @@
 #include "ASE_Noise.cpp"
 #include "Metricas.cpp"
 #include "NSGA2.h"
+#include "Regeneradores.h"
 
 using namespace std;
 
@@ -80,11 +81,11 @@ int main() {
 	Aux->Config->Beta = 10;
 
 	if (MAux::escSim == Sim_PbReq)
-				SimPbReq(Aux);
-	else if (MAux::escSim == Sim_OSNR)
-				SimOSNR(Aux);
+		SimPbReq(Aux);
+	else if	(MAux::escSim == Sim_OSNR)
+		SimOSNR(Aux);
 	else if (MAux::escSim == Sim_DAmp) {
-				Simulate_dAMP(MAux::Config, Aux);
+		Simulate_dAMP(MAux::Config, Aux);
 		//Encontramultiplicador();
 	} else if (MAux::escSim == Sim_NSlots)
 		SimNSlots(MAux::Config);

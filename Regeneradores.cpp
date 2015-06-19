@@ -12,7 +12,9 @@ void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 	int NumNoTransparentes = NumTotalRegeneradores/NumRegeneradoresPorNo;
 	assert(NumNoTransparentes <= Def::Nnodes);
 
-	vector<int> GrauNo = Def::GrauNo;
+	vector<int> GrauNo;
+	for (int i = 0; i < Def::GrauNo.size(); i++)
+		GrauNo.push_back( Def::GrauNo.at(i) );
 	for (int i = 0; i < NumNoTransparentes; i++) {
 		int MaiorGrau = GrauNo.at(0);
 		for (int j = 0; j < GrauNo.size(); j++)
@@ -20,9 +22,10 @@ void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 
 		vector<int> NosMaximos;
 		for (int j = 0; j < GrauNo.size(); j++)
-			if (GrauNo.at(j) == MaiorGrau) NosMaximos.push_back(j);
+			if ((GrauNo.at(j) == MaiorGrau) && (MAux::Rede.at(j).get_TipoNo() == Node::Transparente))
+				NosMaximos.push_back(j);
 
-		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
+		int NoEscolhido = NosMaximos.at(floor( General::uniforme(0, NosMaximos.size()) ));
 		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
 		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
 
@@ -52,13 +55,14 @@ void Regeneradores::RP_CNF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 	for (int i = 0; i < NumNoTransparentes; i++) {
 		int MaiorGrau = CentralidadeNo.at(0);
 		for (int j = 0; j < CentralidadeNo.size(); j++)
-			if (MaiorGrau < CentralidadeNo.at(j)) MaiorGrau = CentralidadeNo.at(j);
+			if ((MaiorGrau < CentralidadeNo.at(j)) && (MAux::Rede.at(j).get_TipoNo() == Node::Transparente))
+				MaiorGrau = CentralidadeNo.at(j);
 
 		vector<int> NosMaximos;
 		for (int j = 0; j < CentralidadeNo.size(); j++)
 			if (CentralidadeNo.at(j) == MaiorGrau) NosMaximos.push_back(j);
 
-		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
+		int NoEscolhido = NosMaximos.at(floor( General::uniforme(0, NosMaximos.size()) ));
 		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
 		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
 		CentralidadeNo.at(NoEscolhido) = -1;
@@ -71,24 +75,28 @@ void Regeneradores::RP_TLP(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 	assert(NumNoTransparentes <= Def::Nnodes);
 
 	MAux::FlagRP_TLP = true;
-	MAux MainAux;
-	Def Config(NULL);
-	Simula_Rede(&Config, &MainAux);
+	MAux *MainAux = new MAux();
+	Def *Config = new Def(NULL);
+	MainAux->laNet = MainAux->LaNetMin;
+	Simula_Rede(Config, MainAux);
 
 	for (int i = 0; i < NumNoTransparentes; i++) {
-		int MaiorGrau = MainAux.RP_TLP_NodeUsage[0];
+		int MaiorGrau = MainAux->RP_TLP_NodeUsage[0];
 		for (int j = 0; j < Def::Nnodes; j++)
-			if (MaiorGrau < MainAux.RP_TLP_NodeUsage[j]) MaiorGrau = MainAux.RP_TLP_NodeUsage[j];
+			if (MaiorGrau < MainAux->RP_TLP_NodeUsage[j]) MaiorGrau = MainAux->RP_TLP_NodeUsage[j];
 
 		vector<int> NosMaximos;
 		for (int j = 0; j < Def::Nnodes; j++)
-			if (MainAux.RP_TLP_NodeUsage[j] == MaiorGrau) NosMaximos.push_back(j);
+			if ((MainAux->RP_TLP_NodeUsage[j] == MaiorGrau) && (MAux::Rede.at(j).get_TipoNo() == Node::Transparente))
+				NosMaximos.push_back(j);
 
-		int NoEscolhido = ceil( General::uniforme(0, NosMaximos.size()) );
+		int NoEscolhido = NosMaximos.at(floor( General::uniforme(0, NosMaximos.size()) ));
 		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
 		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
-		MainAux.RP_TLP_NodeUsage[NoEscolhido] = -1;
+		MainAux->RP_TLP_NodeUsage[NoEscolhido] = -1;
 	}
 
 	MAux::FlagRP_TLP = false;
+	delete MainAux;
+	delete Config;
 }
