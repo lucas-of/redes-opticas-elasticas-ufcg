@@ -3,6 +3,8 @@
 #include "Def.h"
 #include "Constantes.h"
 
+int Node::BR = 100;
+
 Node::Node(int who) {
 	assert (who>=0);
 	whoami = who;
@@ -66,4 +68,22 @@ int Node::get_NumRegeneradores() {
 
 int Node::get_NumRegeneradoresDisponiveis() {
 	return NumRegeneradoresDisponiveis;
+}
+
+bool Node::solicitar_regeneradores(int Taxa) {
+	assert(TipoNo == Translucido);
+	int NumReg = ceil ( Taxa/BR );
+	if (NumRegeneradoresDisponiveis >= NumReg) {
+		NumRegeneradoresDisponiveis -= NumReg;
+		return true;
+	} else
+		return false;
+}
+
+void Node::liberar_regeneradores(int Taxa) {
+	assert(TipoNo == Translucido);
+	int NumReg = ceil ( Taxa/BR );
+	assert( NumRegeneradores - NumRegeneradoresDisponiveis >= NumReg );
+
+	NumRegeneradoresDisponiveis += NumReg;
 }
