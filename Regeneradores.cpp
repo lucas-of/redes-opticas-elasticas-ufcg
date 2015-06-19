@@ -5,6 +5,8 @@
 
 long double Simula_Rede(Def *Config, MAux *Aux);
 
+int Regeneradores::SQP_LNMax;
+
 Regeneradores::Regeneradores() {};
 
 void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo) {
@@ -97,6 +99,40 @@ void Regeneradores::RP_TLP(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
 	}
 
 	MAux::FlagRP_TLP = false;
+	delete MainAux;
+	delete Config;
+}
+
+void Regeneradores::RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo, int LNMax) {
+	assert (NumTotalRegeneradores % NumRegeneradoresPorNo == 0);
+	int NumNoTransparentes = NumTotalRegeneradores/NumRegeneradoresPorNo;
+	assert(NumNoTransparentes <= Def::Nnodes);
+	assert(LNMax > 0);
+
+	SQP_LNMax = LNMax;
+	MAux::FlagRP_SQP = true;
+	MAux *MainAux = new MAux();
+	Def *Config = new Def(NULL);
+	MainAux->laNet = MainAux->LaNetMin;
+	Simula_Rede(Config, MainAux);
+
+	for (int i = 0; i < NumNoTransparentes; i++) {
+		int MaiorGrau = MainAux->RP_SQP_NodeUsage[0];
+		for (int j = 0; j < Def::Nnodes; j++)
+			if (MaiorGrau < MainAux->RP_SQP_NodeUsage[j]) MaiorGrau = MainAux->RP_SQP_NodeUsage[j];
+
+		vector<int> NosMaximos;
+		for (int j = 0; j < Def::Nnodes; j++)
+			if ((MainAux->RP_SQP_NodeUsage[j] == MaiorGrau) && (MAux::Rede.at(j).get_TipoNo() == Node::Transparente))
+				NosMaximos.push_back(j);
+
+		int NoEscolhido = NosMaximos.at(floor( General::uniforme(0, NosMaximos.size()) ));
+		MAux::Rede.at(NoEscolhido).set_TipoNo( Node::Translucido );
+		MAux::Rede.at(NoEscolhido).set_NumRegeneradores( NumRegeneradoresPorNo );
+		MainAux->RP_SQP_NodeUsage[NoEscolhido] = -1;
+	}
+
+	MAux::FlagRP_SQP = false;
 	delete MainAux;
 	delete Config;
 }

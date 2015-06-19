@@ -647,13 +647,13 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 						route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
 						NslotsUsed = 0;
 						si = -1;
-						TryToConnect(route, NslotsUsed, NslotsReq, si, Config);
+						TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
 						assert( (NslotsUsed == 0) || (NslotsUsed == NslotsReq) ); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
 				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
 				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
-										//Inserir a conexao na rede
+					//Inserir a conexao na rede
 					int L_or, L_de;
 					for(unsigned c = 0; c < route->getNhops(); c++) {
 						L_or = route->getNode(c);
@@ -668,6 +668,18 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 					if (Aux->FlagRP_TLP) {
 						for (int i = 0; i <= route->getNhops(); i++)
 							Aux->RP_TLP_NodeUsage[ route->getNode(i) ]++;
+					}
+
+					if (Aux->FlagRP_SQP) {
+						int *Ij = new int[Def::Nnodes];
+						for (int i = 0; i < Def::Nnodes; i++) Ij[i] = 0;
+						for (int i = Regeneradores::SQP_LNMax; i <= route->getNhops(); i+=Regeneradores::SQP_LNMax) {
+							Ij[ route->getNode(i) ] = 1;
+							if (i != 0) Ij[ route->getNode(i-1) ] = 1;
+							if (i != route->getNhops()) Ij [ route->getNode(i+1) ]=1;
+						}
+						for (int i = 0; i < Def::Nnodes; i++) Aux->RP_SQP_NodeUsage[i] += Ij[i];
+						delete[] Ij;
 					}
 
 					Config->numHopsPerRoute += route->getNhops();

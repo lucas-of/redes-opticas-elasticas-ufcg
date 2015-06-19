@@ -28,7 +28,6 @@ ifstream MAux::Topol8("TopologyTop3.txt");
 bool MAux::ExpComp;
 int MAux::Alg_Aloc;
 int MAux::Alg_Routing;
-int MAux::Br;
 long double MAux::laE;
 long double MAux::laNet;
 long double MAux::OSNRMin;
@@ -47,6 +46,8 @@ long double *MAux::Coeficientes;
 long double *MAux::MinimasDistancias;
 bool MAux::FlagRP_TLP = false;
 int *MAux::RP_TLP_NodeUsage;
+bool MAux::FlagRP_SQP = false;
+int *MAux::RP_SQP_NodeUsage;
 vector<int> **MAux::FFlists = NULL;
 vector<Node> MAux::Rede;
 vector<Enlace> *MAux::Caminho;
@@ -65,7 +66,11 @@ MAux::MAux(){
 		}
 	firstEvent = NULL;
 	RP_TLP_NodeUsage = new int[Def::Nnodes];
-	for (int i = 0; i < Def::Nnodes; i++) RP_TLP_NodeUsage[i] = 0;
+	RP_SQP_NodeUsage = new int[Def::Nnodes];
+	for (int i = 0; i < Def::Nnodes; i++) {
+		RP_TLP_NodeUsage[i] = 0;
+		RP_SQP_NodeUsage[i] = 0;
+	}
 }
 
 MAux::~MAux() {

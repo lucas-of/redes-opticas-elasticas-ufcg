@@ -55,7 +55,6 @@ class MAux {
 		Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;
-		static int Br;
 		static long double laE;
 		static long double laNet;
 		static long double OSNRMin;
@@ -72,8 +71,12 @@ class MAux {
 		static long double *Coeficientes;
 		static long double *Topology;
 		static long double *MinimasDistancias;
+
 		static bool FlagRP_TLP; //Se estiver fazendo uma simulacao para o algoritmo TLP, flag marcada como true.
 		static int *RP_TLP_NodeUsage;
+		static bool FlagRP_SQP;
+		static int *RP_SQP_NodeUsage;
+
 		TIME simTime;
 		static vector<int> **FFlists;
 		vector<Route*> *AllRoutes;
