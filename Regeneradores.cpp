@@ -136,3 +136,4 @@ void Regeneradores::RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo,
 	delete MainAux;
 	delete Config;
 }
+

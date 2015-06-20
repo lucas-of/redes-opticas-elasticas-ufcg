@@ -14,6 +14,7 @@ class Route {
 		int getNode(unsigned int) const; //retorna o no na posicao i da rota
 		int getOrN() const; //retorna primeiro no da rota
 		void print() const; //imprime rota
+		Route* breakRoute( int OrN, int DeN );
 	private:
 		std::vector<int> Path;
 };

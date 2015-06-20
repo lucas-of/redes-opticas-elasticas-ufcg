@@ -1,14 +1,25 @@
 #include "Conexao.h"
 
-
-Conexao::Conexao(Route r, int si, int sf, TIME tD) : route(r), Si(si), Sf(sf), tDesc(tD) {}
-
-const int Conexao::getFirstSlot() {
-	return Si;
+Conexao::Conexao(Route r, int *si, int *sf, TIME tD) : route(r), tDesc(tD) {
+	Si = new int[route.getNhops()+1];
+	for (int i = 0; i <= route.getNhops(); i++)
+		Si[i] = si[i];
+	Sf = new int[route.getNhops()+1];
+	for (int i = 0; i <= route.getNhops(); i++)
+		Sf[i] = sf[i];
 }
 
-const int Conexao::getLastSlot() {
-	return Sf;
+Conexao::~Conexao(){
+	delete[] Si;
+	delete[] Sf;
+}
+
+const int Conexao::getFirstSlot(int i) {
+	return Si[i];
+}
+
+const int Conexao::getLastSlot(int i) {
+	return Sf[i];
 }
 
 const Route* Conexao::getRoute() {
@@ -19,13 +30,6 @@ const TIME Conexao::getTimeDesc() {
 	return tDesc;
 }
 
-void Conexao::incFirstSlot(int x) {
-	assert(Si + x >= 0 && Si + x < Def::getSE());
-	Si += x;
+int Conexao::getNHops() {
+	return route.getNhops();
 }
-
-void Conexao::incLastSlot(int x) {
-	assert(Sf + x >= 0 && Sf + x < Def::getSE());
-	Sf += x;
-}
-

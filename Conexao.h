@@ -7,19 +7,19 @@
 
 class Conexao {
 	public:
-		Conexao(Route, int, int, TIME);
+		Conexao(Route, int*, int*, TIME);
+		~Conexao();
 
-		const int getFirstSlot(); //retorna primeiro slot da conexao
-		const int getLastSlot(); //retorna ultimo slot da conexao
+		const int getFirstSlot(int i); //retorna primeiro slot da conexao no Node i
+		const int getLastSlot(int i); //retorna ultimo slot da conexao
 		const Route* getRoute(); //retorna Rota da conexao (objeto tipo Route)
 		const TIME getTimeDesc();
-		void incFirstSlot(int); //incrementa primeiro slot por um inteiro n
-		void incLastSlot(int); //incrementa ultimo slot por um inteiro n
+		int getNHops();
 
-	private:
-		int Si; //Slot Inicial
-		int Sf; //Slot Final
 		Route route; //Rota
+	private:
+		int *Si; //Slot Inicial
+		int *Sf; //Slot Final
 		TIME tDesc;
 };
 

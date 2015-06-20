@@ -1,4 +1,5 @@
 #include "Route.h"
+#include "Main_Auxiliar.h"
 
 Route::Route(std::vector<Node *> &path) {
 	for (int i=0; i<path.size() ; i++) {
@@ -29,4 +30,20 @@ int Route::getOrN() const {
 void Route::print() const {
 	for (int i = 0; i < (int) Path.size(); i++)
 		std::cout << Path.at(i) << "--";
+}
+
+Route* Route::breakRoute(int OrN, int DeN) {
+	int LocOrN, LocDeN;
+	for (int i = 0; i < Path.size(); i++) {
+		if (OrN == Path.at(i)) LocOrN = i;
+		if (DeN == Path.at(i)) LocDeN = i;
+	}
+
+	assert ( LocOrN < LocDeN );
+
+	vector <Node*> Caminho;
+	for (int i = LocOrN; i <= LocDeN; i++)
+		Caminho.push_back( &MAux::Rede.at( i ) );
+
+	return new Route( Caminho );
 }
