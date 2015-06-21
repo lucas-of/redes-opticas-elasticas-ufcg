@@ -15,8 +15,10 @@ class Route {
 		int getOrN() const; //retorna primeiro no da rota
 		void print() const; //imprime rota
 		Route* breakRoute( int OrN, int DeN );
+		std::vector<Node*>* get_Nodes();
 	private:
 		std::vector<int> Path;
+		std::vector<Node*> Nodes;
 };
 
 #endif

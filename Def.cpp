@@ -8,7 +8,7 @@
 vector<int> Def::GrauNo(0);
 double Def::MAX_DOUBLE = std::numeric_limits<double>::max();
 int Def::MAX_INT = std::numeric_limits<int>::max();
-double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
+long double Def::MAX_LONGDOUBLE = std::numeric_limits<long double>::max();
 int Def::Nnodes;
 const int Def::numEsquemasDeModulacao = 3;
 long double Def::numReqBloqMin = 0.0;
@@ -27,15 +27,15 @@ long double Def::lambda = 1550E-9;
 long double Def::Bslot = 12.5;
 long double Def::Bref = 12.5;
 long double Def::Famp = General::dB((long double) 5.0);
+long double Def::DistA = 80;
+long double Def::OSNRin = 30;
 
 Def::Def(Particula *Part) {
 	P = Part;
-	DistA=80;
-	OSNRin=30;
 	numReqAceit_Esquema = new long double[numEsquemasDeModulacao];
 	numReq_Taxa = new long double[numPossiveisTaxas];
 	numReqBloq_Taxa = new long double[numPossiveisTaxas];
-	Topology_S = new bool[Nnodes*Nnodes*SE];
+	Topology_S = new bool[Def::Nnodes*Def::Nnodes*Def::SE];
 	for (int i=0 ; i < Def::getSE(); i++)
 		for (int j=0; j < Def::getNnodes() ; j++)
 			for (int k = 0; k < Def::getNnodes(); k++)

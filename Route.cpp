@@ -5,6 +5,7 @@ Route::Route(std::vector<Node *> &path) {
 	for (int i=0; i<path.size() ; i++) {
 		Path.push_back(path.at(i)->get_whoami());
 	}
+	Nodes = path;
 }
 
 int Route::getDeN() const {
@@ -46,4 +47,8 @@ Route* Route::breakRoute(int OrN, int DeN) {
 		Caminho.push_back( &MAux::Rede.at( i ) );
 
 	return new Route( Caminho );
+}
+
+std::vector<Node*> *Route::get_Nodes() {
+	return &Nodes;
 }

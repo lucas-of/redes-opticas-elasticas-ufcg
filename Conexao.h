@@ -17,7 +17,6 @@ class Conexao {
 		int getNHops();
 
 		Route route; //Rota
-		EsquemaDeModulacao Esquema;
 	private:
 		int *Si; //Slot Inicial
 		int *Sf; //Slot Final

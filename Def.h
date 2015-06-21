@@ -45,9 +45,9 @@ class Def {
 
 		static long double Pin;//Pin potencia de entrada
 		static long double Pref;//Pref potencia de referencia
-		long double OSNRin;//OSNRin OSNR de entrada
+		static long double OSNRin;//OSNRin OSNR de entrada
 		static long double Lsss;//Lsssm perdas nos dispositivos
-		long double DistA;//DistA distancia entre os amplificadores de linha
+		static long double DistA;//DistA distancia entre os amplificadores de linha
 		static Arquitetura arquitetura;//arquitetura de nó sendo 1=BS e 2=SS
 		static long double lambda;//comprimento de onda (em metros)
 		static long double Bslot;//largura de banda do slot
@@ -63,7 +63,7 @@ class Def {
 		static double MAX_DOUBLE; //limites - maior DOUBLE possível
 		static int MAX_INT; //limites - maior INT possível
 		static int maxSim_Bigode;
-		static double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
+		static long double MAX_LONGDOUBLE;  //limites - maior LONG DOUBLE possível
 		long double netOccupancy; //ocupação da rede
 		long double numHopsPerRoute; //número de nós por rota
 		long double numReq; //número de requisições

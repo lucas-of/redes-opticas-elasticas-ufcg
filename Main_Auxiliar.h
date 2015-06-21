@@ -72,9 +72,9 @@ class MAux {
 		static long double *MinimasDistancias;
 
 		static bool FlagRP_TLP; //Se estiver fazendo uma simulacao para o algoritmo TLP, flag marcada como true.
-		static int *RP_TLP_NodeUsage;
+		int *RP_TLP_NodeUsage;
 		static bool FlagRP_SQP;
-		static int *RP_SQP_NodeUsage;
+		int *RP_SQP_NodeUsage;
 
 		TIME simTime;
 		static vector<int> **FFlists;

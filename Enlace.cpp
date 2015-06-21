@@ -109,12 +109,12 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
 
 	for (int i = PSR::get_NMin(); i <= PSR::get_NMax() ; i++) {
 		for (int j = PSR::get_NMin(); j <= PSR::get_NMax(); j++) {
-			if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas) || (PSR::C == PSR::DistanciaFormasNormalizado))
+			if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas) || (PSR::C == PSR::DistanciaFormasNormalizado)) {
 				if (PartCoef !=  NULL)
 					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
 				else
 					peso += Coeficientes[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-			else {
+			} else {
 				if (PartCoef !=  NULL)
 					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
 				else

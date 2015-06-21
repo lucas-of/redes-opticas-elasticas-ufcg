@@ -516,7 +516,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 
 		EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
 		for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
-				evt->conexao->Esquema = Esquemas[Esq];
+				evt->Esquema = Esquemas[Esq];
 				NslotsReq = SlotsReq(nTaxa, evt);
 
 				if(MAux::Alg_Routing == CSP)
@@ -528,9 +528,9 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 				if(MAux::Alg_Routing == DJK_SPeFormas)
 						RWA::DijkstraSPeFormas(orN,deN,NslotsReq, Config->Alfa, Config, MainAux);
 				else if(MAux::Alg_Routing == DJK_RuidoEFormas)
-						RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->conexao->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+						RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 				else if((MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO))
-						RWA::DijkstraPSR(orN, deN, NslotsReq, evt->conexao->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+						RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 
 				for(unsigned int i = 0; i < MainAux->AllRoutes[orN*Def::getNnodes()+deN].size(); i++) {
 						route = MainAux->AllRoutes[orN*Def::getNnodes()+deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
@@ -541,7 +541,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 			if(NslotsUsed > 0) { //A conexao foi aceita
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
 				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
-				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->conexao->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
+				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
 					//Inserir a conexao na rede
 					int L_or, L_de;
 					for(unsigned c = 0; c < route->getNhops(); c++) {
@@ -646,11 +646,9 @@ void setReqEvent(Event* evt, TIME t) {
 	evt->time = t;
 	evt->type = Req;
 	evt->nextEvent = NULL;
-	std::vector<Node*> dummy;
-	dummy.push_back( &MAux::Rede.at(0) );
-	evt->conexao = new Conexao(Route(dummy),NULL,NULL,0);
+	evt->conexao = NULL;
 	if (MAux::escSim == Sim_DAmp | MAux::escSim == Sim_NSlots) {
-		evt->conexao->Esquema = _4QAM;
+		evt->Esquema = _4QAM;
 	}
 }
 
@@ -917,7 +915,7 @@ void Simulate(Def *Config, MAux *Aux) {
 void Simulate_dAMP(Def *Config, MAux *Aux) {
 	RWA::DijkstraSP(Aux);
 	Event *evt = new Event;	setReqEvent(evt,0);
-	cout << "Limiar: " << Def::getlimiarOSNR(evt->conexao->Esquema,400E9) << "dB" << endl;
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,400E9) << "dB" << endl;
 	for(long double osnr = MAux::OSNRMin; osnr <= MAux::OSNRMax; osnr += MAux::OSNRPasso) {
 		Config->setOSNR(osnr);
 		for (long double dAmplif = MAux::DAmpMin; dAmplif <= MAux::DAmpMax; dAmplif += MAux::DAmpPasso) {
@@ -937,7 +935,7 @@ void Simulate_dAMP(Def *Config, MAux *Aux) {
 			} //Encontra a maior entre as menores distancias
 			OSNRout = AvaliarOSNR( Aux->AllRoutes[orN*Def::getNnodes() + deN].at(0) , Config);
 			cout << "OSNRin = " << Config->get_OSRNin() << "dB, dAmp = " << Config->get_DistaA() << "km, OSNR = " << OSNRout << "dB" << endl; //primeira rota
-			if ( OSNRout < Def::getlimiarOSNR(evt->conexao->Esquema,400E9) ) {
+			if ( OSNRout < Def::getlimiarOSNR(evt->Esquema,400E9) ) {
 				MAux::ResultDAmpMenorQueLimiar << Config->get_DistaA() << "\t" << Config->get_OSRNin() << endl;
 			} else {
 				MAux::ResultDAmpMaiorQueLimiar << Config->get_DistaA() << "\t" << Config->get_OSRNin() << endl;
@@ -953,7 +951,7 @@ void EncontraMultiplicador(Def *Config, MAux *Aux) {
 	Config->set_DistaA(80); //80km
 	Config->setOSNR(30); //30dB
 
-	cout << "Limiar: " << Def::getlimiarOSNR(evt->conexao->Esquema,400E9) << "dB" << endl;
+	cout << "Limiar: " << Def::getlimiarOSNR(evt->Esquema,400E9) << "dB" << endl;
 
 	int orN, deN;
 	long double Max = MAux::MinimasDistancias[0];
@@ -989,7 +987,7 @@ void EncontraMultiplicador(Def *Config, MAux *Aux) {
 }
 
 int SlotsReq(int Ran, Event *evt) {
-	return ceil(Def::PossiveisTaxas[Ran]/(2*log2(evt->conexao->Esquema)*Def::get_Bslot()));
+	return ceil(Def::PossiveisTaxas[Ran]/(2*log2(evt->Esquema)*Def::get_Bslot()));
 }
 
 int TaxaReq() {
