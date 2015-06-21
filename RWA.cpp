@@ -214,7 +214,7 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, EsquemaDeModula
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
 				long double Peso;
-				long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*General::dB(Def::getlimiarOSNR(Esquema,TaxaDeTransmissao))/Config->get_Pin();
+				long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*Def::getlimiarOSNR(Esquema,TaxaDeTransmissao)/Config->get_Pin();
 				if (Config->P != NULL)
 					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x,Noise);
 				else

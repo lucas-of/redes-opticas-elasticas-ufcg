@@ -152,7 +152,7 @@ void PSR::PSO() {
 	PSO_configurar();
 	PSO_iniciarPopulacao();
 
-	for (int Repeticao = 0; Repeticao < PSO_G; Repeticao++) {
+	for (int Repeticao = 1; Repeticao <= PSO_G; Repeticao++) {
 		cout << "PSO - Repeticao " << Repeticao << "." << endl;
 		#pragma omp parallel for schedule(dynamic)
 		for (int Part = 0; Part < PSO_P; Part++) {
@@ -161,25 +161,25 @@ void PSR::PSO() {
 			long double PbReq = PSO_simulaRede(PSO_populacao + Part, PSRDef, PSRAux);
 			if (PbReq < (PSO_populacao + Part)->melhorInd) {
 				(PSO_populacao + Part)->melhorInd = PbReq;
-				if (PSR::T == PSR::Matricial)
+				if (PSR::T == PSR::Matricial) {
 					for (int i = 0; i < N*N; i++)
 						(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->x[i];
-				else if (PSR::T == PSR::Tensorial)
+				} else if (PSR::T == PSR::Tensorial) {
 					for (int i = 0; i < 2*N; i++)
 						(PSO_populacao + Part)->p[i] = (PSO_populacao + Part)->geratriz[i];
+				}
 			}
 			if (PbReq < PSR::PSO_MelhorPbReq) {
 				PSR::PSO_MelhorPbReq = PbReq;
-				for (int i = 0; i < N; i++)
-					for (int j = 0; j < N; j++)
-						Coeficientes[i*N + j] = (PSO_populacao+Part)->x[i*N +j];
+				for (int i = 0; i < N*N; i++)
+					Coeficientes[i] = (PSO_populacao+Part)->x[i];
 				PSO_ImprimeCoeficientes();
 			}
 			delete PSRDef;
 			delete PSRAux;
 			cout << "Particula " << Part << " PbReq " << PbReq << " (" << PSO_MelhorPbReq << ")" << endl;
 		}
-			MAux::PSRLog << Repeticao+1 << "\t" << PSO_MelhorPbReq << endl;
+			MAux::PSRLog << Repeticao << "\t" << PSO_MelhorPbReq << endl;
 		PSO_atualizaVelocidades();
 	}
 }
@@ -198,6 +198,8 @@ void PSR::PSO_iniciarPopulacao() {
 		if (OtimizarComAWR == SIM) {
 			assert( PSR::C != DistanciaDisponibilidade );
 			assert( PSR::C != RuidoDisponibilidade );
+			assert( PSR::C != DistanciaFormasNormalizado );
+			assert( PSR::C != RuidoFormasNormalizado );
 			if (PSR::C == DistanciaNumFormas) MAux::escOtim = OtimizarAlfa;
 			else if (PSR::C == RuidoNumFormas) MAux::escOtim = OtimizarBeta;
 
@@ -279,20 +281,18 @@ void PSR::PSO_atualizaVelocidades() {
 		else
 			Fitter = PSO_populacao[i].Vizinha2;
 
-		if (PSR::T == PSR::Matricial)
-			for (int j = 0; j < N; j++) {
-				for (int k = 0; k < N; k++) {
-					eps1 = General::uniforme(0,1);
-					eps2 = General::uniforme(0,1);
-					PSO_populacao[i].v[j*N+k] = PSO_chi * ( PSO_populacao[i].v[j*N+k] + PSO_c1*eps1*( PSO_populacao[i].p[j*N+k] - PSO_populacao[i].x[j*N+k] ) + PSO_c2*eps2*( Fitter->p[j*N+k] - PSO_populacao[i].x[j*N+k] ) );
-					if (PSO_populacao[i].v[j*N+k] > PSO_Vmax) PSO_populacao[i].v[j*N+k] = PSO_Vmax;
-					if (PSO_populacao[i].v[j*N+k] < PSO_Vmin) PSO_populacao[i].v[j*N+k] = PSO_Vmin;
-					PSO_populacao[i].x[j*N+k] += PSO_populacao[i].v[j*N+k];
-					if (PSO_populacao[i].x[j*N+k] > PSO_Xmax) PSO_populacao[i].x[j*N+k] = PSO_Xmax;
-					if (PSO_populacao[i].x[j*N+k] < PSO_Xmin) PSO_populacao[i].x[j*N+k] = PSO_Xmin;
+		if (PSR::T == PSR::Matricial) {
+			for (int j = 0; j < N*N; j++) {
+				eps1 = General::uniforme(0,1);
+				eps2 = General::uniforme(0,1);
+				PSO_populacao[i].v[j] = PSO_chi * ( PSO_populacao[i].v[j] + PSO_c1*eps1*( PSO_populacao[i].p[j] - PSO_populacao[i].x[j] ) + PSO_c2*eps2*( Fitter->p[j] - PSO_populacao[i].x[j] ) );
+					if (PSO_populacao[i].v[j] > PSO_Vmax) PSO_populacao[i].v[j] = PSO_Vmax;
+					if (PSO_populacao[i].v[j] < PSO_Vmin) PSO_populacao[i].v[j] = PSO_Vmin;
+					PSO_populacao[i].x[j] += PSO_populacao[i].v[j];
+					if (PSO_populacao[i].x[j] > PSO_Xmax) PSO_populacao[i].x[j] = PSO_Xmax;
+					if (PSO_populacao[i].x[j] < PSO_Xmin) PSO_populacao[i].x[j] = PSO_Xmin;
 				}
-			}
-		else if (PSR::T == PSR::Tensorial) {
+		} else if (PSR::T == PSR::Tensorial) {
 			for (int j = 0; j < 2*N; j++) {
 				eps1 = General::uniforme(0,1);
 				eps2 = General::uniforme(0,1);
@@ -338,6 +338,9 @@ long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
 	assert(WhoAmI2 < Def::getNnodes());
 	assert(N <= PSR::get_NMax());
 	assert(N >= PSR::get_NMin());
+	assert(PSR::C != RuidoDisponibilidade);
+	assert(PSR::C != RuidoFormasNormalizado);
+	assert(PSR::C != RuidoNumFormas);
 
 	return CacheDistancias[N-minN][WhoAmI1][WhoAmI2];
 }
