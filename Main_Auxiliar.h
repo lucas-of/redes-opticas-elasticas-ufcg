@@ -51,7 +51,6 @@ class MAux {
 
 
 		//Variáveis necessárias em main_EONsimulator.cpp
-		static bool ExpComp;
 		Event *firstEvent;
 		static int Alg_Aloc;
 		static int Alg_Routing;

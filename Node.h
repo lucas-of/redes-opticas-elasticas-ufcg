@@ -34,7 +34,6 @@ class Node {
 
 		int NumRegeneradores;
 		int NumRegeneradoresDisponiveis;
-		static int BR; //BitRate de um Regenerador
 
 		void calcula_ganho_pot(Def *Config);
 		void calcula_ruido_pot();

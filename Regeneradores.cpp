@@ -6,6 +6,7 @@
 long double Simula_Rede(Def *Config, MAux *Aux);
 
 int Regeneradores::SQP_LNMax;
+int Regeneradores::BR = 100;
 
 Regeneradores::Regeneradores() {};
 
@@ -137,3 +138,16 @@ void Regeneradores::RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo,
 	delete Config;
 }
 
+bool Regeneradores::RA_FLR(Route route, int NslotsReq, int BitRate, int *si, Def *Config) {
+	int RegeneneradoresNecessarios = ceil( BitRate/BR );
+	int NoS, NoX;
+	for (int s = 0; s < route.getNhops(); s++) {
+		NoS = route.getNode(s);
+		for (int x = s + 1; x < route.getNhops(); x++) {
+			NoX = route.getNode(x); //descobre o x-esimo no da rota
+			if (( MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios ) || (x == route.getNhops()-1)) {
+				Route rotaQuebrada = *route.breakRoute( NoS, NoX );
+			}
+		}
+	}
+}

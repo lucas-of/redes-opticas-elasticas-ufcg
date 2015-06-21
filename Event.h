@@ -11,7 +11,6 @@ struct Event {
 	EventType type;
 	Event *nextEvent;
 	Conexao* conexao;
-	EsquemaDeModulacao Esquema;
 };
 
 #endif // EVENT_H

@@ -2,8 +2,7 @@
 #include "General.h"
 #include "Def.h"
 #include "Constantes.h"
-
-int Node::BR = 100;
+#include "Regeneradores.h"
 
 Node::Node(int who) {
 	assert (who>=0);
@@ -72,7 +71,7 @@ int Node::get_NumRegeneradoresDisponiveis() {
 
 bool Node::solicitar_regeneradores(int Taxa) {
 	assert(TipoNo == Translucido);
-	int NumReg = ceil ( Taxa/BR );
+	int NumReg = ceil ( Taxa/Regeneradores::BR );
 	if (NumRegeneradoresDisponiveis >= NumReg) {
 		NumRegeneradoresDisponiveis -= NumReg;
 		return true;
@@ -82,7 +81,7 @@ bool Node::solicitar_regeneradores(int Taxa) {
 
 void Node::liberar_regeneradores(int Taxa) {
 	assert(TipoNo == Translucido);
-	int NumReg = ceil ( Taxa/BR );
+	int NumReg = ceil ( Taxa/Regeneradores::BR );
 	assert( NumRegeneradores - NumRegeneradoresDisponiveis >= NumReg );
 
 	NumRegeneradoresDisponiveis += NumReg;

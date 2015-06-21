@@ -2,11 +2,13 @@
 
 Conexao::Conexao(Route r, int *si, int *sf, TIME tD) : route(r), tDesc(tD) {
 	Si = new int[route.getNhops()+1];
-	for (int i = 0; i <= route.getNhops(); i++)
-		Si[i] = si[i];
+	if (si != NULL)
+		for	(int i = 0; i <= route.getNhops(); i++)
+			Si[i] = si[i];
 	Sf = new int[route.getNhops()+1];
-	for (int i = 0; i <= route.getNhops(); i++)
-		Sf[i] = sf[i];
+	if (sf != NULL)
+		for	(int i = 0; i <= route.getNhops(); i++)
+			Sf[i] = sf[i];
 }
 
 Conexao::~Conexao(){
