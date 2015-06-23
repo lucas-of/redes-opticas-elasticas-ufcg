@@ -389,7 +389,7 @@ void Load() {
 		cout << "\t" << PSR::Matricial << " - Matricial\n\t" << PSR::Tensorial << " - Tensorial\nEntre com o paradigma para o PSR: ";
 		cin >> aux;
 		PSR::T = (PSR::Tipo)aux;
-		cout << "\t" << PSR::Distancia << " - Distância\n\t" << PSR::Ruido << " - Ruído.\nEntre com o primeiro dos parâmetros para o PSR: ";
+		cout << "\t" << PSR::Distancia << " - Distância\n\t" << PSR::Ruido << " - Ruído\n\t" << PSR::RuidoNormalizado << " - Ruído Normalizado.\nEntre com o primeiro dos parâmetros para o PSR: ";
 		cin >> aux;
 		PSR::C1 = (PSR::Custo1)aux;
 		cout << "\t" << PSR::Disponibilidade << " - Disponibilidade\n\t" << PSR::NumFormas << " - Numero de Formas\n\t" << PSR::NumFormasNormalizado << " - Numero de Formas Normalizado\nEntre com o segundo dos parâmetros para o PSR: ";
@@ -499,8 +499,10 @@ void RemoveCon(Event* evt, Def *Config) {
 		}
 
 	for(int node = 0; node < Def::getNnodes(); node++) {
-		if (evt->RegeneradoresUtilizados[node] != 0)
+		if (evt->RegeneradoresUtilizados[node] != 0) {
 			MAux::Rede.at(node).liberar_regeneradores( evt->RegeneradoresUtilizados[node] ); //liberando os regeneradores utilizados
+			evt->RegeneradoresUtilizados[node] = 0;
+		}
 	}
 
 	delete evt->conexao;
@@ -615,8 +617,10 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	Config->numSlots_Req += NslotsReq;
 
 	if ((MAux::escTipoRede == Translucida) && (NslotsUsed == 0)) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
-		if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) //Conexao Aceita
-			NslotsReq = NslotsUsed;
+		if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
+			//Conexao Aceita
+			NslotsUsed = NslotsReq;
+		}
 	}
 
 	//Verifica quantas conexoes e quantos slots foram bloqueados

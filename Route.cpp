@@ -44,7 +44,7 @@ Route* Route::breakRoute(int OrN, int DeN) {
 
 	vector <Node*> Caminho;
 	for (int i = LocOrN; i <= LocDeN; i++)
-		Caminho.push_back( &MAux::Rede.at( i ) );
+		Caminho.push_back( Nodes.at( i ) );
 
 	return new Route( Caminho );
 }

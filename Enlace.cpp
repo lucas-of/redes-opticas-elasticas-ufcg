@@ -5,6 +5,8 @@
 #include "assert.h"
 #include "Constantes.h"
 
+long double* Enlace::Coeficientes;
+
 Enlace::Enlace(Node *NOrig, Node *NDest, double dist) {
 	assert (dist > 0);
 	Origem = NOrig;
@@ -110,15 +112,11 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
 	for (int i = PSR::get_NMin(); i <= PSR::get_NMax() ; i++) {
 		for (int j = PSR::get_NMin(); j <= PSR::get_NMax(); j++) {
 			if (PSR::C1 == PSR::Distancia) {
-				if (PartCoef !=  NULL)
-					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-				else
-					peso += Coeficientes[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
-			} else {
-				if (PartCoef !=  NULL)
-					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
-				else
-					peso += Coeficientes[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
+				peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
+			} else if (PSR::C1 == PSR::Ruido) {
+				peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
+			} else if (PSR::C1 == PSR::RuidoNormalizado) {
+				Noise = Noise/PSR::get_MaiorRuido();
 			}
 		}
 	}
@@ -136,4 +134,8 @@ Node* Enlace::get_NodeOrigem() {
 void Enlace::set_distancia(long double dist) {
 	assert (dist > 0);
 	distancia = dist;
+}
+
+long double* Enlace::get_Coeficientes() {
+	return Coeficientes;
 }

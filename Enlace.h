@@ -7,7 +7,7 @@ class Enlace {
 	public:
 		Enlace(Node *NOrig, Node *NDest, double dist);
 		double get_comprimento(void);
-        long double get_peso(Def*, int, long double *PartCoef, long double Noise);
+		long double get_peso(Def*, int, long double *PartCoef, long double Noise);
 		Node* get_NodeOrigem(void);
 		Node* get_NodeDestino(void);
 		long double get_ganho_enlace();
@@ -17,8 +17,9 @@ class Enlace {
 		long double get_ruido_enlace();
 		void set_distancia(long double);
 		void recalcular(Def *Config);
-		void recalcular_peso(long double *Coef);
-        int get_distancia();
+		static void recalcular_peso(long double *Coef);
+		int get_distancia();
+		static long double* get_Coeficientes();
 	private:
 		double distancia;
 		Node *Origem, *Destino;
@@ -30,7 +31,7 @@ class Enlace {
 		long double ruido_preamplif;
 		long double L_FB;
 		long double L_DCF;
-		long double *Coeficientes;
+		static long double *Coeficientes;
 		void calcula_perdas();
 		void calcula_ganho_enlace();
 		void calcula_ruido_enlace();

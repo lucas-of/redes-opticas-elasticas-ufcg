@@ -213,12 +213,16 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, EsquemaDeModula
 		for(j = 0; j < Def::getNnodes(); j++)
 			if((Status[j] == 0)&&(MAux::Topology[k*Def::Nnodes + j] != 0)) {
 				//O no j e nao marcado e vizinho do no k
-				long double Peso;
-				long double Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*Def::getlimiarOSNR(Esquema,TaxaDeTransmissao)/Config->get_Pin();
+				long double Peso, Noise;
+				if (PSR::C2 == PSR::Ruido)
+					Noise = MAux::Caminho[k].at(j).get_ruido_enlace()*Def::getlimiarOSNR(Esquema,TaxaDeTransmissao)/Config->get_Pin();
+				else if (PSR::C2 == PSR::RuidoNormalizado)
+					Noise = MAux::Caminho[k].at(j).get_ruido_enlace()/PSR::get_MaiorRuido();
+
 				if (Config->P != NULL)
 					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Config->P->x,Noise);
 				else
-					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,NULL,Noise);
+					Peso = MAux::Caminho[k].at(j).get_peso(Config,L,Enlace::get_Coeficientes(),Noise);
 				if(CustoVertice[k] + Peso < CustoVertice[j]) {
 					CustoVertice[j] = CustoVertice[k] + Peso;
 					Precedente[j] = k;

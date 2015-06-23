@@ -13,7 +13,7 @@ class PSR{
 	public:
 		PSR(int Nmin, int Nmax, MAux*);
 		enum Custo1{
-			Distancia, Ruido
+			Distancia, Ruido, RuidoNormalizado
 		};
 		enum Custo2{
 			Disponibilidade, NumFormas, NumFormasNormalizado
@@ -29,6 +29,7 @@ class PSR{
 		const static int get_NMax();
 		static void executar_PSR(MAux *Aux);
 		static long double get_MaiorEnlace();
+		static long double get_MaiorRuido();
 		static void criarCache();
 		static long double get_Disponibilidade(int NSlots, int N, int L);
 		static long double get_Distancia(int WhoAmI1, int WhoAmI2, int N);
@@ -42,6 +43,7 @@ class PSR{
 		static int maxN, minN;
 		static long double *Coeficientes;
 		static long double MaiorEnlace;
+		static long double MaiorRuido;
 		static MAux *Aux;
 
 		static int PSO_P; //numero de partículas

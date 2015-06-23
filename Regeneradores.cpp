@@ -164,7 +164,7 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event
 		NoS = route->getNode(s);
 		for (int x = s + 1; x <= route->getNhops(); x++) {
 			NoX = route->getNode(x); //descobre o x-esimo no da rota
-			if (( MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios ) || (x == route->getNhops()-1)) {
+			if (( MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios ) || (x == route->getNhops())) {
 				Route rotaQuebrada = *route->breakRoute( NoS, NoX );
 				NslotsUsed = 0;
 				SI = -1;
