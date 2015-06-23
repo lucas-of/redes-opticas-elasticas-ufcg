@@ -142,7 +142,7 @@ void Regeneradores::RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo,
 	delete Config;
 }
 
-bool Regeneradores::RA_FLR(Route *route, long double BitRate, int &si, Def *Config, Event *evt) {
+bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event *evt) {
 	assert(BitRate > 0);
 
 	evt->Esquema = _64QAM; //Esse algoritmo sempre tenta criar as chamadas com 64QAM.
@@ -150,6 +150,7 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, int &si, Def *Conf
 	int RegeneneradoresNecessarios = ceil( BitRate/BR );
 	int NoS, NoX;
 	int r = 0;
+	int L_or, L_de;
 	int NslotsUsed;
 	int NslotsReq = SlotsReq(BitRate, evt->Esquema);
 	int SI; //SlotInicial
@@ -176,9 +177,29 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, int &si, Def *Conf
 							for (int i = 0; i < numSegmentosTransparentes; i++) {
 								Route rotaQuebrada = *route->breakRoute( SegmentosTransparentes.at(i), SegmentosTransparentes.at(i+1) );
 								TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
-								assert(SI != -1);
 
+								assert(SI != -1);
+								assert(NslotsReq == NslotsUsed);
+
+								evt->conexao->setFirstSlot(i, SI);
+								evt->conexao->setLastSlot(i, SI + NslotsReq);
+
+								for(unsigned c = 0; c < rotaQuebrada.getNhops(); c++) {
+									L_or = rotaQuebrada.getNode(c);
+									L_de = rotaQuebrada.getNode(c+1);
+									for(int s = evt->conexao->getFirstSlot(i); s < evt->conexao->getLastSlot(i); s++) {
+										assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == false);
+										Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = true;
+										//Os slots sao marcados como ocupados
+									}
+								}
+
+								int NumReg = MAux::Rede.at( SegmentosTransparentes.at(i) ).solicitar_regeneradores(BitRate);
+								assert(NumReg != 0); //Conseguiu solicitar os regeneradores
+
+								evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
 							}
+							return true;
 						} else {
 							r = x; //atualiza ponto de regeneração
 						}

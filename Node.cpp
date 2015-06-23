@@ -69,19 +69,18 @@ int Node::get_NumRegeneradoresDisponiveis() {
 	return NumRegeneradoresDisponiveis;
 }
 
-bool Node::solicitar_regeneradores(int Taxa) {
+int Node::solicitar_regeneradores(int Taxa) {
 	assert(TipoNo == Translucido);
 	int NumReg = ceil ( Taxa/Regeneradores::BR );
 	if (NumRegeneradoresDisponiveis >= NumReg) {
 		NumRegeneradoresDisponiveis -= NumReg;
-		return true;
+		return NumReg;
 	} else
-		return false;
+		return 0;
 }
 
-void Node::liberar_regeneradores(int Taxa) {
+void Node::liberar_regeneradores(int NumReg) {
 	assert(TipoNo == Translucido);
-	int NumReg = ceil ( Taxa/Regeneradores::BR );
 	assert( NumRegeneradores - NumRegeneradoresDisponiveis >= NumReg );
 
 	NumRegeneradoresDisponiveis += NumReg;

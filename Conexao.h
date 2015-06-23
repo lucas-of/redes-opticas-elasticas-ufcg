@@ -12,6 +12,8 @@ class Conexao {
 
 		const int getFirstSlot(int i); //retorna primeiro slot da conexao no Node i
 		const int getLastSlot(int i); //retorna ultimo slot da conexao
+		void setFirstSlot(int i, int si);
+		void setLastSlot(int i, int sf);
 		const Route* getRoute(); //retorna Rota da conexao (objeto tipo Route)
 		const TIME getTimeDesc();
 		int getNHops();

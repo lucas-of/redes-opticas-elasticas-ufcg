@@ -24,8 +24,8 @@ class Node {
 		int get_NumRegeneradores();
 		int get_NumRegeneradoresDisponiveis();
 
-		bool solicitar_regeneradores(int Taxa); //Taxa em Gbps
-		void liberar_regeneradores(int Taxa);
+		int solicitar_regeneradores(int Taxa); //Taxa em Gbps
+		void liberar_regeneradores(int NumReg);
 	private:
 		long double loss;
 		long double gain_pot;

@@ -491,6 +491,12 @@ void RemoveCon(Event* evt, Def *Config) {
 			assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == true);
 			Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = false;
 		}
+
+	for(int node = 0; node < Def::getNnodes(); node++) {
+		if (evt->RegeneradoresUtilizados[node] != 0)
+			MAux::Rede.at(node).liberar_regeneradores( evt->RegeneradoresUtilizados[node] ); //liberando os regeneradores utilizados
+	}
+
 	delete evt->conexao;
 	delete evt;
 }
@@ -605,6 +611,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 
 	if (MAux::escTipoRede == Translucida) { //Nova Chance de estabelecer chamada em Redes Translucidas
 
+		Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt );
 	}
 
 	//Verifica quantas conexoes e quantos slots foram bloqueados

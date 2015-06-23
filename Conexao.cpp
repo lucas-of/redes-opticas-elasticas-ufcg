@@ -35,3 +35,17 @@ const TIME Conexao::getTimeDesc() {
 int Conexao::getNHops() {
 	return route.getNhops();
 }
+
+void Conexao::setFirstSlot(int i, int si) {
+	assert(i <= route.getNhops());
+	assert(si < Def::getSE());
+	Si[i] = si;
+}
+
+void Conexao::setLastSlot(int i, int sf) {
+	assert(i <= route.getNhops());
+	assert(sf < Def::getSE());
+	assert(Si[i] <= sf);
+
+	Sf[i] = sf;
+}
