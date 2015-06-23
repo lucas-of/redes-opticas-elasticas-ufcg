@@ -116,7 +116,7 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
 			} else if (PSR::C1 == PSR::Ruido) {
 				peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
 			} else if (PSR::C1 == PSR::RuidoNormalizado) {
-				Noise = Noise/PSR::get_MaiorRuido();
+				peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*pow(Noise,j);
 			}
 		}
 	}
