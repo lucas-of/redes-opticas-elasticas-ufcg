@@ -16,7 +16,7 @@ class Regeneradores {
 		static bool RA_FLR(Route *route, long double BitRate, Def *Config, Event *evt); //First Longest Reach Regenerator Assignment
 
 		static int SQP_LNMax;
-		static int BR; //BitRate de um Regenerador
+		static long double BR; //BitRate de um Regenerador
 
 };
 

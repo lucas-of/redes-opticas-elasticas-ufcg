@@ -115,11 +115,13 @@ void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
 
 void CarregaCoeficientes() {
 	int Nm, NM, N;
-	int Custo, Tipo;
-	PSR::PSO_Coeficientes_R >> Custo;
+	int Custo1, Custo2, Tipo;
+	PSR::PSO_Coeficientes_R >> Custo1;
+	PSR::PSO_Coeficientes_R >> Custo2;
 	PSR::PSO_Coeficientes_R >> Tipo;
 	PSR::PSO_Coeficientes_R >> Nm >> NM;
-	assert (Custo == PSR::C);
+	assert (Custo1 == PSR::C1);
+	assert (Custo2 == PSR::C2);
 	assert (Tipo == PSR::T);
 	PSR PSR_Auxiliar(Nm, NM, Aux);
 
@@ -308,11 +310,12 @@ void Load() {
 	}
 
 	if (MAux::escSim == Sim_TreinoPSR) {
-		if (((PSR::C == PSR::RuidoNumFormas) || (PSR::C == PSR::DistanciaNumFormas)) && (PSR::T == PSR::Matricial)) {
-			cout<<"Considera partícula do AWR para Otimizar? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
-			cin>>aux;
-			PSR::OtimizarComAWR = (Respostas)aux;
-		}
+		if (PSR::T == PSR::Matricial)
+			if ( (PSR::C2 == PSR::NumFormas) ) {
+				cout<<"Considera partícula do AWR para Otimizar? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
+				cin>>aux;
+				PSR::OtimizarComAWR = (Respostas)aux;
+			}
 	}
 
 	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">; " << endl << "\tTop3 <" << Top3 << ">;" << endl;
@@ -386,9 +389,12 @@ void Load() {
 		cout << "\t" << PSR::Matricial << " - Matricial\n\t" << PSR::Tensorial << " - Tensorial\nEntre com o paradigma para o PSR: ";
 		cin >> aux;
 		PSR::T = (PSR::Tipo)aux;
-		cout << "\t" << PSR::DistanciaDisponibilidade << " - Distância e Disponibilidade\n\t" << PSR::DistanciaNumFormas << " - Distância e Num. de Formas\n\t" << PSR::RuidoDisponibilidade << " - Ruido e Disponibilidade\n\t" << PSR::RuidoNumFormas << " - Ruido e Num. de Formas\n\t" << PSR::DistanciaFormasNormalizado << " - Distância e Num. Formas Normalizado\n\t" << PSR::RuidoFormasNormalizado << " - Ruido e Num. de Formas Normalizado\nEntre com o custo para o PSR: ";
+		cout << "\t" << PSR::Distancia << " - Distância\n\t" << PSR::Ruido << " - Ruído.\nEntre com o primeiro dos parâmetros para o PSR: ";
 		cin >> aux;
-		PSR::C = (PSR::Custo)aux;
+		PSR::C1 = (PSR::Custo1)aux;
+		cout << "\t" << PSR::Disponibilidade << " - Disponibilidade\n\t" << PSR::NumFormas << " - Numero de Formas\n\t" << PSR::NumFormasNormalizado << " - Numero de Formas Normalizado\nEntre com o segundo dos parâmetros para o PSR: ";
+		cin >> aux;
+		PSR::C2 = (PSR::Custo2)aux;
 	}
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
@@ -521,6 +527,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
 		evt->Esquema = Esquemas[Esq];
 		NslotsReq = SlotsReq(nTaxa, evt->Esquema);
+		assert(NslotsReq > 0);
 
 		if(MAux::Alg_Routing == CSP)
 			RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
@@ -545,17 +552,15 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 				assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE()-NslotsUsed);
 				if (MAux::AvaliaOsnr==SIM) OSNR = AvaliarOSNR(route, Config);
 				if (MAux::AvaliaOsnr==NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa])) { //aceita a conexao
-					if (MAux::escTipoRede == Transparente) { //Por motivos de legado, se a conexão for translucida o algoritmo RA é quem faz isso.
-						//Inserir a conexao na rede
-						int L_or, L_de;
-						for(unsigned c = 0; c < route->getNhops(); c++) {
-							L_or = route->getNode(c);
-							L_de = route->getNode(c+1);
-							for(int s = si; s < si + NslotsUsed; s++) {
-								assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == false);
-								Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = true;
-								//Os slots sao marcados como ocupados
-							}
+					//Inserir a conexao na rede
+					int L_or, L_de;
+					for(unsigned c = 0; c < route->getNhops(); c++) {
+						L_or = route->getNode(c);
+						L_de = route->getNode(c+1);
+						for(int s = si; s < si + NslotsUsed; s++) {
+							assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == false);
+							Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = true;
+							//Os slots sao marcados como ocupados
 						}
 					}
 
@@ -609,9 +614,9 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	}
 	Config->numSlots_Req += NslotsReq;
 
-	if (MAux::escTipoRede == Translucida) { //Nova Chance de estabelecer chamada em Redes Translucidas
-
-		Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt );
+	if ((MAux::escTipoRede == Translucida) && (NslotsUsed == 0)) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
+		if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) //Conexao Aceita
+			NslotsReq = NslotsUsed;
 	}
 
 	//Verifica quantas conexoes e quantos slots foram bloqueados

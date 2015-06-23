@@ -10,7 +10,7 @@ int SlotsReq(int Ran, EsquemaDeModulacao Esquema);
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config);
 
 int Regeneradores::SQP_LNMax;
-int Regeneradores::BR = 100E9;
+long double Regeneradores::BR = 100E9;
 
 Regeneradores::Regeneradores() {};
 
@@ -162,7 +162,7 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event
 
 	for (int s = 0; s < route->getNhops(); s++) {
 		NoS = route->getNode(s);
-		for (int x = s + 1; x < route->getNhops(); x++) {
+		for (int x = s + 1; x <= route->getNhops(); x++) {
 			NoX = route->getNode(x); //descobre o x-esimo no da rota
 			if (( MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios ) || (x == route->getNhops()-1)) {
 				Route rotaQuebrada = *route->breakRoute( NoS, NoX );
@@ -172,7 +172,7 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event
 				if (SI != -1) { //Há espectro
 					long double OSNR = AvaliarOSNR(&rotaQuebrada, Config);
 					if (OSNR >= Def::getlimiarOSNR(evt->Esquema, BitRate)) { //Há qualidade
-						if (x == route->getNhops() - 1) { //destino
+						if (x == route->getNhops()) { //destino
 							SegmentosTransparentes.push_back(NoX);
 							for (int i = 0; i < numSegmentosTransparentes; i++) {
 								Route rotaQuebrada = *route->breakRoute( SegmentosTransparentes.at(i), SegmentosTransparentes.at(i+1) );
@@ -218,4 +218,5 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event
 			}
 		}
 	}
+	return false;
 }

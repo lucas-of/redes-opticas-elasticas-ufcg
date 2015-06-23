@@ -95,7 +95,7 @@ void Enlace::recalcular(Def *Config) {
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long double Noise) {
 	long double peso = 0;
 	long double SlotsDispon = 0;
-	if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::RuidoDisponibilidade)) {
+	if ( PSR::C2 == PSR::Disponibilidade ) {
 			for (int Slot = 0; Slot < Def::getSE(); Slot++)
 				if (!Config->Topology_S[Slot*Def::Nnodes*Def::Nnodes + Def::Nnodes*Origem->whoami + Destino->whoami])
 					SlotsDispon += 1;
@@ -109,7 +109,7 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
 
 	for (int i = PSR::get_NMin(); i <= PSR::get_NMax() ; i++) {
 		for (int j = PSR::get_NMin(); j <= PSR::get_NMax(); j++) {
-			if ((PSR::C == PSR::DistanciaDisponibilidade) || (PSR::C == PSR::DistanciaNumFormas) || (PSR::C == PSR::DistanciaFormasNormalizado)) {
+			if (PSR::C1 == PSR::Distancia) {
 				if (PartCoef !=  NULL)
 					peso += PartCoef[(i-PSR::get_NMin())*PSR::get_N()+(j-PSR::get_NMin())]*PSR::get_Disponibilidade(SlotsDispon,i,L)*PSR::get_Distancia(Origem->whoami, Destino->whoami, j);
 				else

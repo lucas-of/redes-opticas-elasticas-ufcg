@@ -11,7 +11,8 @@ long double PSR::MaiorEnlace = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::P
 int PSR::PSO_P, PSR::PSO_G;
 long double PSR::PSO_c1, PSR::PSO_c2, PSR::PSO_chi, PSR::PSO_MelhorPbReq = 1;
 ifstream PSR::PSO_Coeficientes_R("PSOCoeficientes.txt");
-PSR::Custo PSR::C = PSR::DistanciaNumFormas;
+PSR::Custo1 PSR::C1 = PSR::Distancia;
+PSR::Custo2 PSR::C2 = PSR::Disponibilidade;
 PSR::Tipo PSR::T = PSR::Tensorial;
 
 void clearMemory(); /*Limpa e zera todas as constantes de Def.h, reinicia o tempo de simulação e libera todos os slots.*/
@@ -53,18 +54,18 @@ void PSR::criarCache() {
 				if (MAux::Topology[Def::getNnodes()*i + j] == 0)
 					CacheDistancias[k-minN][i][j] = Def::MAX_DOUBLE;
 				else
-					if ((C == DistanciaDisponibilidade) || (C == DistanciaNumFormas) || (C==DistanciaFormasNormalizado))
+					if (C1 == Distancia)
 						CacheDistancias[k-minN][i][j] = pow( aux/get_MaiorEnlace(), k );
-					else if ((C == RuidoDisponibilidade) || (C == RuidoNumFormas) || (C==RuidoFormasNormalizado))
+					else if (C1 == Ruido)
 						CacheDistancias[k-minN][i][j] = Def::MAX_DOUBLE;
 			}
 		}
 	}
 
 	for (int i = 0; i <= Def::getSE(); i++) {
-		if ((C == DistanciaDisponibilidade) || (C == RuidoDisponibilidade)) aux = (i*1.0)/Def::getSE();
-		else if ((C == DistanciaNumFormas) || (C == RuidoNumFormas)) aux = (1.0)/(i + 1);
-		else if ((C == DistanciaFormasNormalizado) || (C == RuidoFormasNormalizado)) aux = 1.0/(Def::getSE() - i + 1);
+		if (C2 == Disponibilidade) aux = (i*1.0)/Def::getSE();
+		else if (C2 == NumFormas) aux = (1.0)/(i + 1);
+		else if (C2 == NumFormasNormalizado) aux = 1.0/(Def::getSE() - i + 1);
 		for (int j = minN; j <= maxN; j++)
 			CacheDisponibilidade[i][j-minN] = pow(aux, j);
 	}
@@ -196,12 +197,10 @@ void PSR::PSO_iniciarPopulacao() {
 		}
 
 		if (OtimizarComAWR == SIM) {
-			assert( PSR::C != DistanciaDisponibilidade );
-			assert( PSR::C != RuidoDisponibilidade );
-			assert( PSR::C != DistanciaFormasNormalizado );
-			assert( PSR::C != RuidoFormasNormalizado );
-			if (PSR::C == DistanciaNumFormas) MAux::escOtim = OtimizarAlfa;
-			else if (PSR::C == RuidoNumFormas) MAux::escOtim = OtimizarBeta;
+			assert( PSR::C2 != Disponibilidade );
+			assert( PSR::C2 != NumFormasNormalizado );
+			if (PSR::C1 == Distancia) MAux::escOtim = OtimizarAlfa;
+			else if (PSR::C1 == Ruido) MAux::escOtim = OtimizarBeta;
 
 			if (MAux::escOtim == OtimizarAlfa)
 				MAux::Alg_Routing = DJK_SPeFormas;
@@ -310,7 +309,8 @@ void PSR::PSO_atualizaVelocidades() {
 
 void PSR::PSO_ImprimeCoeficientes() {
 	ofstream PSO_Coeficientes_W("PSOCoeficientes.txt");
-	PSO_Coeficientes_W << PSR::C << endl;
+	PSO_Coeficientes_W << PSR::C1 << endl;
+	PSO_Coeficientes_W << PSR::C2 << endl;
 	PSO_Coeficientes_W << PSR::T << endl;
 	PSO_Coeficientes_W << minN << "\t" << maxN << endl;
 	for (int i = 0; i < N; i++) {
@@ -327,7 +327,7 @@ long double PSR::get_Disponibilidade(int NSlots, int N, int L) {
 	assert(N >= PSR::get_NMin());
 	assert(NSlots <= Def::getSE());
 
-	if ((C != DistanciaFormasNormalizado) && (C != RuidoFormasNormalizado))
+	if (C2 != NumFormasNormalizado)
 		return CacheDisponibilidade[NSlots][N-minN];
 	else
 		return pow(NSlots,N)*CacheDisponibilidade[L][N-minN];
@@ -338,9 +338,7 @@ long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
 	assert(WhoAmI2 < Def::getNnodes());
 	assert(N <= PSR::get_NMax());
 	assert(N >= PSR::get_NMin());
-	assert(PSR::C != RuidoDisponibilidade);
-	assert(PSR::C != RuidoFormasNormalizado);
-	assert(PSR::C != RuidoNumFormas);
+	assert(PSR::C1 != Ruido);
 
 	return CacheDistancias[N-minN][WhoAmI1][WhoAmI2];
 }

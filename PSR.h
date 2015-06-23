@@ -12,10 +12,17 @@
 class PSR{
 	public:
 		PSR(int Nmin, int Nmax, MAux*);
-		enum Custo{ DistanciaDisponibilidade, DistanciaNumFormas, RuidoDisponibilidade, RuidoNumFormas, DistanciaFormasNormalizado, RuidoFormasNormalizado };
+		enum Custo1{
+			Distancia, Ruido
+		};
+		enum Custo2{
+			Disponibilidade, NumFormas, NumFormasNormalizado
+		};
+
 		enum Tipo { Matricial, Tensorial };
 		static Respostas OtimizarComAWR;
-		static Custo C;
+		static Custo1 C1;
+		static Custo2 C2;
 		static Tipo T;
 		const static int get_N();
 		const static int get_NMin();

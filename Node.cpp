@@ -9,6 +9,9 @@ Node::Node(int who) {
 	whoami = who;
 	loss = General::dB(-1*Def::get_Lsss());
 	TipoNo = Transparente;
+
+	NumRegeneradores = 0;
+	NumRegeneradoresDisponiveis = 0;
 }
 
 int Node::get_whoami() {

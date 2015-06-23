@@ -16,6 +16,7 @@ struct Event {
 
 	Event() {
 		RegeneradoresUtilizados = new int[Def::Nnodes];
+		for (int i = 0; i < Def::Nnodes; i++) RegeneradoresUtilizados[i] = 0;
 	};
 
 	~Event() {
