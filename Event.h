@@ -12,6 +12,15 @@ struct Event {
 	Event *nextEvent;
 	Conexao* conexao;
 	EsquemaDeModulacao Esquema;
+	int *RegeneradoresUtilizados;
+
+	Event() {
+		RegeneradoresUtilizados = new int[Def::Nnodes];
+	};
+
+	~Event() {
+		delete[] RegeneradoresUtilizados;
+	}
 };
 
 #endif // EVENT_H

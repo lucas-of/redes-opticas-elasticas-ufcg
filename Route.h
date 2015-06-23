@@ -10,7 +10,7 @@ class Route {
 	public:
 		Route (std::vector<Node*> &);
 		int getDeN() const; //retorna ultimo no da rota
-		unsigned int getNhops() const; //retorna numero de nos ate o destino
+		int getNhops() const; //retorna numero de nos ate o destino
 		int getNode(unsigned int) const; //retorna o no na posicao i da rota
 		int getOrN() const; //retorna primeiro no da rota
 		void print() const; //imprime rota

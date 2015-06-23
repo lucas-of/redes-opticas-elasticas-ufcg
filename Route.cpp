@@ -13,7 +13,7 @@ int Route::getDeN() const {
 	return Path.back();
 }
 
-unsigned int Route::getNhops() const {
+int Route::getNhops() const {
 	assert(Path.size()>0);
 	return Path.size()-1;
 }
