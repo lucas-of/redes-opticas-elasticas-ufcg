@@ -53,6 +53,11 @@ Topologia MAux::escTop;
 Simulacao MAux::escSim;
 SimOtimizacao MAux::escOtim;
 TipoDeRede MAux::escTipoRede;
+AlgoritmoRA MAux::escRA;
+AlgoritmoRP MAux::escRP;
+int MAux::NumRegeneradoresPorNo;
+int MAux::NumRegeneradoresTotal;
+int MAux::LNMax;
 
 MAux::MAux(){
 	AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];

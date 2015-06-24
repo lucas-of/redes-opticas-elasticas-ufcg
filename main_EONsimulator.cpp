@@ -37,6 +37,7 @@ void DefineNextEventOfCon(Event* evt, MAux *Aux); /*Define se o próximo evento 
 void EncontraMultiplicador(Def *Config, MAux *Aux); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
 void GrauDosNodes(Def *Config); /*Calcula o grau dos nós*/
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
+void PrepararRedeTranslucida();
 void RefreshNoise(Def *Config); /*atualiza os ruídos dos enlaces*/
 void RemoveCon(Event*, Def *Config); /*Retira uma conexão da rede - liberando todos os seus slots*/
 void RequestCon(Event*, Def *Config, MAux *MainAux); /*Cria uma conexão. Dados dois nós, procura pelo algoritmo de roteamento definido uma rota entre os mesmos. Após encontrar a rota, cria a conexão, e por fim agenda o próximo evento de requisição de conexão.*/
@@ -372,6 +373,37 @@ void Load() {
 	cin >> aux;
 	MAux::escTipoRede = (TipoDeRede) aux;
 
+	if (MAux::escTipoRede == Translucida) {
+
+		cout << "\t" << NDF << " - NDF\n\t" << CNF << " - CNF\n\t" << TLP << " - TLP\n\t" << SQP << " - SQP\nEscolha o algoritmo de RP: ";
+		cin >> aux;
+		MAux::escRP = (AlgoritmoRP)aux;
+
+		cout << "Entre com o número total de regeneradores: ";
+		cin >> aux;
+		assert(aux > 0);
+		MAux::NumRegeneradoresTotal = aux;
+
+		cout << "Entre com o número de regeneradores por nó: ";
+		cin >> aux;
+		assert(aux > 0);
+		assert(aux <= MAux::NumRegeneradoresTotal);
+		assert(MAux::NumRegeneradoresTotal%aux == 0); //certifica que são múltiplos
+		MAux::NumRegeneradoresPorNo = aux;
+
+		if (MAux::escRP == SQP) {
+			cout << "Entre com LNMax, que é um parâmetro para o SQP: ";
+			cin >> aux;
+			assert(aux > 0);
+			MAux::LNMax = aux;
+		}
+
+		cout << "\t" << FLR << " - FLR\n\t" << FNS << " - FNS\nEscolha o algoritmo de RA: ";
+		cin >> aux;
+		MAux::escRA = (AlgoritmoRA)aux;
+
+	}
+
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
 		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_NF << " - LOR Num. Formas\n\t" << LOR_A << " - LOR Disponibilidade\n\t" << Dij_PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
@@ -475,6 +507,19 @@ void Load() {
 
 	for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
 		MAux::Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
+}
+
+void PrepararRedeTranslucida() {
+	switch(MAux::escRP) {
+		case NDF:
+			Regeneradores::RP_NDF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
+		case CNF:
+			Regeneradores::RP_CNF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
+		case TLP:
+			Regeneradores::RP_TLP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
+		case SQP:
+			Regeneradores::RP_SQP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo, MAux::LNMax ); break;
+	}
 }
 
 void RefreshNoise(Def *Config) {
@@ -617,9 +662,19 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	Config->numSlots_Req += NslotsReq;
 
 	if ((MAux::escTipoRede == Translucida) && (NslotsUsed == 0)) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
-		if (Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
-			//Conexao Aceita
-			NslotsUsed = NslotsReq;
+		switch (MAux::escRA) {
+			case FLR:
+				if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
+					//Conexao Aceita
+					NslotsUsed = NslotsReq;
+				}
+				break;
+			case FNS:
+				if (Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
+					//Conexao Aceita
+					NslotsUsed = NslotsReq;
+				}
+				break;
 		}
 	}
 

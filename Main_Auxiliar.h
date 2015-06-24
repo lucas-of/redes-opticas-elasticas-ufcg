@@ -17,6 +17,8 @@ enum Respostas{ NAO, SIM };
 enum Topologia { PacificBell , NSFNet, NFSNetMod, PontoaPonto4, PontoaPonto8, Top1, Top2, Top3 };
 enum Simulacao { Sim_PbReq, Sim_OSNR, Sim_DAmp, Sim_NSlots, Sim_TreinoPSR, Sim_AlfaBetaOtimizado, Sim_Bigode };
 enum SimOtimizacao { OtimizarAlfa, OtimizarBeta };
+enum AlgoritmoRA{ NDF, CNF, TLP, SQP };
+enum AlgoritmoRP{ FLR, FNS };
 enum Dijkstra { MH /*considera custo fixo*/, CSP /*considera maneiras de alocar slots requisitados no enlace como custo*/, CSP_Acum /*considera número de nós até destino e maneiras de alocar slots requisitados no enlace como custo*/, SP /*menor caminho*/, DJK_SPeFormas /*mistura de SP com DJK_Formas*/, DJK_RuidoEFormas /*DJK considerando ruido normalizado do enlace e número de formas possíveis de alocação*/, LOR_NF /*LOR com Num Formas de Alocacao*/, LOR_A /*LOR com Dispobilidade*/, Dij_PSO /*PSO*/, OSNRR /*OSNR-R*/};
 
 //Abre arquivos de texto para leitura ou escrita
@@ -73,8 +75,11 @@ class MAux {
 
 		static bool FlagRP_TLP; //Se estiver fazendo uma simulacao para o algoritmo TLP, flag marcada como true.
 		int *RP_TLP_NodeUsage;
-		static bool FlagRP_SQP;
+		static bool FlagRP_SQP; //Se estiver fazendo uma simulacao para o algoritmo SQP, flag marcada como true.
 		int *RP_SQP_NodeUsage;
+		static int NumRegeneradoresTotal;
+		static int NumRegeneradoresPorNo;
+		static int LNMax; //Parametro para o SQP
 
 		TIME simTime;
 		static vector<int> **FFlists;
@@ -86,6 +91,9 @@ class MAux {
 		static TipoDeRede escTipoRede;
 		static Simulacao escSim;
 		static SimOtimizacao escOtim;
+		static AlgoritmoRA escRA;
+		static AlgoritmoRP escRP;
+
 };
 
 #endif // MAIN_AUXILIAR_H
