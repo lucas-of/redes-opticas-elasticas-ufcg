@@ -67,6 +67,7 @@ void PSR::criarCache() {
 		if (C2 == Disponibilidade) aux = (i*1.0)/Def::getSE();
 		else if (C2 == NumFormas) aux = (1.0)/(i + 1);
 		else if (C2 == NumFormasNormalizado) aux = 1.0/(Def::getSE() - i + 1);
+		else if (C2 == Ocupabilidade) aux = 1.0 - (i*1.0)/Def::getSE();
 		for (int j = minN; j <= maxN; j++)
 			CacheDisponibilidade[i][j-minN] = pow(aux, j);
 	}

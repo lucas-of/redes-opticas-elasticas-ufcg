@@ -392,7 +392,7 @@ void Load() {
 		cout << "\t" << PSR::Distancia << " - Distância\n\t" << PSR::Ruido << " - Ruído\n\t" << PSR::RuidoNormalizado << " - Ruído Normalizado.\nEntre com o primeiro dos parâmetros para o PSR: ";
 		cin >> aux;
 		PSR::C1 = (PSR::Custo1)aux;
-		cout << "\t" << PSR::Disponibilidade << " - Disponibilidade\n\t" << PSR::NumFormas << " - Numero de Formas\n\t" << PSR::NumFormasNormalizado << " - Numero de Formas Normalizado\nEntre com o segundo dos parâmetros para o PSR: ";
+		cout << "\t" << PSR::Disponibilidade << " - Disponibilidade\n\t" << PSR::NumFormas << " - Numero de Formas\n\t" << PSR::NumFormasNormalizado << " - Numero de Formas Normalizado\n\t" << PSR::Ocupabilidade << " - Ocupabilidade\nEntre com o segundo dos parâmetros para o PSR: ";
 		cin >> aux;
 		PSR::C2 = (PSR::Custo2)aux;
 	}

@@ -16,7 +16,7 @@ class PSR{
 			Distancia, Ruido, RuidoNormalizado
 		};
 		enum Custo2{
-			Disponibilidade, NumFormas, NumFormasNormalizado
+			Disponibilidade, NumFormas, NumFormasNormalizado, Ocupabilidade
 		};
 
 		enum Tipo { Matricial, Tensorial };
