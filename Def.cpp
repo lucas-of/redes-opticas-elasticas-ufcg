@@ -101,8 +101,8 @@ double Def::getLaNet(int Lr) {
 	return LaNet.at(Lr);
 }
 
-double Def::getlimiarOSNR(EsquemaDeModulacao Esquema, long double TaxaDeBit) {
-	return General::lin(0.5*TaxaDeBit*get_snrb(Esquema)/Def::get_Bref());
+double Def::getlimiarOSNR(EsquemaDeModulacao Esquema, long double BitRate) {
+	return General::lin(0.5*BitRate*get_snrb(Esquema)/Def::get_Bref());
 }
 
 long double Def::get_Bref() {

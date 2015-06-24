@@ -6,13 +6,11 @@
 
 long double AvaliarOSNR(const Route *Rota, Def *Config);
 long double Simula_Rede(Def *Config, MAux *Aux);
-int SlotsReq(int Ran, EsquemaDeModulacao Esquema);
+int SlotsReq(long double BitRate, EsquemaDeModulacao Esquema);
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config);
 
 int Regeneradores::SQP_LNMax;
 long double Regeneradores::BR = 100E9;
-
-Regeneradores::Regeneradores() {};
 
 void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo) {
 	assert (NumTotalRegeneradores % NumRegeneradoresPorNo == 0);
@@ -213,6 +211,100 @@ bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event
 						x = r; //atualiza ponto de teste
 					} else {
 						return false; //chamada bloqueada.
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool Regeneradores::RA_FNS(Route *route, long double BitRate, Def *Config, Event *evt) {
+	assert(BitRate > 0);
+
+	EsquemaDeModulacao EscolhaEsquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM }; //Esse algoritmo tenta implementar as chamadas usando esses Esquemas, nessa ordem.
+
+	int RegeneneradoresNecessarios = ceil( BitRate/BR );
+	int NoS, NoX;
+	int r = 0;
+	int L_or, L_de;
+	int NslotsUsed;
+	int NslotsReq;
+	int SI; //SlotInicial
+	int m = 0; //Primeiro Esquema
+
+	vector<int> SegmentosTransparentes;
+	int numSegmentosTransparentes = 0;
+	vector<EsquemaDeModulacao> EsquemasUtilizados;
+	SegmentosTransparentes.push_back( route->getNode(0) );
+
+	for (int s = 0; s < route->getNhops(); s++) {
+		NoS = route->getNode(s);
+		for (int x = s + 1; x <= route->getNhops(); x++) {
+			NoX = route->getNode(x); //descobre o x-esimo no da rota
+			if (( MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios ) || (x == route->getNhops())) {
+				Route rotaQuebrada = *route->breakRoute( NoS, NoX );
+				NslotsUsed = 0;
+				SI = -1;
+				NslotsReq = SlotsReq(BitRate,EscolhaEsquemas[m]);
+				TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
+				if (SI != -1) { //Há espectro
+					long double OSNR = AvaliarOSNR(&rotaQuebrada, Config);
+					if (OSNR >= Def::getlimiarOSNR(EscolhaEsquemas[m], BitRate)) { //Há qualidade
+						if (x == route->getNhops()) { //destino
+							SegmentosTransparentes.push_back(NoX);
+							for (int i = 0; i < numSegmentosTransparentes; i++) {
+								Route rotaQuebrada = *route->breakRoute( SegmentosTransparentes.at(i), SegmentosTransparentes.at(i+1) );
+								NslotsReq = SlotsReq(BitRate,EsquemasUtilizados.at(i));
+								TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
+
+								assert(SI != -1);
+								assert(NslotsReq == NslotsUsed);
+
+								evt->conexao->setFirstSlot(i, SI);
+								evt->conexao->setLastSlot(i, SI + NslotsReq);
+
+								for(unsigned c = 0; c < rotaQuebrada.getNhops(); c++) {
+									L_or = rotaQuebrada.getNode(c);
+									L_de = rotaQuebrada.getNode(c+1);
+									for(int s = evt->conexao->getFirstSlot(i); s < evt->conexao->getLastSlot(i); s++) {
+										assert(Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] == false);
+										Config->Topology_S[s*Def::Nnodes*Def::Nnodes + L_or*Def::Nnodes + L_de] = true;
+										//Os slots sao marcados como ocupados
+									}
+								}
+
+								int NumReg = MAux::Rede.at( SegmentosTransparentes.at(i) ).solicitar_regeneradores(BitRate);
+								assert(NumReg != 0); //Conseguiu solicitar os regeneradores
+
+								evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
+							}
+							return true;
+						} else {
+							if (m != 0) {
+								numSegmentosTransparentes++;
+								SegmentosTransparentes.push_back( route->getNode(r) );
+								EsquemasUtilizados.push_back( EscolhaEsquemas[m] );
+								r = x;
+								s = x;
+								m = 0;
+							} else {
+								r = x; //atualiza ponto de regeneração
+							}
+						}
+					}
+				} else {
+					if (r != s) {
+						numSegmentosTransparentes++;
+						SegmentosTransparentes.push_back(NoS);
+						EsquemasUtilizados.push_back( EscolhaEsquemas[m] );
+						s = r; //atualiza fonte
+						x = r; //atualiza ponto de teste
+					} else {
+						x--;
+						m++;
+						if (m == numEsquemasDeModulacao)
+							return false; //chamada bloqueada.
 					}
 				}
 			}

@@ -54,7 +54,7 @@ void Sim(MAux *Aux); /*Define parâmetros anteriores à simulação. Escolher aq
 void SimCompFFO(MAux *Aux); /*Simula testando as diversas heurísticas. Usa tráfego aleatoriamente distribuído. Descomentar linha em main() para usar esse código*/
 void Simulate(Def *Config, MAux *Aux); /*Função principal. Inicia a simulação, chamando clearMemory(). Então começa a fazer as requisições de acordo com o tipo de Evento que ocorreu, até que a simulação termine.*/
 void Simulate_dAMP(Def *Config, MAux *Aux); /*Análogo de Simulate(), mas para variações na distância entre os amplificadores*/
-int SlotsReq(int Ran, EsquemaDeModulacao Esquema); /*coverte a taxa em um número de slots.*/
+int SlotsReq(long double BitRate, EsquemaDeModulacao Esquema); /*coverte a taxa em um número de slots.*/
 int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, que representará a taxa de transmissão que a requisição solicitará.*/
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
@@ -528,7 +528,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = { _64QAM, _16QAM, _4QAM };
 	for (int Esq = 0; Esq < numEsquemasDeModulacao; Esq++) {
 		evt->Esquema = Esquemas[Esq];
-		NslotsReq = SlotsReq(nTaxa, evt->Esquema);
+		NslotsReq = SlotsReq(Def::PossiveisTaxas[nTaxa], evt->Esquema);
 		assert(NslotsReq > 0);
 
 		if(MAux::Alg_Routing == CSP)
@@ -617,7 +617,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	Config->numSlots_Req += NslotsReq;
 
 	if ((MAux::escTipoRede == Translucida) && (NslotsUsed == 0)) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
-		if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
+		if (Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
 			//Conexao Aceita
 			NslotsUsed = NslotsReq;
 		}
@@ -1005,8 +1005,8 @@ void EncontraMultiplicador(Def *Config, MAux *Aux) {
 	delete evt;
 }
 
-int SlotsReq(int Ran, EsquemaDeModulacao Esquema) {
-	return ceil(Def::PossiveisTaxas[Ran]/(2*log2(Esquema)*Def::get_Bslot()));
+int SlotsReq(long double BitRate, EsquemaDeModulacao Esquema) {
+	return ceil(BitRate/(2*log2(Esquema)*Def::get_Bslot()));
 }
 
 int TaxaReq() {

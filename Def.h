@@ -88,7 +88,7 @@ class Def {
 		static int getGrauNo(int);
 		static long double getlambda(void);
 		double getLaNet(int);
-		static double getlimiarOSNR(EsquemaDeModulacao, long double);
+		static double getlimiarOSNR(EsquemaDeModulacao, long double BitRate);
 		static int getNnodes();
 		static long double getNumReqBloqMin();
 		static long double getNumReqMax();

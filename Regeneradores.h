@@ -14,6 +14,7 @@ class Regeneradores {
 		static void RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo, int LNMax); //Signal Quality Prediction Based
 
 		static bool RA_FLR(Route *route, long double BitRate, Def *Config, Event *evt); //First Longest Reach Regenerator Assignment
+		static bool RA_FNS(Route *route, long double BitRate, Def *Config, Event *evt); //First Narrowest Spectrum Regenerator Assignment
 
 		static int SQP_LNMax;
 		static long double BR; //BitRate de um Regenerador
