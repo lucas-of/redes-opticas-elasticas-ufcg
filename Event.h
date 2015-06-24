@@ -13,6 +13,7 @@ struct Event {
 	Conexao* conexao;
 	EsquemaDeModulacao Esquema;
 	int *RegeneradoresUtilizados;
+	int TotalRegeneradoresUtilizados = 0;
 
 	Event() {
 		RegeneradoresUtilizados = new int[Def::Nnodes];

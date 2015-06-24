@@ -72,6 +72,8 @@ int main() {
 	else if(MAux::Alg_Routing == OSNRR)
 		RWA::OSNRR(Aux);
 
+	PrepararRedeTranslucida();
+
 	Aux->Config->Alfa = 94;
 	Aux->Config->Beta = 10;
 
@@ -381,14 +383,14 @@ void Load() {
 
 		cout << "Entre com o número total de regeneradores: ";
 		cin >> aux;
-		assert(aux > 0);
+		assert(aux >= 0);
 		MAux::NumRegeneradoresTotal = aux;
 
 		cout << "Entre com o número de regeneradores por nó: ";
 		cin >> aux;
-		assert(aux > 0);
+		assert(aux >= 0);
 		assert(aux <= MAux::NumRegeneradoresTotal);
-		assert(MAux::NumRegeneradoresTotal%aux == 0); //certifica que são múltiplos
+		if (aux!=0) assert(MAux::NumRegeneradoresTotal%aux == 0); //certifica que são múltiplos
 		MAux::NumRegeneradoresPorNo = aux;
 
 		if (MAux::escRP == SQP) {
@@ -510,15 +512,16 @@ void Load() {
 }
 
 void PrepararRedeTranslucida() {
-	switch(MAux::escRP) {
-		case NDF:
-			Regeneradores::RP_NDF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
-		case CNF:
-			Regeneradores::RP_CNF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
-		case TLP:
-			Regeneradores::RP_TLP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo ); break;
-		case SQP:
-			Regeneradores::RP_SQP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo, MAux::LNMax ); break;
+	if (MAux::NumRegeneradoresTotal != 0) {
+		if (MAux::escRP == NDF) {
+			Regeneradores::RP_NDF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo );
+		} else if (MAux::escRP == CNF) {
+			Regeneradores::RP_CNF( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo );
+		} else if (MAux::escRP == TLP) {
+			Regeneradores::RP_TLP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo );
+		} else if (MAux::escRP == SQP) {
+			Regeneradores::RP_SQP( MAux::NumRegeneradoresTotal, MAux::NumRegeneradoresPorNo, MAux::LNMax );
+		}
 	}
 }
 
@@ -546,9 +549,12 @@ void RemoveCon(Event* evt, Def *Config) {
 	for(int node = 0; node < Def::getNnodes(); node++) {
 		if (evt->RegeneradoresUtilizados[node] != 0) {
 			MAux::Rede.at(node).liberar_regeneradores( evt->RegeneradoresUtilizados[node] ); //liberando os regeneradores utilizados
+			evt->RegeneradoresUtilizados -= evt->RegeneradoresUtilizados[node];
 			evt->RegeneradoresUtilizados[node] = 0;
 		}
 	}
+
+	assert(evt->TotalRegeneradoresUtilizados == 0);
 
 	delete evt->conexao;
 	delete evt;
@@ -662,19 +668,16 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 	Config->numSlots_Req += NslotsReq;
 
 	if ((MAux::escTipoRede == Translucida) && (NslotsUsed == 0)) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
-		switch (MAux::escRA) {
-			case FLR:
-				if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
-					//Conexao Aceita
-					NslotsUsed = NslotsReq;
-				}
-				break;
-			case FNS:
-				if (Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt )) {
-					//Conexao Aceita
-					NslotsUsed = NslotsReq;
-				}
-				break;
+		if (MAux::escRA == FLR) {
+			if (Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt)) {
+				//Conexao Aceita
+				NslotsUsed = NslotsReq;
+			}
+		} else if (MAux::escRA == FNS) {
+			if (Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt)) {
+				//Conexao Aceita
+				NslotsUsed = NslotsReq;
+			}
 		}
 	}
 
