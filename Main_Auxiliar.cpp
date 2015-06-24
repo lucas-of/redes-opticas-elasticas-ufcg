@@ -59,24 +59,24 @@ int MAux::NumRegeneradoresPorNo;
 int MAux::NumRegeneradoresTotal;
 int MAux::LNMax;
 
-MAux::MAux(){
-	AllRoutes = new vector<Route*>[Def::getNnodes()*Def::getNnodes()];
-	for (int i = 0; i < Def::Nnodes*Def::Nnodes; i++)
-		while (!AllRoutes[i].empty()) {
-			delete AllRoutes[i].back();
-			AllRoutes[i].pop_back();
-		}
-	firstEvent = NULL;
-	RP_TLP_NodeUsage = new int[Def::Nnodes];
-	RP_SQP_NodeUsage = new int[Def::Nnodes];
-	for (int i = 0; i < Def::Nnodes; i++) {
-		RP_TLP_NodeUsage[i] = 0;
-		RP_SQP_NodeUsage[i] = 0;
-	}
+MAux::MAux() {
+    AllRoutes = new vector<Route*>[Def::getNnodes() * Def::getNnodes()];
+    for ( int i = 0; i < Def::Nnodes * Def::Nnodes; i++ )
+        while ( !AllRoutes[i].empty() ) {
+            delete AllRoutes[i].back();
+            AllRoutes[i].pop_back();
+        }
+    firstEvent = NULL;
+    RP_TLP_NodeUsage = new int[Def::Nnodes];
+    RP_SQP_NodeUsage = new int[Def::Nnodes];
+    for ( int i = 0; i < Def::Nnodes; i++ ) {
+        RP_TLP_NodeUsage[i] = 0;
+        RP_SQP_NodeUsage[i] = 0;
+    }
 }
 
 MAux::~MAux() {
-	delete[] AllRoutes;
-	delete[] RP_TLP_NodeUsage;
-	delete[] RP_SQP_NodeUsage;
+    delete[] AllRoutes;
+    delete[] RP_TLP_NodeUsage;
+    delete[] RP_SQP_NodeUsage;
 }
