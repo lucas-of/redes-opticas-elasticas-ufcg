@@ -18,14 +18,14 @@ long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400
 int Def::SE = 0;
 int Def::SR = 0;
 int Def::maxSim_Bigode = 0;
-long double Def::Pin = 1.0;
-long double Def::Pref = 1.0;
+long double Def::Pin = 1E-3;
+long double Def::Pref = 1E-3;
 long double Def::Lsss = 5.0;
 long double Def::freq = 193.4E12;
 Def::Arquitetura Def::arquitetura = Def::BS;
 long double Def::lambda = 1550E-9;
-long double Def::Bslot = 12.5;
-long double Def::Bref = 12.5;
+long double Def::Bslot = 12.5E9;
+long double Def::Bref = 12.5E9;
 long double Def::Famp = General::dB((long double) 5.0);
 long double Def::DistA = 80;
 long double Def::OSNRin = 30;
@@ -120,11 +120,11 @@ long double Def::getNumReqMax() {
 long double Def::get_snrb(EsquemaDeModulacao Esq) {
     switch (Esq) {
         case _4QAM:
-            return General::dB(6.8);
+            return General::dB(6.8); break;
         case _16QAM:
-            return General::dB(10.5);
+            return General::dB(10.5); break;
         case _64QAM:
-            return General::dB(14.8);
+            return General::dB(14.8); break;
         default:
             return 0;
     }

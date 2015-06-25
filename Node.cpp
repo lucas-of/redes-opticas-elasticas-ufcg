@@ -72,7 +72,7 @@ int Node::get_NumRegeneradoresDisponiveis() {
     return NumRegeneradoresDisponiveis;
 }
 
-int Node::solicitar_regeneradores(int Taxa) {
+int Node::solicitar_regeneradores(long double Taxa) {
     assert(TipoNo == Translucido);
     int NumReg = ceil(Taxa / Regeneradores::BR);
     if ( NumRegeneradoresDisponiveis >= NumReg ) {

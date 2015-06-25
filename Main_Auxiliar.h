@@ -36,11 +36,11 @@ enum SimOtimizacao {
     OtimizarAlfa, OtimizarBeta
 };
 
-enum AlgoritmoRA {
+enum AlgoritmoRP {
     NDF, CNF, TLP, SQP
 };
 
-enum AlgoritmoRP {
+enum AlgoritmoRA {
     FLR, FNS
 };
 

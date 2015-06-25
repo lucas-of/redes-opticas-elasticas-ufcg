@@ -25,7 +25,7 @@ public:
     int get_NumRegeneradores();
     int get_NumRegeneradoresDisponiveis();
 
-    int solicitar_regeneradores(int Taxa); //Taxa em Gbps
+    int solicitar_regeneradores(long double Taxa); //Taxa em Gbps
     void liberar_regeneradores(int NumReg);
 private:
     long double loss;

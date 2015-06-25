@@ -36,6 +36,7 @@ void createStructures(); /*Cria estrutura topológica da rede, e carrega os dado
 void DefineNextEventOfCon(Event* evt, MAux *Aux); /*Define se o próximo evento da conexão será uma expansão, compressão ou desativação da conexão*/
 void EncontraMultiplicador(Def *Config, MAux *Aux); /*calcula a OSNR para o diâmetro da rede, após multiplicar a distância dos enlaces por certo fator*/
 void GrauDosNodes(Def *Config); /*Calcula o grau dos nós*/
+Event* InserirConexao(Route* route, int si, int NslotsUsed, long double Tempo, MAux *Aux, Def* Config);
 void Load(); /*Função que lê os dados relativos à simulação. Realiza tarefas de io. Verificar significado de várias variáveis em seu escopo*/
 void PrepararRedeTranslucida();
 void RefreshNoise(Def *Config); /*atualiza os ruídos dos enlaces*/
@@ -574,21 +575,21 @@ void RefreshNoise(Def *Config) {
 
 void RemoveCon(Event* evt, Def *Config) {
     //Remove conexao da rede, liberando seus Slots
-
     int L_or, L_de;
-    for ( int hop = 0; hop < evt->conexao->getNHops(); hop++ )
+    for ( int hop = 0; hop < evt->conexao->getNHops(); hop++ ) {
+        L_or = evt->conexao->route.getNode(hop);
+        L_de = evt->conexao->route.getNode(hop + 1);
         for ( int s = evt->conexao->getFirstSlot(hop); s <= evt->conexao->getLastSlot(hop); s++ ) {
             assert((s >= 0) && (s < Def::getSE()));
-            L_or = evt->conexao->route.getNode(hop);
-            L_de = evt->conexao->route.getNode(hop + 1);
             assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == true);
             Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = false;
         }
+    }
 
     for ( int node = 0; node < Def::getNnodes(); node++ ) {
         if ( evt->RegeneradoresUtilizados[node] != 0 ) {
             MAux::Rede.at(node).liberar_regeneradores(evt->RegeneradoresUtilizados[node]); //liberando os regeneradores utilizados
-            evt->RegeneradoresUtilizados -= evt->RegeneradoresUtilizados[node];
+            evt->TotalRegeneradoresUtilizados -= evt->RegeneradoresUtilizados[node];
             evt->RegeneradoresUtilizados[node] = 0;
         }
     }
@@ -646,7 +647,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
                 if ( MAux::AvaliaOsnr == NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa]) ) { //aceita a conexao
                     //Inserir a conexao na rede
                     int L_or, L_de;
-                    for ( unsigned c = 0; c < route->getNhops(); c++ ) {
+                    for ( int c = 0; c < route->getNhops(); c++ ) {
                         L_or = route->getNode(c);
                         L_de = route->getNode(c + 1);
                         for ( int s = si; s < si + NslotsUsed; s++ ) {
@@ -656,40 +657,12 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
                         }
                     }
 
-                    if ( Aux->FlagRP_TLP ) {
-                        for ( int i = 0; i <= route->getNhops(); i++ )
-                            Aux->RP_TLP_NodeUsage[ route->getNode(i) ]++;
-                    }
+                    long double Tempo = General::exponential(MAux::mu);
 
-                    if ( Aux->FlagRP_SQP ) {
-                        int *Ij = new int[Def::Nnodes];
-                        for ( int i = 0; i < Def::Nnodes; i++ ) Ij[i] = 0;
-                        for ( int i = Regeneradores::SQP_LNMax; i <= route->getNhops(); i += Regeneradores::SQP_LNMax ) {
-                            Ij[ route->getNode(i) ] = 1;
-                            if ( i != 0 ) Ij[ route->getNode(i - 1) ] = 1;
-                            if ( i != route->getNhops() ) Ij [ route->getNode(i + 1) ] = 1;
-                        }
-                        for ( int i = 0; i < Def::Nnodes; i++ ) Aux->RP_SQP_NodeUsage[i] += Ij[i];
-                        delete[] Ij;
-                    }
+                    InserirConexao(route, si, NslotsUsed, Tempo, Aux, Config);
 
                     Config->numHopsPerRoute += route->getNhops();
                     Config->netOccupancy += NslotsUsed * route->getNhops();
-
-                    //Cria uma nova conexao
-                    long double Tempo = General::exponential(MAux::mu);
-                    int SI[route->getNhops() + 1];
-                    int SF[route->getNhops() + 1];
-                    for ( int i = 0; i <= route->getNhops(); i++ ) {
-                        SI[i] = si;
-                        SF[i] = si + NslotsUsed - 1;
-                    }
-                    Conexao *newConexao = new Conexao(*route, SI, SF, MainAux->simTime + Tempo);
-                    //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
-                    Event *evt = new Event;
-                    evt->conexao = newConexao;
-                    DefineNextEventOfCon(evt, MainAux);
-                    ScheduleEvent(evt, MainAux);
                     Config->tempoTotal_Taxa[nTaxa] += Tempo;
                     Config->numReqAceit_Esquema[Esq] += 1;
                     Config->taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
@@ -708,12 +681,12 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 
     if ( (MAux::escTipoRede == Translucida) && (NslotsUsed == 0) ) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
         if ( MAux::escRA == FLR ) {
-            if ( Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, evt) ) {
+            if ( Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, MainAux) ) {
                 //Conexao Aceita
                 NslotsUsed = NslotsReq;
             }
         } else if ( MAux::escRA == FNS ) {
-            if ( Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, evt) ) {
+            if ( Regeneradores::RA_FNS(route, Def::PossiveisTaxas[nTaxa], Config, MainAux) ) {
                 //Conexao Aceita
                 NslotsUsed = NslotsReq;
             }
@@ -727,6 +700,41 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
     setReqEvent(evt, MainAux->simTime + IAT);
     assert(evt->type == Req);
     ScheduleEvent(evt, MainAux); //Reusa este mesmo objeto evt
+}
+
+Event* InserirConexao(Route* route, int si, int NslotsUsed, long double Tempo, MAux* Aux, Def* Config) {
+    if ( Aux->FlagRP_TLP ) {
+        for ( int i = 0; i <= route->getNhops(); i++ )
+            Aux->RP_TLP_NodeUsage[ route->getNode(i) ]++;
+    }
+
+    if ( Aux->FlagRP_SQP ) {
+        int *Ij = new int[Def::Nnodes];
+        for ( int i = 0; i < Def::Nnodes; i++ ) Ij[i] = 0;
+        for ( int i = Regeneradores::SQP_LNMax; i <= route->getNhops(); i += Regeneradores::SQP_LNMax ) {
+            Ij[ route->getNode(i) ] = 1;
+            if ( i != 0 ) Ij[ route->getNode(i - 1) ] = 1;
+            if ( i != route->getNhops() ) Ij [ route->getNode(i + 1) ] = 1;
+        }
+        for ( int i = 0; i < Def::Nnodes; i++ ) Aux->RP_SQP_NodeUsage[i] += Ij[i];
+        delete[] Ij;
+    }
+
+    //Cria uma nova conexao
+    int SI[route->getNhops()];
+    int SF[route->getNhops()];
+    for ( int i = 0; i < route->getNhops(); i++ ) {
+        SI[i] = si;
+        SF[i] = si + NslotsUsed - 1;
+    }
+    Conexao *newConexao = new Conexao(*route, SI, SF, Aux->simTime + Tempo);
+    //Agendar um dos eventos possiveis para conexao (Expandir, contrair, cair, etc):
+    Event *evt = new Event;
+    evt->conexao = newConexao;
+    DefineNextEventOfCon(evt, Aux);
+    ScheduleEvent(evt, Aux);
+
+    return evt;
 }
 
 void ScheduleEvent(Event *evt, MAux *Aux) {
@@ -1006,13 +1014,11 @@ void Simulate(Def *Config, MAux *Aux) {
         MAux::Resul << MAux::laNet << "\t" << (long double) Config->numReq_Bloq / Config->numReq << "\t" << (long double) (1.0 - Config->numReq_Bloq / Config->numReq) << "\t" << (long double) Config->numSlots_Bloq / Config->numSlots_Req << "\t" << (long double) Config->numHopsPerRoute / (Config->numReq - Config->numReq_Bloq) << "\t" << Config->netOccupancy << endl;
         MAux::ResulOSNR << MAux::laNet << "\t" << Config->numReq_BloqPorOSNR / Config->numReq_Bloq << endl;
         MAux::Resul2 << MAux::laNet << "\t" << Config->numReq_BloqPorOSNR / Config->numReq << "\t" << (1.0 - Config->numReq_BloqPorOSNR / Config->numReq_Bloq) * Config->numReq_Bloq / Config->numReq << endl;
-    }
-    else if ( MAux::escSim == Sim_OSNR ) {
+    } else if ( MAux::escSim == Sim_OSNR ) {
         cout << "OSNR = " << Config->get_OSRNin() << "   PbReq= " << ProbBloqueio(Config) << "   PbAc= " << ProbAceitacao(Config) << "   PbSlots= " << (long double) Config->numSlots_Bloq / Config->numSlots_Req << " HopsMed= " << (long double) Config->numHopsPerRoute / (Config->numReq - Config->numReq_Bloq) << " netOcc= " << (long double) Config->netOccupancy << endl;
         MAux::Resul << Config->get_OSRNin() << "\t" << (long double) Config->numReq_Bloq / Config->numReq << "\t" << (long double) Config->numSlots_Bloq / Config->numSlots_Req << "\t" << (long double) Config->numHopsPerRoute / (Config->numReq - Config->numReq_Bloq) << "\t" << Config->netOccupancy << endl;
         MAux::ResulOSNR << Config->get_OSRNin() << "\t" << Config->numReq_BloqPorOSNR / Config->numReq_Bloq << endl;
-    }
-    else if ( MAux::escSim == Sim_NSlots ) {
+    } else if ( MAux::escSim == Sim_NSlots ) {
         cout << "NSlots = " << Def::getSE() << "\t PbReq Fis = " << Config->numReq_BloqPorOSNR / Config->numReq << "\t PbReq Rede = " << (1.0 - Config->numReq_BloqPorOSNR / Config->numReq_Bloq) * Config->numReq_Bloq / Config->numReq << endl;
         MAux::Resul << Def::getSE() << "\t" << Config->numReq_Bloq / Config->numReq << "\t" << Config->numReq_BloqPorOSNR / Config->numReq << "\t" << (1.0 - Config->numReq_BloqPorOSNR / Config->numReq_Bloq) * Config->numReq_Bloq / Config->numReq << endl;
     }

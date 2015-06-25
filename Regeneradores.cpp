@@ -5,6 +5,7 @@
 #include "Event.h"
 
 long double AvaliarOSNR(const Route *Rota, Def *Config);
+Event* InserirConexao(Route* route, int si, int NslotsUsed, long double Tempo, MAux *Aux, Def* Config);
 long double Simula_Rede(Def *Config, MAux *Aux);
 int SlotsReq(long double BitRate, EsquemaDeModulacao Esquema);
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config);
@@ -15,6 +16,7 @@ long double Regeneradores::BR = 100E9;
 void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo) {
     assert(NumTotalRegeneradores % NumRegeneradoresPorNo == 0);
     int NumNoTransparentes = NumTotalRegeneradores / NumRegeneradoresPorNo;
+    int NoEscolhido;
     assert(NumNoTransparentes <= Def::Nnodes);
 
     vector<int> GrauNo;
@@ -30,7 +32,7 @@ void Regeneradores::RP_NDF(int NumTotalRegeneradores, int NumRegeneradoresPorNo)
             if ( (GrauNo.at(j) == MaiorGrau) && (MAux::Rede.at(j).get_TipoNo() == Node::Transparente) )
                 NosMaximos.push_back(j);
 
-        int NoEscolhido = NosMaximos.at(floor(General::uniforme(0, NosMaximos.size())));
+        NoEscolhido = NosMaximos.at(floor(General::uniforme(0, NosMaximos.size())));
         MAux::Rede.at(NoEscolhido).set_TipoNo(Node::Translucido);
         MAux::Rede.at(NoEscolhido).set_NumRegeneradores(NumRegeneradoresPorNo);
 
@@ -140,88 +142,11 @@ void Regeneradores::RP_SQP(int NumTotalRegeneradores, int NumRegeneradoresPorNo,
     delete Config;
 }
 
-bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, Event *evt) {
+bool Regeneradores::RA_FLR(Route *route, long double BitRate, Def *Config, MAux *Aux) {
     assert(BitRate > 0);
+    assert(HaEspectroEQualidade(route, BitRate, Config) == false); //RA só pode ser chamado em rotas sem qualidade/espectro
 
-    evt->Esquema = _64QAM; //Esse algoritmo sempre tenta criar as chamadas com 64QAM.
-
-    int RegeneneradoresNecessarios = ceil(BitRate / BR);
-    int NoS, NoX;
-    int r = 0;
-    int s, x;
-    int L_or, L_de;
-    int NslotsUsed;
-    int NslotsReq = SlotsReq(BitRate, evt->Esquema);
-    int SI; //SlotInicial
-
-    vector<int> SegmentosTransparentes;
-    int numSegmentosTransparentes = 0;
-    vector<EsquemaDeModulacao> Esquemas;
-    SegmentosTransparentes.push_back(route->getNode(0));
-
-    for ( s = 0; s <= route->getNhops(); s++ ) {
-        NoS = route->getNode(s);
-        for ( x = s + 1; x <= route->getNhops(); x++ ) {
-            NoX = route->getNode(x); //descobre o x-esimo no da rota
-            if ( (MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios) || (x == route->getNhops()) ) {
-                Route rotaQuebrada = *route->breakRoute(NoS, NoX);
-                NslotsUsed = 0;
-                SI = -1;
-                TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
-                long double OSNR = AvaliarOSNR(&rotaQuebrada, Config);
-                if ( (SI != -1) && (OSNR >= Def::getlimiarOSNR(evt->Esquema, BitRate)) ) {
-                    if ( x == route->getNhops() ) { //destino
-                        SegmentosTransparentes.push_back(NoX);
-                        for ( int i = 0; i < numSegmentosTransparentes; i++ ) {
-                            Route rotaQuebrada = *route->breakRoute(SegmentosTransparentes.at(i), SegmentosTransparentes.at(i + 1));
-                            TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
-
-                            assert(SI != -1);
-                            assert(NslotsReq == NslotsUsed);
-
-                            evt->conexao->setFirstSlot(i, SI);
-                            evt->conexao->setLastSlot(i, SI + NslotsReq - 1);
-
-                            for ( unsigned c = 0; c < rotaQuebrada.getNhops(); c++ ) {
-                                L_or = rotaQuebrada.getNode(c);
-                                L_de = rotaQuebrada.getNode(c + 1);
-                                for ( int s = evt->conexao->getFirstSlot(i); s < evt->conexao->getLastSlot(i); s++ ) {
-                                    assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == false);
-                                    Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = true;
-                                    //Os slots sao marcados como ocupados
-                                }
-                            }
-
-                            int NumReg = MAux::Rede.at(SegmentosTransparentes.at(i)).solicitar_regeneradores(BitRate);
-                            assert(NumReg != 0); //Conseguiu solicitar os regeneradores
-                            evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
-                            evt->TotalRegeneradoresUtilizados += NumReg;
-                        }
-                        return true; //chamada aceita
-                    } else {
-                        r = x; //atualiza ponto de regeneração
-                    }
-                }
-            } else {
-                if ( r != s ) {
-                    numSegmentosTransparentes++;
-                    SegmentosTransparentes.push_back(route->getNode(r));
-                    Esquemas.push_back(_64QAM);
-                    s = r; //atualiza fonte
-                    x = r; //atualiza ponto de teste
-                } else {
-                    return false; //chamada bloqueada.
-                }
-            }
-        }
-    }
-    return false;
-}
-
-bool Regeneradores::RA_FNS(Route *route, long double BitRate, Def *Config, Event *evt) {
-    assert(BitRate > 0);
-
-    EsquemaDeModulacao EscolhaEsquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM}; //Esse algoritmo tenta implementar as chamadas usando esses Esquemas, nessa ordem.
+    Event *evt;
 
     int RegeneneradoresNecessarios = ceil(BitRate / BR);
     int NoS, NoX;
@@ -230,83 +155,215 @@ bool Regeneradores::RA_FNS(Route *route, long double BitRate, Def *Config, Event
     int L_or, L_de;
     int NslotsUsed;
     int NslotsReq;
-    int SI; //SlotInicial
-    int m = 0; //Primeiro Esquema
+    int SI = -1; //SlotInicial
 
     vector<int> SegmentosTransparentes;
     int numSegmentosTransparentes = 0;
-    vector<EsquemaDeModulacao> EsquemasUtilizados;
     SegmentosTransparentes.push_back(route->getNode(0));
 
-    for ( s = 0; s < route->getNhops(); s++ ) {
+    for ( s = 0; s <= route->getNhops(); s++ ) {
         NoS = route->getNode(s);
         for ( x = s + 1; x <= route->getNhops(); x++ ) {
             NoX = route->getNode(x); //descobre o x-esimo no da rota
             if ( (MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios) || (x == route->getNhops()) ) {
                 Route rotaQuebrada = *route->breakRoute(NoS, NoX);
-                NslotsUsed = 0;
-                SI = -1;
-                NslotsReq = SlotsReq(BitRate, EscolhaEsquemas[m]);
-                TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
-                long double OSNR = AvaliarOSNR(&rotaQuebrada, Config);
-                if ( (SI != -1) && (OSNR >= Def::getlimiarOSNR(EscolhaEsquemas[m], BitRate)) ) { //Há qualidade
+                if ( HaEspectroEQualidade(&rotaQuebrada, BitRate, Config) ) {
                     if ( x == route->getNhops() ) { //destino
                         SegmentosTransparentes.push_back(NoX);
-                        for ( int i = 0; i < numSegmentosTransparentes; i++ ) {
-                            Route rotaQuebrada = *route->breakRoute(SegmentosTransparentes.at(i), SegmentosTransparentes.at(i + 1));
-                            NslotsReq = SlotsReq(BitRate, EsquemasUtilizados.at(i));
-                            TryToConnect(&rotaQuebrada, NslotsReq, NslotsUsed, SI, Config);
+
+                        //Insere conexão na rede
+                        long double Tempo = General::exponential(MAux::mu);
+                        evt = InserirConexao(route, 0, 1, Tempo, Aux, Config);
+
+                        int hop = 0;
+                        for ( int i = 0; i <= numSegmentosTransparentes; i++ ) {
+                            SI = -1;
+                            NslotsUsed = 0;
+                            Route Segmento = *route->breakRoute(SegmentosTransparentes.at(i), SegmentosTransparentes.at(i + 1));
+                            NslotsReq = SlotsReq(BitRate, MelhorEsquema(&Segmento, BitRate, Config));
+                            TryToConnect(&Segmento, NslotsReq, NslotsUsed, SI, Config);
 
                             assert(SI != -1);
                             assert(NslotsReq == NslotsUsed);
 
-                            evt->conexao->setFirstSlot(i, SI);
-                            evt->conexao->setLastSlot(i, SI + NslotsReq - 1);
-
-                            for ( unsigned c = 0; c < rotaQuebrada.getNhops(); c++ ) {
-                                L_or = rotaQuebrada.getNode(c);
-                                L_de = rotaQuebrada.getNode(c + 1);
-                                for ( int s = evt->conexao->getFirstSlot(i); s < evt->conexao->getLastSlot(i); s++ ) {
+                            for ( int c = 0; c < Segmento.getNhops(); c++ ) {
+                                evt->conexao->setFirstSlot(hop, SI);
+                                evt->conexao->setLastSlot(hop, SI + NslotsReq - 1);
+                                L_or = Segmento.getNode(c);
+                                L_de = Segmento.getNode(c + 1);
+                                for ( int s = evt->conexao->getFirstSlot(hop); s <= evt->conexao->getLastSlot(hop); s++ ) {
                                     assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == false);
                                     Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = true;
                                     //Os slots sao marcados como ocupados
                                 }
+                                hop++;
                             }
 
-                            int NumReg = MAux::Rede.at(SegmentosTransparentes.at(i)).solicitar_regeneradores(BitRate);
-                            assert(NumReg != 0); //Conseguiu solicitar os regeneradores
-
-                            evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
+                            if ( i != 0 ) {
+                                int NumReg = MAux::Rede.at(SegmentosTransparentes.at(i)).solicitar_regeneradores(BitRate);
+                                assert(NumReg != 0); //Conseguiu solicitar os regeneradores
+                                evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
+                                evt->TotalRegeneradoresUtilizados += NumReg;
+                            }
                         }
-                        return true;
+                        return true; //chamada aceita
                     } else {
-                        if ( m != 0 ) {
-                            numSegmentosTransparentes++;
-                            SegmentosTransparentes.push_back(route->getNode(r));
-                            EsquemasUtilizados.push_back(EscolhaEsquemas[m]);
-                            r = x;
-                            s = x;
-                            m = 0;
-                        } else {
-                            r = x; //atualiza ponto de regeneração
-                        }
+                        r = x; //atualiza ponto de regeneração
                     }
-                }
-            } else {
-                if ( r != s ) {
-                    numSegmentosTransparentes++;
-                    SegmentosTransparentes.push_back(route->getNode(r));
-                    EsquemasUtilizados.push_back(EscolhaEsquemas[m]);
-                    s = r; //atualiza fonte
-                    x = r; //atualiza ponto de teste
                 } else {
-                    x--;
-                    m++;
-                    if ( m == numEsquemasDeModulacao )
+                    if ( r != s ) {
+                        numSegmentosTransparentes += 1;
+                        SegmentosTransparentes.push_back(route->getNode(r));
+                        s = r; //atualiza fonte
+                        NoS = route->getNode(s);
+                        x = r; //atualiza ponto de teste
+                        NoX = route->getNode(x);
+                    } else {
                         return false; //chamada bloqueada.
+                    }
                 }
             }
         }
     }
     return false;
+}
+
+bool Regeneradores::RA_FNS(Route *route, long double BitRate, Def *Config, MAux *Aux) {
+    assert(BitRate > 0);
+    assert(HaEspectroEQualidade(route, BitRate, Config) == false); //RA só pode ser chamado em rotas sem qualidade/espectro
+
+    Event *evt;
+
+    EsquemaDeModulacao EscolhaEsquemas[] = {_64QAM, _16QAM, _4QAM}; //Esse algoritmo tenta implementar as chamadas usando esses Esquemas, nessa ordem.
+
+    int RegeneneradoresNecessarios = ceil(BitRate / BR);
+    int NoS, NoX;
+    int r = 0;
+    int s, x;
+    int L_or, L_de;
+    int NslotsUsed;
+    int NslotsReq;
+    int SI = -1; //SlotInicial
+    int m = 0; //Primeiro Esquema
+
+    vector<int> SegmentosTransparentes;
+    int numSegmentosTransparentes = 0;
+    SegmentosTransparentes.push_back(route->getNode(0));
+
+    for ( s = 0; s <= route->getNhops(); s++ ) {
+        NoS = route->getNode(s);
+        for ( x = s + 1; x <= route->getNhops(); x++ ) {
+            NoX = route->getNode(x); //descobre o x-esimo no da rota
+            if ( (MAux::Rede.at(NoX).get_NumRegeneradoresDisponiveis() >= RegeneneradoresNecessarios) || (x == route->getNhops()) ) {
+                Route rotaQuebrada = *route->breakRoute(NoS, NoX);
+                if ( HaEspectroEQualidade(&rotaQuebrada, BitRate, Config, EscolhaEsquemas[m]) ) { //Há qualidade
+                    if ( x == route->getNhops() ) { //destino
+                        SegmentosTransparentes.push_back(NoX);
+
+                        //Insere conexão na rede
+                        long double Tempo = General::exponential(MAux::mu);
+                        evt = InserirConexao(route, 0, 1, Tempo, Aux, Config);
+
+                        int hop = 0;
+                        for ( int i = 0; i <= numSegmentosTransparentes; i++ ) {
+                            SI = -1;
+                            Route Segmento = *route->breakRoute(SegmentosTransparentes.at(i), SegmentosTransparentes.at(i + 1));
+                            NslotsReq = SlotsReq(BitRate, MelhorEsquema(&Segmento, BitRate, Config));
+                            TryToConnect(&Segmento, NslotsReq, NslotsUsed, SI, Config);
+
+                            assert(SI != -1);
+                            assert(NslotsReq == NslotsUsed);
+
+                            for ( int c = 0; c < Segmento.getNhops(); c++ ) {
+                                evt->conexao->setFirstSlot(hop, SI);
+                                evt->conexao->setLastSlot(hop, SI + NslotsReq - 1);
+                                L_or = Segmento.getNode(c);
+                                L_de = Segmento.getNode(c + 1);
+                                for ( int s = evt->conexao->getFirstSlot(hop); s <= evt->conexao->getLastSlot(hop); s++ ) {
+                                    assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == false);
+                                    Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = true;
+                                    //Os slots sao marcados como ocupados
+                                }
+                                hop++;
+                            }
+
+                            if ( i != 0 ) {
+                                int NumReg = MAux::Rede.at(SegmentosTransparentes.at(i)).solicitar_regeneradores(BitRate);
+                                assert(NumReg != 0); //Conseguiu solicitar os regeneradores
+                                evt->RegeneradoresUtilizados[ SegmentosTransparentes.at(i) ] = NumReg;
+                                evt->TotalRegeneradoresUtilizados += NumReg;
+                            }
+                        }
+                        return true;
+                    } else {
+                        if ( m != 0 ) {
+                            r = x;
+                            s = x;
+                            NoS = route->getNode(s);
+                            m = 0;
+                            SegmentosTransparentes.push_back(route->getNode(r));
+                            numSegmentosTransparentes += 1;
+                        } else {
+                            r = x; //atualiza ponto de regeneração
+                        }
+                    }
+                } else {
+                    if ( r != s ) {
+                        numSegmentosTransparentes += 1;
+                        SegmentosTransparentes.push_back(route->getNode(r));
+                        s = r; //atualiza fonte
+                        NoS = route->getNode(s);
+                        x = r; //atualiza ponto de teste
+                        NoX = route->getNode(x);
+                    } else {
+                        x -= 1;
+                        NoX = route->getNode(x);
+                        m += 1;
+                        if ( m == numEsquemasDeModulacao )
+                            return false; //chamada bloqueada.
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool Regeneradores::HaEspectroEQualidade(Route* route, long double BitRate, Def *Config, EsquemaDeModulacao Esquema) {
+    int NslotsUsed = 0;
+    int NslotsReq;
+    int SI = -1; //SlotInicial
+
+    long double OSNR;
+
+    NslotsReq = SlotsReq(BitRate, Esquema);
+    TryToConnect(route, NslotsReq, NslotsUsed, SI, Config);
+    OSNR = AvaliarOSNR(route, Config);
+
+    if ( (NslotsUsed != 0) && (OSNR >= Def::getlimiarOSNR(Esquema, BitRate)) ) return true;
+    return false;
+}
+
+bool Regeneradores::HaEspectroEQualidade(Route* route, long double BitRate, Def * Config) {
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM};
+
+    for ( int i = 0; i < numEsquemasDeModulacao; i++ ) {
+        if ( Regeneradores::HaEspectroEQualidade(route, BitRate, Config, Esquemas[i]) ) return true;
+    }
+
+    return false;
+}
+
+EsquemaDeModulacao Regeneradores::MelhorEsquema(Route* route, long double BitRate, Def * Config) {
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM};
+    int i;
+
+    for ( i = 0; i < numEsquemasDeModulacao; i++ ) {
+        if ( Regeneradores::HaEspectroEQualidade(route, BitRate, Config, Esquemas[i]) ) {
+            return Esquemas[i];
+        }
+    }
+
+    assert(i != numEsquemasDeModulacao - 1);
+    return (EsquemaDeModulacao) - 1;
 }
