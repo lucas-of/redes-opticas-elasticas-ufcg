@@ -13,8 +13,8 @@ int Def::Nnodes;
 const int Def::numEsquemasDeModulacao = 3;
 long double Def::numReqBloqMin = 0.0;
 long double Def::numReqMax = 1E7; //dez milhoes de requisicoes
-const int Def::numPossiveisTaxas = 5;
-long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {10, 40, 100, 160, 400}; //em Gbps
+const int Def::numPossiveisTaxas = 3;
+long double Def::PossiveisTaxas[Def::numPossiveisTaxas] = {100, 200, 400}; //em Gbps
 int Def::SE = 0;
 int Def::SR = 0;
 int Def::maxSim_Bigode = 0;
@@ -28,7 +28,7 @@ long double Def::Bslot = 12.5E9;
 long double Def::Bref = 12.5E9;
 long double Def::Famp = General::dB((long double) 5.0);
 long double Def::DistA = 80;
-long double Def::OSNRin = 30;
+long double Def::OSNRin = 40;
 
 Def::Def(Particula *Part) {
     P = Part;
@@ -121,10 +121,10 @@ long double Def::get_snrb(EsquemaDeModulacao Esq) {
     switch (Esq) {
         case _4QAM:
             return General::dB(6.8); break;
+        case _8QAM:
+            return General::dB(9.0); break;
         case _16QAM:
             return General::dB(10.5); break;
-        case _64QAM:
-            return General::dB(14.8); break;
         default:
             return 0;
     }

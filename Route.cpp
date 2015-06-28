@@ -33,7 +33,7 @@ void Route::print() const {
         std::cout << Path.at(i) << "--";
 }
 
-Route* Route::breakRoute(int OrN, int DeN) {
+Route Route::breakRoute(int OrN, int DeN) {
     int LocOrN, LocDeN;
     for ( int i = 0; i < Path.size(); i++ ) {
         if ( OrN == Path.at(i) ) LocOrN = i;
@@ -46,7 +46,7 @@ Route* Route::breakRoute(int OrN, int DeN) {
     for ( int i = LocOrN; i <= LocDeN; i++ )
         Caminho.push_back(Nodes.at(i));
 
-    return new Route(Caminho);
+    return Route(Caminho);
 }
 
 std::vector<Node*> *Route::get_Nodes() {

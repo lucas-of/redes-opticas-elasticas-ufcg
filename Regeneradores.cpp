@@ -234,7 +234,7 @@ bool Regeneradores::RA_FNS(Route *route, long double BitRate, Def *Config, MAux 
 
     Event *evt;
 
-    EsquemaDeModulacao EscolhaEsquemas[] = {_64QAM, _16QAM, _4QAM}; //Esse algoritmo tenta implementar as chamadas usando esses Esquemas, nessa ordem.
+    EsquemaDeModulacao EscolhaEsquemas[] = {_16QAM, _8QAM, _4QAM}; //Esse algoritmo tenta implementar as chamadas usando esses Esquemas, nessa ordem.
 
     int RegeneneradoresNecessarios = ceil(BitRate / BR);
     int NoS, NoX;
@@ -345,7 +345,7 @@ bool Regeneradores::HaEspectroEQualidade(Route* route, long double BitRate, Def 
 }
 
 bool Regeneradores::HaEspectroEQualidade(Route* route, long double BitRate, Def * Config) {
-    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM};
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_16QAM, _8QAM, _4QAM};
 
     for (int i = 0; i < numEsquemasDeModulacao; i++) {
         if (Regeneradores::HaEspectroEQualidade(route, BitRate, Config, Esquemas[i])) return true;
@@ -355,7 +355,7 @@ bool Regeneradores::HaEspectroEQualidade(Route* route, long double BitRate, Def 
 }
 
 EsquemaDeModulacao Regeneradores::MelhorEsquema(Route* route, long double BitRate, Def * Config) {
-    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM};
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_16QAM, _8QAM, _4QAM};
     int i;
 
     for (i = 0; i < numEsquemasDeModulacao; i++) {

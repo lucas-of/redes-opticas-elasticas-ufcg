@@ -7,7 +7,7 @@
 #include <vector>
 
 enum EsquemaDeModulacao {
-    _4QAM = 4, _16QAM = 16, _64QAM = 64
+    _4QAM = 4, _8QAM = 8, _16QAM = 16
 };
 const int numEsquemasDeModulacao = 3;
 

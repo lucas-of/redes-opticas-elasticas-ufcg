@@ -616,7 +616,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
     Config->numReq++;
     Config->numReq_Taxa[nTaxa]++;
 
-    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_64QAM, _16QAM, _4QAM};
+    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_16QAM, _8QAM, _4QAM};
     for ( int Esq = 0; Esq < numEsquemasDeModulacao; Esq++ ) {
         evt->Esquema = Esquemas[Esq];
         NslotsReq = SlotsReq(Def::PossiveisTaxas[nTaxa], evt->Esquema);
