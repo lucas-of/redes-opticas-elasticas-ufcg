@@ -120,11 +120,14 @@ long double Def::getNumReqMax() {
 long double Def::get_snrb(EsquemaDeModulacao Esq) {
     switch (Esq) {
         case _4QAM:
-            return General::dB(6.8); break;
+            return General::dB(6.8);
+            break;
         case _8QAM:
-            return General::dB(9.0); break;
+            return General::dB(9.0);
+            break;
         case _16QAM:
-            return General::dB(10.5); break;
+            return General::dB(10.5);
+            break;
         default:
             return 0;
     }

@@ -616,70 +616,74 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
     Config->numReq++;
     Config->numReq_Taxa[nTaxa]++;
 
-    EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_16QAM, _8QAM, _4QAM};
-    for ( int Esq = 0; Esq < numEsquemasDeModulacao; Esq++ ) {
-        evt->Esquema = Esquemas[Esq];
-        NslotsReq = SlotsReq(Def::PossiveisTaxas[nTaxa], evt->Esquema);
-        assert(NslotsReq > 0);
+    if ( Aux->escTipoRede == Transparente ) {
+        EsquemaDeModulacao Esquemas[numEsquemasDeModulacao] = {_16QAM, _8QAM, _4QAM};
+        for ( int Esq = 0; Esq < numEsquemasDeModulacao; Esq++ ) {
+            evt->Esquema = Esquemas[Esq];
+            NslotsReq = SlotsReq(Def::PossiveisTaxas[nTaxa], evt->Esquema);
+            assert(NslotsReq > 0);
 
-        if ( MAux::Alg_Routing == CSP )
-            RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
-        if ( MAux::Alg_Routing == CSP_Acum )
-            RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
-        if ( (MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF) )
-            RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
-        if ( MAux::Alg_Routing == DJK_SPeFormas )
-            RWA::DijkstraSPeFormas(orN, deN, NslotsReq, Config->Alfa, Config, MainAux);
-        else if ( MAux::Alg_Routing == DJK_RuidoEFormas )
-            RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
-        else if ( (MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO) )
-            RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+            if ( MAux::Alg_Routing == CSP )
+                RWA::DijkstraFormas(orN, deN, NslotsReq, Config, MainAux);
+            if ( MAux::Alg_Routing == CSP_Acum )
+                RWA::DijkstraAcum(orN, deN, NslotsReq, Config, MainAux);
+            if ( (MAux::Alg_Routing == LOR_A) || (MAux::Alg_Routing == LOR_NF) )
+                RWA::LORModificado(orN, deN, NslotsReq, Config, MainAux);
+            if ( MAux::Alg_Routing == DJK_SPeFormas )
+                RWA::DijkstraSPeFormas(orN, deN, NslotsReq, Config->Alfa, Config, MainAux);
+            else if ( MAux::Alg_Routing == DJK_RuidoEFormas )
+                RWA::DijkstraRuidoeFormas(orN, deN, NslotsReq, Config->Beta, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
+            else if ( (MAux::escSim == Sim_TreinoPSR) || (MAux::Alg_Routing == Dij_PSO) )
+                RWA::DijkstraPSR(orN, deN, NslotsReq, evt->Esquema, Def::PossiveisTaxas[nTaxa], Config, MainAux);
 
-        for ( unsigned int i = 0; i < MainAux->AllRoutes[orN * Def::getNnodes() + deN].size(); i++ ) {
-            route = MainAux->AllRoutes[orN * Def::getNnodes() + deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
-            NslotsUsed = 0;
-            si = -1;
-            TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
-            assert((NslotsUsed == 0) || (NslotsUsed == NslotsReq)); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
-            if ( NslotsUsed > 0 ) { //A conexao foi aceita
-                assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE() - NslotsUsed);
-                if ( MAux::AvaliaOsnr == SIM ) OSNR = AvaliarOSNR(route, Config);
-                if ( MAux::AvaliaOsnr == NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa]) ) { //aceita a conexao
-                    //Inserir a conexao na rede
-                    int L_or, L_de;
-                    for ( int c = 0; c < route->getNhops(); c++ ) {
-                        L_or = route->getNode(c);
-                        L_de = route->getNode(c + 1);
-                        for ( int s = si; s < si + NslotsUsed; s++ ) {
-                            assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == false);
-                            Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = true;
-                            //Os slots sao marcados como ocupados
+            for ( unsigned int i = 0; i < MainAux->AllRoutes[orN * Def::getNnodes() + deN].size(); i++ ) {
+                route = MainAux->AllRoutes[orN * Def::getNnodes() + deN].at(i); //Tenta a i-esima rota destinada para o par orN-deN
+                NslotsUsed = 0;
+                si = -1;
+                TryToConnect(route, NslotsReq, NslotsUsed, si, Config);
+                assert((NslotsUsed == 0) || (NslotsUsed == NslotsReq)); //Tirar isso aqui quando uma conexao puder ser atendida com um numero menor de slots que o requisitado
+                if ( NslotsUsed > 0 ) { //A conexao foi aceita
+                    assert(NslotsUsed <= NslotsReq && si >= 0 && si <= Def::getSE() - NslotsUsed);
+                    if ( MAux::AvaliaOsnr == SIM ) OSNR = AvaliarOSNR(route, Config);
+                    if ( MAux::AvaliaOsnr == NAO || OSNR >= Def::getlimiarOSNR(evt->Esquema, Def::PossiveisTaxas[nTaxa]) ) { //aceita a conexao
+                        //Inserir a conexao na rede
+                        int L_or, L_de;
+                        for ( int c = 0; c < route->getNhops(); c++ ) {
+                            L_or = route->getNode(c);
+                            L_de = route->getNode(c + 1);
+                            for ( int s = si; s < si + NslotsUsed; s++ ) {
+                                assert(Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] == false);
+                                Config->Topology_S[s * Def::Nnodes * Def::Nnodes + L_or * Def::Nnodes + L_de] = true;
+                                //Os slots sao marcados como ocupados
+                            }
                         }
-                    }
 
-                    long double Tempo = General::exponential(MAux::mu);
+                        long double Tempo = General::exponential(MAux::mu);
 
-                    InserirConexao(route, si, NslotsUsed, Tempo, Aux, Config);
+                        InserirConexao(route, si, NslotsUsed, Tempo, Aux, Config);
 
-                    Config->numHopsPerRoute += route->getNhops();
-                    Config->netOccupancy += NslotsUsed * route->getNhops();
-                    Config->tempoTotal_Taxa[nTaxa] += Tempo;
-                    Config->numReqAceit_Esquema[Esq] += 1;
-                    Config->taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
-                    break;
-                } else { //conexao bloqueada por OSNR
-                    NslotsUsed = 0;
-                    if ( (Esq == numEsquemasDeModulacao - 1) && (MAux::escTipoRede == Transparente) ) { //Fim da linha em Redes Transparentes
-                        AccountForBlockingOSNR(NslotsReq, NslotsUsed, Config);
+                        Config->numHopsPerRoute += route->getNhops();
+                        Config->netOccupancy += NslotsUsed * route->getNhops();
+                        Config->tempoTotal_Taxa[nTaxa] += Tempo;
+                        Config->numReqAceit_Esquema[Esq] += 1;
+                        Config->taxaTotal_Esquema[Esq] += Def::PossiveisTaxas[nTaxa];
+                        break;
+                    } else { //conexao bloqueada por OSNR
+                        NslotsUsed = 0;
+                        if ( Esq == numEsquemasDeModulacao - 1 ) { //Fim da linha em Redes Transparentes
+                            AccountForBlockingOSNR(NslotsReq, NslotsUsed, Config);
+                        }
                     }
                 }
             }
+            if ( NslotsUsed != 0 ) break;
         }
-        if ( NslotsUsed != 0 ) break;
     }
     Config->numSlots_Req += NslotsReq;
 
-    if ( (MAux::escTipoRede == Translucida) && (NslotsUsed == 0) ) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
+    if ( MAux::escTipoRede == Translucida ) { //Nova Chance de estabelecer chamadas bloqueadas em Redes Translucidas
+        route = MainAux->AllRoutes[orN * Def::getNnodes() + deN].at(0);
+        NslotsReq = SlotsReq(Def::PossiveisTaxas[nTaxa], _4QAM);
         if ( MAux::escRA == FLR ) {
             if ( Regeneradores::RA_FLR(route, Def::PossiveisTaxas[nTaxa], Config, MainAux) ) {
                 //Conexao Aceita
