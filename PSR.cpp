@@ -146,7 +146,7 @@ void PSR::PSO_configurar() {
     PSO_chi = -2.0 / (2 - phi - sqrt(phi * phi - 4 * phi));
 
     PSO_populacao = new Particula[PSO_P];
-    if ( PSR::T == PSR::Matricial )
+    if ( PSR::T == PSR::Matricial ) {
         for ( int i = 0; i < PSO_P; i++ ) {
             if ( i != 0 ) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
             else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
@@ -156,7 +156,8 @@ void PSR::PSO_configurar() {
             PSO_populacao[i].x = new long double[N * N];
             PSO_populacao[i].v = new long double[N * N];
             PSO_populacao[i].p = new long double[N * N];
-        } else if ( PSR::T == PSR::Tensorial ) {
+        }
+    } else if ( PSR::T == PSR::Tensorial ) {
         for ( int i = 0; i < PSO_P; i++ ) {
             if ( i != 0 ) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
             else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
@@ -188,7 +189,7 @@ void PSR::PSO() {
 
     for ( int Repeticao = 1; Repeticao <= PSO_G; Repeticao++ ) {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
-        #pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic)
         for ( int Part = 0; Part < PSO_P; Part++ ) {
             Def *PSRDef = new Def(PSO_populacao + Part);
             MAux *PSRAux = new MAux();
@@ -275,7 +276,7 @@ void PSR::PSO_iniciarPopulacao() {
     MAux::Alg_Routing = Dij_PSO;
 }
 
-void PSR::PSO_atualizaCustoEnlaces(Particula *P) {
+void PSR::PSO_atualizaCustoEnlaces(Particula * P) {
     Enlace::recalcular_peso(P->x);
 }
 
@@ -289,12 +290,12 @@ long double PSR::get_MaiorRuido() {
     return MaiorRuido;
 }
 
-long double PSR::PSO_simulaRede(Particula *P, Def *Config, MAux *Aux) {
+long double PSR::PSO_simulaRede(Particula *P, Def *Config, MAux * Aux) {
     PSO_atualizaCustoEnlaces(P);
     return Simula_Rede(Config, Aux);
 }
 
-void PSR::executar_PSR(MAux *Aux) {
+void PSR::executar_PSR(MAux * Aux) {
     PSO();
     PSO_ImprimeCoeficientes();
     for ( int i = 0; i < PSO_P; i++ ) {
@@ -414,7 +415,7 @@ long double PSR::get_Taxa(long double Taxa, int N) {
     return CacheTaxas[N - minN][i];
 }
 
-void PSR::PSO_gerarPosicao(Particula *P) {
+void PSR::PSO_gerarPosicao(Particula * P) {
     for ( int i = 0; i < N; i++ ) {
         for ( int j = 0; j < N; j++ ) {
             P->x[i * N + j] = P->geratriz[i] * P->geratriz[j + N];
