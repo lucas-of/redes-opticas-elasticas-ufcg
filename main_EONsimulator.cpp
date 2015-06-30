@@ -131,10 +131,21 @@ void CarregaCoeficientes() {
 
     N = NM - Nm + 1;
 
-    MAux::Coeficientes = new long double[N * N];
-    for ( int i = 0; i < N; i++ ) {
-        for ( int j = 0; j < N; j++ ) {
-            PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i * N + j];
+    if ( PSR::T == PSR::Matricial || PSR::T == PSR::Tensorial ) {
+        MAux::Coeficientes = new long double[N * N];
+        for ( int i = 0; i < N; i++ ) {
+            for ( int j = 0; j < N; j++ ) {
+                PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i * N + j];
+            }
+        }
+    } else if ( PSR::T == PSR::Tridimensional ) {
+        MAux::Coeficientes = new long double[N * N * N];
+        for ( int i = 0; i < N; i++ ) {
+            for ( int j = 0; j < N; j++ ) {
+                for ( int k = 0; k < N; k++ ) {
+                    PSR::PSO_Coeficientes_R >> MAux::Coeficientes[i * N * N + j * N + k];
+                }
+            }
         }
     }
 
@@ -188,7 +199,7 @@ void clearMemory(Def *Config, MAux *Aux) {
         Config->numReqAceit_Esquema[i] = 0;
         Config->taxaTotal_Esquema[i] = 0;
     }
-    
+
     //Checar se limpeza foi realizada corretamente
     for ( int orN = 0; orN < Def::getNnodes(); orN++ )
         for ( int deN = 0; deN < Def::getNnodes(); deN++ )
@@ -659,7 +670,7 @@ void RequestCon(Event* evt, Def *Config, MAux *MainAux) {
 
                     long double Tempo = General::exponential(MAux::mu);
 
-                    InserirConexao(route, si, NslotsUsed, Tempo, Aux, Config);
+                    InserirConexao(route, si, NslotsUsed, Tempo, MainAux, Config);
 
                     Config->numHopsPerRoute += route->getNhops();
                     Config->netOccupancy += NslotsUsed * route->getNhops();

@@ -8,6 +8,7 @@ public:
     Enlace(Node *NOrig, Node *NDest, double dist);
     double get_comprimento(void);
     long double get_peso(Def*, int, long double *PartCoef, long double Noise);
+    long double get_peso(Def*, int, long double *PartCoef, long double Noise, long double BitRate);
     Node* get_NodeOrigem(void);
     Node* get_NodeDestino(void);
     long double get_ganho_enlace();

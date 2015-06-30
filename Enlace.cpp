@@ -97,7 +97,7 @@ void Enlace::recalcular(Def *Config) {
 long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long double Noise) {
     long double peso = 0;
     long double SlotsDispon = 0;
-    if ( PSR::C2 == PSR::Disponibilidade ) {
+    if ( PSR::C2 == PSR::Disponibilidade || PSR::C2 == PSR::Ocupabilidade ) {
         for ( int Slot = 0; Slot < Def::getSE(); Slot++ )
             if ( !Config->Topology_S[Slot * Def::Nnodes * Def::Nnodes + Def::Nnodes * Origem->whoami + Destino->whoami] )
                 SlotsDispon += 1;
@@ -117,6 +117,38 @@ long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long dou
                 peso += PartCoef[(i - PSR::get_NMin()) * PSR::get_N()+(j - PSR::get_NMin())] * PSR::get_Disponibilidade(SlotsDispon, i, L) * pow(Noise, j);
             } else if ( PSR::C1 == PSR::RuidoNormalizado ) {
                 peso += PartCoef[(i - PSR::get_NMin()) * PSR::get_N()+(j - PSR::get_NMin())] * PSR::get_Disponibilidade(SlotsDispon, i, L) * pow(Noise, j);
+            }
+        }
+    }
+    return peso;
+}
+
+long double Enlace::get_peso(Def *Config, int L, long double *PartCoef, long double Noise, long double BitRate) {
+    assert(PSR::T == PSR::Tridimensional);
+    long double peso = 0;
+    long double SlotsDispon = 0;
+    if ( PSR::C2 == PSR::Disponibilidade || PSR::C2 == PSR::Ocupabilidade ) {
+        for ( int Slot = 0; Slot < Def::getSE(); Slot++ )
+            if ( !Config->Topology_S[Slot * Def::Nnodes * Def::Nnodes + Def::Nnodes * Origem->whoami + Destino->whoami] )
+                SlotsDispon += 1;
+    } else {
+        bool *Disp = new bool[Def::getSE()];
+        for ( int Slot = 0; Slot < Def::getSE(); Slot++ )
+            Disp[Slot] = !Config->Topology_S[Slot * Def::Nnodes * Def::Nnodes + Def::Nnodes * Origem->whoami + Destino->whoami];
+        SlotsDispon = Heuristics::calcNumFormAloc(L, Disp);
+        delete[] Disp;
+    }
+
+    for ( int i = PSR::get_NMin(); i <= PSR::get_NMax(); i++ ) {
+        for ( int j = PSR::get_NMin(); j <= PSR::get_NMax(); j++ ) {
+            for ( int k = PSR::get_NMin(); k <= PSR::get_NMax(); k++ ) {
+                if ( PSR::C1 == PSR::Distancia ) {
+                    peso += PartCoef[(i - PSR::get_NMin()) * PSR::get_N() * PSR::get_N()+(j - PSR::get_NMin()) * PSR::get_N() + (k - PSR::get_NMin())] * PSR::get_Disponibilidade(SlotsDispon, i, L) * PSR::get_Distancia(Origem->whoami, Destino->whoami, j) * PSR::get_Taxa(BitRate, k);
+                } else if ( PSR::C1 == PSR::Ruido ) {
+                    peso += PartCoef[(i - PSR::get_NMin()) * PSR::get_N() * PSR::get_N()+(j - PSR::get_NMin()) * PSR::get_N() + (k - PSR::get_NMin())] * PSR::get_Disponibilidade(SlotsDispon, i, L) * pow(Noise, j) * PSR::get_Taxa(BitRate, k);
+                } else if ( PSR::C1 == PSR::RuidoNormalizado ) {
+                    peso += PartCoef[(i - PSR::get_NMin()) * PSR::get_N() * PSR::get_N()+(j - PSR::get_NMin()) * PSR::get_N() + (k - PSR::get_NMin())] * PSR::get_Disponibilidade(SlotsDispon, i, L) * pow(Noise, j) * PSR::get_Taxa(BitRate, k);
+                }
             }
         }
     }

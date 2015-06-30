@@ -30,7 +30,11 @@ PSR::PSR(int Nmin, int Nmax, MAux *A = 0) {
     minN = Nmin;
     Aux = A;
 
-    Coeficientes = new long double[PSR::get_N() * PSR::get_N()];
+    if ( PSR::T == Matricial || PSR::T == Tensorial ) {
+        Coeficientes = new long double[PSR::get_N() * PSR::get_N()];
+    } else if ( PSR::T == Tridimensional ) {
+        Coeficientes = new long double[PSR::get_N() * PSR::get_N() * PSR::get_N()];
+    }
     ComprimentosNormalizados = new long double[Def::getNnodes() * Def::getNnodes()];
     CacheDistancias = new long double**[PSR::get_N()];
     CacheDisponibilidade = new long double*[Def::getSE() + 1];
@@ -164,7 +168,7 @@ void PSR::PSO_configurar() {
             PSO_populacao[i].p = new long double[N * 2];
             PSO_populacao[i].geratriz = new long double[N * 2];
         }
-    } else if (PSR::T == PSR::Tridimensional) {
+    } else if ( PSR::T == PSR::Tridimensional ) {
         for ( int i = 0; i < PSO_P; i++ ) {
             if ( i != 0 ) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
             else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
@@ -184,7 +188,7 @@ void PSR::PSO() {
 
     for ( int Repeticao = 1; Repeticao <= PSO_G; Repeticao++ ) {
         cout << "PSO - Repeticao " << Repeticao << "." << endl;
-#pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for ( int Part = 0; Part < PSO_P; Part++ ) {
             Def *PSRDef = new Def(PSO_populacao + Part);
             MAux *PSRAux = new MAux();
@@ -197,6 +201,9 @@ void PSR::PSO() {
                 } else if ( PSR::T == PSR::Tensorial ) {
                     for ( int i = 0; i < 2 * N; i++ )
                         ( PSO_populacao + Part )->p[i] = (PSO_populacao + Part)->geratriz[i];
+                } else if ( PSR::T == PSR::Tridimensional ) {
+                    for ( int i = 0; i < N * N * N; i++ )
+                        ( PSO_populacao + Part )->p[i] = (PSO_populacao + Part)->x[i];
                 }
             }
             if ( PbReq < PSR::PSO_MelhorPbReq ) {
@@ -217,11 +224,9 @@ void PSR::PSO() {
 void PSR::PSO_iniciarPopulacao() {
     if ( PSR::T == PSR::Matricial ) {
         for ( int i = 0; i < PSO_P; i++ ) {
-            for ( int j = 0; j < N; j++ ) {
-                for ( int k = 0; k < N; k++ ) {
-                    PSO_populacao[i].v[j * N + k] = 0;
-                    PSO_populacao[i].x[j * N + k] = General::uniforme(0, PSR::PSO_Xmax);
-                }
+            for ( int j = 0; j < N * N; j++ ) {
+                PSO_populacao[i].v[j] = 0;
+                PSO_populacao[i].x[j] = General::uniforme(0, PSR::PSO_Xmax);
             }
         }
 
@@ -238,10 +243,8 @@ void PSR::PSO_iniciarPopulacao() {
 
             SimAlfaBeta();
 
-            for ( int j = 0; j < N; j++ ) {
-                for ( int k = 0; k < N; k++ ) {
-                    PSO_populacao[0].x[j * N + k] = 0;
-                }
+            for ( int j = 0; j < N * N; j++ ) {
+                PSO_populacao[0].x[j] = 0;
             }
 
             if ( MAux::escOtim == OtimizarAlfa ) {
@@ -258,6 +261,13 @@ void PSR::PSO_iniciarPopulacao() {
                 PSO_populacao[i].v[k] = 0;
                 PSO_populacao[i].geratriz[k] = General::uniforme(0, PSR::PSO_Xmax);
                 PSO_gerarPosicao(&PSO_populacao[i]);
+            }
+        }
+    } else if ( PSR::T == PSR::Tridimensional ) {
+        for ( int i = 0; i < PSO_P; i++ ) {
+            for ( int k = 0; k < N * N * N; k++ ) {
+                PSO_populacao[i].v[k] = 0;
+                PSO_populacao[i].x[k] = General::uniforme(0, PSR::PSO_Xmax);
             }
         }
     }
@@ -332,6 +342,17 @@ void PSR::PSO_atualizaVelocidades() {
                 if ( PSO_populacao[i].geratriz[j] < PSO_Xmin ) PSO_populacao[i].geratriz[j] = PSO_Xmin;
             }
             PSO_gerarPosicao(&PSO_populacao[i]);
+        } else if ( PSR::T == PSR::Tridimensional ) {
+            for ( int j = 0; j < N * N * N; j++ ) {
+                eps1 = General::uniforme(0, 1);
+                eps2 = General::uniforme(0, 1);
+                PSO_populacao[i].v[j] = PSO_chi * (PSO_populacao[i].v[j] + PSO_c1 * eps1 * (PSO_populacao[i].p[j] - PSO_populacao[i].x[j]) + PSO_c2 * eps2 * (Fitter->p[j] - PSO_populacao[i].x[j]));
+                if ( PSO_populacao[i].v[j] > PSO_Vmax ) PSO_populacao[i].v[j] = PSO_Vmax;
+                if ( PSO_populacao[i].v[j] < PSO_Vmin ) PSO_populacao[i].v[j] = PSO_Vmin;
+                PSO_populacao[i].x[j] += PSO_populacao[i].v[j];
+                if ( PSO_populacao[i].x[j] > PSO_Xmax ) PSO_populacao[i].x[j] = PSO_Xmax;
+                if ( PSO_populacao[i].x[j] < PSO_Xmin ) PSO_populacao[i].x[j] = PSO_Xmin;
+            }
         }
     }
 }
@@ -342,9 +363,16 @@ void PSR::PSO_ImprimeCoeficientes() {
     PSO_Coeficientes_W << PSR::C2 << endl;
     PSO_Coeficientes_W << PSR::T << endl;
     PSO_Coeficientes_W << minN << "\t" << maxN << endl;
+
     for ( int i = 0; i < N; i++ ) {
         for ( int j = 0; j < N; j++ ) {
-            PSO_Coeficientes_W << Coeficientes[i * PSR::N + j] << "\t";
+            if ( PSR::T == PSR::Matricial || PSR::T == PSR::Tensorial ) {
+                PSO_Coeficientes_W << Coeficientes[i * PSR::N + j] << "\t";
+            } else if ( PSR::T == PSR::Tridimensional ) {
+                for ( int k = 0; k < N; k++ )
+                    PSO_Coeficientes_W << Coeficientes[i * PSR::N * PSR::N + j * PSR::N + k] << "\t";
+                PSO_Coeficientes_W << endl;
+            }
         }
         PSO_Coeficientes_W << endl;
     }
