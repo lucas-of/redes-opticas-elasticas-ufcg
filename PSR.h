@@ -22,7 +22,7 @@ public:
     };
 
     enum Tipo {
-        Matricial, Tensorial
+        Matricial, Tensorial, Tridimensional
     };
     static Respostas OtimizarComAWR;
     static Custo1 C1;
@@ -37,12 +37,14 @@ public:
     static void criarCache();
     static long double get_Disponibilidade(int NSlots, int N, int L);
     static long double get_Distancia(int WhoAmI1, int WhoAmI2, int N);
+    static long double get_Taxa(long double Taxa, int N);
     static long double *ComprimentosNormalizados;
     static ifstream PSO_Coeficientes_R;
 
 private:
     static long double ***CacheDistancias;
     static long double **CacheDisponibilidade;
+    static long double **CacheTaxas;
     static int N; //ponto de truncamento
     static int maxN, minN;
     static long double *Coeficientes;

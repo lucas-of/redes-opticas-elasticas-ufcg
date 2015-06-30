@@ -4,7 +4,7 @@
 int PSR::N, PSR::maxN, PSR::minN;
 MAux *PSR::Aux;
 Respostas PSR::OtimizarComAWR;
-long double **PSR::CacheDisponibilidade, ***PSR::CacheDistancias;
+long double **PSR::CacheDisponibilidade, ***PSR::CacheDistancias, **PSR::CacheTaxas;
 long double *PSR::Coeficientes, *PSR::ComprimentosNormalizados;
 Particula *PSR::PSO_populacao;
 long double PSR::MaiorEnlace = -1, PSR::MaiorRuido = -1, PSR::PSO_Vmax = 1, PSR::PSO_Vmin = -1, PSR::PSO_Xmax = 1, PSR::PSO_Xmin = -1;
@@ -34,13 +34,18 @@ PSR::PSR(int Nmin, int Nmax, MAux *A = 0) {
     ComprimentosNormalizados = new long double[Def::getNnodes() * Def::getNnodes()];
     CacheDistancias = new long double**[PSR::get_N()];
     CacheDisponibilidade = new long double*[Def::getSE() + 1];
+    CacheTaxas = new long double*[PSR::get_N()];
     for ( int i = 0; i < PSR::get_N(); i++ ) {
         CacheDistancias[i] = new long double*[Def::Nnodes];
         for ( int j = 0; j < Def::Nnodes; j++ )
             CacheDistancias[i][j] = new long double[Def::Nnodes];
     }
-    for ( int i = 0; i < Def::getSE() + 1; i++ )
+    for ( int i = 0; i < Def::getSE() + 1; i++ ) {
         CacheDisponibilidade[i] = new long double[PSR::get_N()];
+    }
+    for ( int i = 0; i < PSR::get_N(); i++ ) {
+        CacheTaxas[i] = new long double[Def::numPossiveisTaxas];
+    }
     Normalizacao();
     criarCache();
     procurarMaiorEnlace();
@@ -70,6 +75,17 @@ void PSR::criarCache() {
         else if ( C2 == Ocupabilidade ) aux = 1.0 - (i * 1.0) / Def::getSE();
         for ( int j = minN; j <= maxN; j++ )
             CacheDisponibilidade[i][j - minN] = pow(aux, j);
+    }
+
+    long double MaiorTaxa = 0;
+    for ( int i = 0; i < Def::numPossiveisTaxas; i++ ) {
+        if ( Def::PossiveisTaxas[i] > MaiorTaxa ) MaiorTaxa = Def::PossiveisTaxas[i];
+    }
+    for ( int i = 0; i < Def::numPossiveisTaxas; i++ ) {
+        aux = Def::PossiveisTaxas[i];
+        for ( int j = minN; j <= maxN; j++ ) {
+            CacheTaxas[j - minN][i] = pow(aux / MaiorTaxa, j);
+        }
     }
 }
 
@@ -147,6 +163,17 @@ void PSR::PSO_configurar() {
             PSO_populacao[i].v = new long double[N * 2];
             PSO_populacao[i].p = new long double[N * 2];
             PSO_populacao[i].geratriz = new long double[N * 2];
+        }
+    } else if (PSR::T == PSR::Tridimensional) {
+        for ( int i = 0; i < PSO_P; i++ ) {
+            if ( i != 0 ) PSO_populacao[i].Vizinha1 = PSO_populacao + i - 1;
+            else PSO_populacao[i].Vizinha1 = PSO_populacao + PSO_P - 1;
+            if ( i != PSO_P - 1 ) PSO_populacao[i].Vizinha2 = PSO_populacao + i + 1;
+            else PSO_populacao[i].Vizinha2 = PSO_populacao;
+
+            PSO_populacao[i].x = new long double[N * N * N];
+            PSO_populacao[i].v = new long double[N * N * N];
+            PSO_populacao[i].p = new long double[N * N * N];
         }
     }
 }
@@ -343,6 +370,20 @@ long double PSR::get_Distancia(int WhoAmI1, int WhoAmI2, int N) {
     assert(PSR::C1 != Ruido);
 
     return CacheDistancias[N - minN][WhoAmI1][WhoAmI2];
+}
+
+long double PSR::get_Taxa(long double Taxa, int N) {
+    assert(N <= PSR::get_NMax());
+    assert(N >= PSR::get_NMin());
+    int i = -1;
+    for ( int j = 0; j < Def::numPossiveisTaxas; j++ ) {
+        if ( Def::PossiveisTaxas[j] == Taxa ) {
+            j = i;
+            break;
+        }
+    }
+    assert(i != -1);
+    return CacheTaxas[N - minN][i];
 }
 
 void PSR::PSO_gerarPosicao(Particula *P) {

@@ -188,7 +188,7 @@ void clearMemory(Def *Config, MAux *Aux) {
         Config->numReqAceit_Esquema[i] = 0;
         Config->taxaTotal_Esquema[i] = 0;
     }
-
+    
     //Checar se limpeza foi realizada corretamente
     for ( int orN = 0; orN < Def::getNnodes(); orN++ )
         for ( int deN = 0; deN < Def::getNnodes(); deN++ )
@@ -460,7 +460,7 @@ void Load() {
     if ( MAux::Alg_Routing == OSNRR )
         MAux::AvaliaOsnr = SIM;
     if ( (MAux::Alg_Routing == Dij_PSO) || (MAux::escSim == Sim_TreinoPSR) ) {
-        cout << "\t" << PSR::Matricial << " - Matricial\n\t" << PSR::Tensorial << " - Tensorial\nEntre com o paradigma para o PSR: ";
+        cout << "\t" << PSR::Matricial << " - Matricial\n\t" << PSR::Tensorial << " - Tensorial\n\t" << PSR::Tridimensional << " - Tridimensional\nEntre com o paradigma para o PSR: ";
         cin >> aux;
         PSR::T = (PSR::Tipo)aux;
         cout << "\t" << PSR::Distancia << " - Distância\n\t" << PSR::Ruido << " - Ruído\n\t" << PSR::RuidoNormalizado << " - Ruído Normalizado.\nEntre com o primeiro dos parâmetros para o PSR: ";
