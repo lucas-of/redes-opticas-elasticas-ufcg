@@ -209,8 +209,13 @@ void PSR::PSO() {
             }
             if ( PbReq < PSR::PSO_MelhorPbReq ) {
                 PSR::PSO_MelhorPbReq = PbReq;
-                for ( int i = 0; i < N * N; i++ )
-                    Coeficientes[i] = (PSO_populacao + Part)->x[i];
+                if ( PSR::T == PSR::Matricial || PSR::T == PSR::Tensorial ) {
+                    for ( int i = 0; i < N * N; i++ )
+                        Coeficientes[i] = (PSO_populacao + Part)->x[i];
+                } else if ( PSR::T == PSR::Tridimensional ) {
+                    for ( int i = 0; i < N * N * N; i++ )
+                        Coeficientes[i] = (PSO_populacao + Part)->x[i];
+                }
                 PSO_ImprimeCoeficientes();
             }
             delete PSRDef;
