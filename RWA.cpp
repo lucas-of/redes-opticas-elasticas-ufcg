@@ -218,6 +218,8 @@ void RWA::DijkstraPSR(const int orN, const int deN, const int L, EsquemaDeModula
                     Noise = MAux::Caminho[k].at(j).get_ruido_enlace() * Def::getlimiarOSNR(Esquema, TaxaDeTransmissao) / Config->get_Pin();
                 else if ( PSR::C1 == PSR::RuidoNormalizado )
                     Noise = MAux::Caminho[k].at(j).get_ruido_enlace() / PSR::get_MaiorRuido();
+                else 
+                    Noise = 0;
 
                 if ( Config->P != NULL )
                     Peso = MAux::Caminho[k].at(j).get_peso(Config, L, Config->P->x, Noise);
