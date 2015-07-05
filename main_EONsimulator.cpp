@@ -63,7 +63,7 @@ int TaxaReq();  /*gera um número aleatório, sob uma distribuição uniforme, q
 void TryToConnect(const Route* route, const int NslotsReq, int& NslotsUsed, int& si, Def *Config); /*Tenta alocar na rota route um número NslotsReq de slots. O Algoritmo de Alocação é relevante aqui. Retorna si, o slot inicial (-1 se não conseguiu alocar) e NslotsUsed (número de slots que conseguiu alocar).*/
 
 MAux *Aux;
-
+/*
 int main() {
 	Load();
 	cout << "Inicio da simulacao:" << endl;
@@ -109,7 +109,7 @@ int main() {
 	cin.get();
 	return 0;
 }
-
+*/
 void AccountForBlocking(int NslotsReq, int NslotsUsed, int nTaxa, Def *Config) {
 	if(NslotsUsed <= 0) { //A conexao foi bloqueada
 		Config->numReq_Bloq++;
@@ -425,7 +425,7 @@ void Load() {
 	cout<<"Considera a OSNR? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
 	cin>>aux;
 	MAux::AvaliaOsnr = (Respostas)aux;
-	cout << MAux::AvaliaOsnr << endl;
+    cout << MAux::AvaliaOsnr << endl; //Obs: Acho que pode ser removido, pois só exibe a entrada anterior
 
 	cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
 	cin >> op;
@@ -476,7 +476,7 @@ void Load() {
 		for(int i = 0; i < Def::getSR()+1; i++)
 			MAux::FFlists[i] = new vector<int>(0);
 	}
-
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
 	cin >> MAux::mu; //mu = taxa de desativacao das conexoes;
 	if (MAux::escSim == Sim_OSNR || MAux::escSim == Sim_DAmp) {
@@ -551,7 +551,7 @@ void Load() {
 		cin>> nR;
 		Def::setNumReqBloqMin(nR);
 	}
-
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
 		MAux::Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
 }
