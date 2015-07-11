@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>tela_principal</string>
+   <string>Simulador</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QLabel" name="label_op_sim">
@@ -1010,6 +1010,29 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
+   <widget class="QListWidget" name="listWidget">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>100</y>
+      <width>361</width>
+      <height>461</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>590</y>
+      <width>151</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Começar Simulação</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -1059,10 +1082,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_cons_osnr"/>
-  <buttongroup name="buttonGroup_cons_exp_compr"/>
-  <buttongroup name="buttonGroup_awr_otim"/>
-  <buttongroup name="buttonGroup_arq"/>
   <buttongroup name="buttonGroup_otim_dist_ruid"/>
+  <buttongroup name="buttonGroup_arq"/>
+  <buttongroup name="buttonGroup_awr_otim"/>
+  <buttongroup name="buttonGroup_cons_exp_compr"/>
+  <buttongroup name="buttonGroup_cons_osnr"/>
  </buttongroups>
 </ui>
