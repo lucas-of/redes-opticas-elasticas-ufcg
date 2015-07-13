@@ -378,9 +378,17 @@ void Load() {
 	int Npontos, aux;
 	long double op;
 
+// //////////////////// parte 1
+
 	cout << "Escolha a Simulação. " << endl << "\tProbabilidade de Bloqueio <" << Sim_PbReq << ">;" << endl << "\tOSNR <" << Sim_OSNR << ">; " << endl << "\tDistancia dos Amplificadores <" << Sim_DAmp << ">;" << endl << "\tNumero de Slots <" << Sim_NSlots << ">;" << endl << "\tPSR - Otimização <" << Sim_TreinoPSR << ">;" << endl << "\tOtimização do Alfa/Beta <" << Sim_AlfaBetaOtimizado << ">;" << endl << "\tBigode <" << Sim_Bigode << ">." << endl;
 	cin >> aux;
 	MAux::escSim = (Simulacao)aux;
+
+// //////////////////// fim parte 1
+
+// //////////////////// parte 2
+
+  // //////////////////// PG 0
 
 	if (MAux::escSim == Sim_Bigode) {
 		cout << "Quantas repetições da simulação?" << endl;
@@ -389,12 +397,20 @@ void Load() {
 		Def::maxSim_Bigode = aux;
 	}
 
+  // //////////////////// fim PG 0
+
+  // //////////////////// PG 1
+
 	if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		cout << "Otimizar para AWR com Distancia ou AWR com Ruido?\n\t";
 		cout << OtimizarAlfa << " - Distancia\n\t" << OtimizarBeta << " - Ruido\n";
 		cin >> aux;
 		MAux::escOtim = (SimOtimizacao)aux;
 	}
+
+  // //////////////////// fim PG 1
+
+  // //////////////////// PG 2
 
 	if (MAux::escSim == Sim_TreinoPSR) {
 		if ((PSR::C == PSR::RuidoNumFormas) || (PSR::C == PSR::DistanciaNumFormas)) {
@@ -403,6 +419,12 @@ void Load() {
 			PSR::OtimizarComAWR = (Respostas)aux;
 		}
 	}
+
+  // //////////////////// fim PG 2
+
+// //////////////////// fim parte 2
+
+// //////////////////// parte 1
 
 	cout << "Escolha a topologia." << endl << "\tPacific Bell <" << PacificBell << ">; "<< endl << "\tNSFNet <" << NSFNet << ">; " << endl << "\tNSFNet Modificada (Reduzida) <" << NFSNetMod << ">;" << endl << "\tPonto a Ponto de 4 Nós <" << PontoaPonto4 <<">; "  << endl << "\tPonto a Ponto de 8 Nós <" << PontoaPonto8 << ">; " << endl << "\tTop1 <" << Top1 << ">;" << endl << "\tTop2 <" << Top2 << ">;" << endl;
 	cin>>aux;
@@ -425,7 +447,7 @@ void Load() {
 	cout<<"Considera a OSNR? <"<<SIM<<"> Sim ou <"<<NAO<<"> Nao"<<endl;
 	cin>>aux;
 	MAux::AvaliaOsnr = (Respostas)aux;
-    cout << MAux::AvaliaOsnr << endl; //Obs: Acho que pode ser removido, pois só exibe a entrada anterior
+	cout << MAux::AvaliaOsnr << endl;
 
 	cout << "Entre com a banda de um slot, em GHz (valores comuns sao 1.5625, 3.125, 6.25 e 12.5)" << endl;
 	cin >> op;
@@ -452,19 +474,33 @@ void Load() {
 	delete Aux;
 	Aux = new MAux();
 
+// //////////////////// fim parte 1
+
+// //////////////////// parte 2
+
+  // //////////////////// PG 0
+
 	if ((MAux::escSim != Sim_TreinoPSR) && (MAux::escSim != Sim_AlfaBetaOtimizado)) {
 		cout << "\t" << MH<<" - Minimum Hops \n\t"<<CSP<<" - CSP\n\t"<< CSP_Acum<<" - CSP Acumulado\n\t" << SP << " - Shortest Path\n\t"<< DJK_SPeFormas << " - AWR\n\t" << DJK_RuidoEFormas << " - AWR com Ruído do Enlace\n\t" << LOR_NF << " - LOR Num. Formas\n\t" << LOR_A << " - LOR Disponibilidade\n\t" << Dij_PSO << " - PSO\n\t" << OSNRR << " - OSNR-R\n";
 		cout << "Entre com o Algoritmo de Roteamento: ";
 		cin >> MAux::Alg_Routing;
 	}
+
+  // //////////////////// fim PG 0
+
 	if (MAux::escSim == Sim_AlfaBetaOtimizado) {
 		if (MAux::escOtim == OtimizarAlfa)
 			MAux::Alg_Routing = DJK_SPeFormas;
 		else if (MAux::escOtim == OtimizarBeta)
 			MAux::Alg_Routing = DJK_RuidoEFormas;
 	}
+
 	if (MAux::Alg_Routing == OSNRR)
 		MAux::AvaliaOsnr = SIM;
+
+// //////////////////// fim parte 2
+
+// //////////////////// parte 1
 
 	cout<<"\t" << RD<<" - Random \n\t"<<FF<<" - FirstFit \n\t"<<MU<<" - Most Used \n\t"<<FFO<<" - FirstFitOpt "<<endl;
 	cout << "Entre com o Algoritmo de Alocacao: ";
@@ -476,9 +512,16 @@ void Load() {
 		for(int i = 0; i < Def::getSR()+1; i++)
 			MAux::FFlists[i] = new vector<int>(0);
 	}
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	cout <<"Entre com o mu (taxa de desativacao de conexoes): ";
 	cin >> MAux::mu; //mu = taxa de desativacao das conexoes;
+
+// //////////////////// fim parte 1
+
+// //////////////////// parte 2
+
+  // //////////////////// PG 4, 5
+
 	if (MAux::escSim == Sim_OSNR || MAux::escSim == Sim_DAmp) {
 		cout << "Entre com..." << endl;
 		cout << "OSNR minimo = ";
@@ -489,6 +532,11 @@ void Load() {
 		cin >> Npontos;
 		MAux::OSNRPasso = (MAux::OSNRMax-MAux::OSNRMin)/(Npontos-1);
 	}
+
+  // //////////////////// fim PG 4, 5
+
+  // //////////////////// PG 6
+
 	if (MAux::escSim == Sim_PbReq) {
 		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
 		cout << "LaNet minimo = ";
@@ -499,11 +547,21 @@ void Load() {
 		cin >> Npontos;
 		MAux::LaPasso = (MAux::LaNetMax-MAux::LaNetMin)/(Npontos-1);
 	}
+
+  // //////////////////// fim PG 6
+
+  // //////////////////// PG 0, 1, 2
+
 	if (MAux::escSim == Sim_TreinoPSR || MAux::escSim == Sim_AlfaBetaOtimizado || MAux::escSim == Sim_Bigode) {
 		cout << "La = Taxa de Chegada de Conexoes. Entre com..." << endl;
 		cout << "LaNet = ";
 		cin >> MAux::laNet; // La = taxa de chegada das conexoes;
 	}
+
+  // //////////////////// fim PG 0, 1, 2
+
+  // //////////////////// PG 5
+
 	if (MAux::escSim == Sim_DAmp) {
 		cout << "Entre com..." << endl;
 		cout << "Distancia minima entre Amplf. de Linha = ";
@@ -515,6 +573,10 @@ void Load() {
 		MAux::DAmpPasso = (MAux::DAmpMax-MAux::DAmpMin)/(Npontos-1);
 	}
 
+  // //////////////////// fim PG 5
+
+  // //////////////////// PG todas, caso OSNR = SIM
+
 	if (MAux::AvaliaOsnr==SIM) {
 		cout << "Entre com a potencia de entrada, em dBm." << endl;
 		cin>>op;
@@ -522,11 +584,17 @@ void Load() {
 		cout << "Entre com a potencia de referencia da fibra, em dBm." << endl;
 		cin>>op;
 		MAux::Config->set_Pref(op);
+
+  // //////////////////// PG todas menos 5
+
 		if (MAux::escSim != Sim_DAmp) {
 			cout<<"Entre com distancia entre os amplificadores (em km)."<<endl;
 			cin>>op;
 			MAux::Config->set_DistaA(op);
 		}
+
+  // //////////////////// fim PG todas menos 5
+
 		cout<<"Se a arquitetura for Brodcasting and Select digite 1. Se for Switching and Select digite 2."<<endl;
 		cin>>aux;
 		if (aux == 1)
@@ -535,9 +603,22 @@ void Load() {
 			Def::set_Arquitetura(Def::SS);
 	}
 
+  // //////////////////// fim PG todas, caso OSNR=SIM
+
+// //////////////////// fim parte 2
+
+// //////////////////// parte 1
+
 	//Dados para a expansao e compressao das conexoes:
 	cout << "Considerar expansao e compressao do numero de subportadoras das Conexoes? <0> Falso; <1> Verdadeiro;"<<endl;
 	cin >> MAux::ExpComp;
+
+// //////////////////// fim parte 1
+
+// //////////////////// parte 2
+
+  // //////////////////// PG todas, caso CONSIDERAR EXP E COMPR = SIM
+
 	if(MAux::ExpComp) {
 		cout<<"Entre com o MAux::muC: ";
 		cin>> MAux::muC;
@@ -545,15 +626,23 @@ void Load() {
 		cin >> MAux::laE;
 	}
 
+  // //////////////////// fim PG todas, caso CONSIDERAR EXP E COMPR = SIM
+
+  // //////////////////// PG todas menos 5
+
 	long double nR;
 	if (MAux::escSim != Sim_DAmp) {
 		cout<<"Entre com o numero minimo de requisicoes bloqueadas que o programa tem de encontrar antes de terminar: ";
 		cin>> nR;
 		Def::setNumReqBloqMin(nR);
 	}
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // //////////////////// fim PG todas menos 5
+
 	for(int f = 0; f <= Def::getSE()-Def::getSR()+1; f++)
 		MAux::Metrica<<f<<"\t"<<1.0/(f+1)<<endl;
+
+// //////////////////// fim parte 2
 }
 
 void RefreshNoise(Def *Config) {

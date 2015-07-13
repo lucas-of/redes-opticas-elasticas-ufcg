@@ -16,25 +16,17 @@ public:
     ~tela_principal();
 
 private slots:
+    void on_actionSobre_triggered();
+
     void on_actionSair_triggered();
 
-    void on_actionAjuda_triggered();
+    void on_pushButton_sobre_clicked();
 
-    void on_comboBox_op_sim_currentIndexChanged(const QString &arg1);
+    void on_pushButton_nova_sim_clicked();
 
-    void on_radioButton_otim_dist_clicked();
+    void on_pushButton_proximo_clicked();
 
-    void on_radioButton_otim_ruid_clicked();
-
-    void on_comboBox_op_alg_rote_currentIndexChanged(const QString &arg1);
-
-    void on_radioButton_cons_osnr_sim_clicked();
-
-    void on_radioButton_cons_osnr_nao_clicked();
-
-    void on_radioButton_cons_exp_compr_sim_clicked();
-
-    void on_radioButton_cons_exp_compr_nao_clicked();
+    void on_actionNova_Simula_o_triggered();
 
 private:
     Ui::tela_principal *ui;

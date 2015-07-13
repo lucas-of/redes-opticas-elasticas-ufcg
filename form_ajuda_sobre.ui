@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ajuda_form</class>
- <widget class="QDialog" name="ajuda_form">
+ <class>form_ajuda_sobre</class>
+ <widget class="QDialog" name="form_ajuda_sobre">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,19 +11,19 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Ajuda</string>
+   <string>Ajuda - Sobre</string>
   </property>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>30</y>
-     <width>321</width>
+     <x>30</x>
+     <y>20</y>
+     <width>221</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Interface Redes Ópticas Elásticas - UFCG</string>
+    <string>Redes Ópticas Elásticas - UFCG</string>
    </property>
   </widget>
  </widget>

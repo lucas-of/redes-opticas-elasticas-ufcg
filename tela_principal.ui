@@ -6,1032 +6,472 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1291</width>
-    <height>787</height>
+    <width>1162</width>
+    <height>752</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Simulador</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="label_op_sim">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>141</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Escolha a simulação:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_op_sim">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>10</y>
-      <width>221</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_rep_sim">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>241</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Quantas repetições da simulação?</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_rep_sim">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>50</y>
-      <width>131</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_otim_dist_ruid">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>90</y>
-      <width>371</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Otimizar para AWR com Distancia ou AWR com Ruido?</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_otim_dist">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>120</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Distância</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_otim_dist_ruid</string>
-    </attribute>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_otim_ruid">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>120</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Ruído</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_otim_dist_ruid</string>
-    </attribute>
-   </widget>
-   <widget class="QLabel" name="label_awr_otim">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>150</y>
-      <width>311</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Considera partícula do AWR para Otimizar? </string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_awr_otim_sim">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>180</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sim</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_awr_otim</string>
-    </attribute>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_awr_otim_nao">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>180</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Não</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_awr_otim</string>
-    </attribute>
-   </widget>
-   <widget class="QLabel" name="label_op_topo">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>220</y>
-      <width>151</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Escolha a topologia:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_op_topo">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>220</y>
-      <width>221</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_nos">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>260</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Número de Nós:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_nos_valor">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>260</y>
-      <width>201</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>IMPLEMENTAR FUNÇÃO</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_cons_osnr">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>300</y>
-      <width>151</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Considerar a OSNR?</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_cons_osnr_sim">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>300</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sim</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_cons_osnr</string>
-    </attribute>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_cons_osnr_nao">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>300</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Não</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_cons_osnr</string>
-    </attribute>
-   </widget>
-   <widget class="QLabel" name="label_banda_slot">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>330</y>
-      <width>381</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a banda de um slot, em GHz (Valores comuns </string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_banda_slot_cont">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>360</y>
-      <width>231</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>são 1.5625, 3.125, 6.25 e 12.5):</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_banda_slot">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>360</y>
-      <width>151</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_slot_enlace">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>400</y>
-      <width>301</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Número de slots por enlace:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_slot_enlace_valor">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>400</y>
-      <width>171</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>IMPLEMENTAR FUNÇÃO</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_op_alg_rote">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>440</y>
-      <width>241</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Esolha o algoritmo de roteamento:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_op_alg_rote">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>440</y>
-      <width>121</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_op_alg_aloc">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>480</y>
-      <width>231</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Escolha o algoritmo de alocação:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_op_alg_aloc">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>480</y>
-      <width>131</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_mu">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>520</y>
-      <width>361</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o mu (Taxa de desativação de conexões):</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_mu">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>540</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_osnr_min">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>580</y>
-      <width>191</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o OSNR mínimo:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_osnr_max">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>620</y>
-      <width>191</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o OSNR máximo:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_osnr_min">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>580</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_osnr_max">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>620</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_pontos_graf">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>660</y>
-      <width>131</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pontos no gráfico:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_pontos_graf">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>660</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="Line" name="line">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>10</y>
-      <width>20</width>
-      <height>671</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_inform_la">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>10</y>
-      <width>281</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sendo La a taxa de chegada de conexões, </string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_la_min">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>40</y>
-      <width>191</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a LaNet Mínima:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_la_max">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>80</y>
-      <width>191</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a LaNet Máxima:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_la_min">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>40</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_la_max">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>80</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_la">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>120</y>
-      <width>131</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a LaNet:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_la">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>120</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dist_min_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>160</y>
-      <width>431</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a distância mínima entre os amplificadores</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dist_min_amp_cont">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>180</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>de linha:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_dist_min_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>180</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dist_max_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>220</y>
-      <width>441</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a distância máxima entre os amplificadores</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dist_max_amp_cont">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>240</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>de linha:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_dist_max_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>240</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_pot_entr">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>280</y>
-      <width>291</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a potência de entrada, em dBm:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_pot_entr">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>300</y>
-      <width>111</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_pot_ref">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>340</y>
-      <width>381</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a potência de referência da fibra, em dBm:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_pot_ref">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>360</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dist_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>400</y>
-      <width>381</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com a distância entre os amplificadores, em Km:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_dist_amp">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>420</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_arq">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>460</y>
-      <width>181</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Selecione a arquitetura:</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_arq_bs">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>490</y>
-      <width>181</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Broadcast and Select</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_arq</string>
-    </attribute>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_arq_ss">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>490</y>
-      <width>181</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Switching and Select</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_arq</string>
-    </attribute>
-   </widget>
-   <widget class="QLabel" name="label_cons_exp_compr">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>520</y>
-      <width>351</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Considerar expansão e compressão do número de</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_cons_exp_compr_cont">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>540</y>
-      <width>211</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string> subportadoras das Conexões?</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_cons_exp_compr_sim">
-    <property name="geometry">
-     <rect>
-      <x>560</x>
-      <y>560</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sim</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_cons_exp_compr</string>
-    </attribute>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_cons_exp_compr_nao">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>560</y>
-      <width>117</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Não</string>
-    </property>
-    <attribute name="buttonGroup">
-     <string notr="true">buttonGroup_cons_exp_compr</string>
-    </attribute>
-   </widget>
-   <widget class="QLabel" name="label_maux_lae">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>630</y>
-      <width>161</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o MAux::laE:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_maux_lae">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>630</x>
-      <y>630</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_maux_muc">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>590</y>
-      <width>171</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o MAux::muC:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_maux_muc">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>590</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_req">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>10</y>
-      <width>391</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Entre com o numero minimo de requisicoes bloqueadas</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_num_req_cont">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>30</y>
-      <width>421</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>que o programa tem de encontrar antes de terminar:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_num_req">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>50</y>
-      <width>113</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="Line" name="line_2">
-    <property name="geometry">
-     <rect>
-      <x>870</x>
-      <y>10</y>
-      <width>20</width>
-      <height>671</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="listWidget">
-    <property name="geometry">
-     <rect>
-      <x>910</x>
-      <y>100</y>
-      <width>361</width>
-      <height>461</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>1010</x>
-      <y>590</y>
-      <width>151</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Começar Simulação</string>
-    </property>
+   <widget class="QStackedWidget" name="stackedWidget_principal">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>-1</y>
+      <width>1141</width>
+      <height>721</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="page">
+     <widget class="QLabel" name="label_abertura">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>300</y>
+        <width>271</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Simulador - Redes Ópticas</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_abertura_cont">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>330</y>
+        <width>161</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Elásticas - UFCG</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>160</y>
+        <width>164</width>
+        <height>341</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="pushButton_nova_sim">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Nova Simulação</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_abrir_sim">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Abrir Simulação</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_exemplos">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Exemplos</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_sobre">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Sobre</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_2">
+     <widget class="QLabel" name="label_op_sim">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>50</y>
+        <width>141</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Escolha a simulação:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_op_sim">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>50</y>
+        <width>201</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_op_topo">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>110</y>
+        <width>141</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Escolha a topologia:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_op_topo">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>110</y>
+        <width>201</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_num_nos">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>170</y>
+        <width>121</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Número de Nós:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_num_nos">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>170</y>
+        <width>113</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_op_osnr_sim_nao">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>230</y>
+        <width>211</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>A OSNR deve ser considerada?</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_op_osnr_sim">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>230</y>
+        <width>117</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Sim</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_op_osnr_sim_nao</string>
+      </attribute>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_op_osnr_nao">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>230</y>
+        <width>117</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Não</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_op_osnr_sim_nao</string>
+      </attribute>
+     </widget>
+     <widget class="QLabel" name="label_valor_banda_slot">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>290</y>
+        <width>381</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Entre com a banda de um slot, em GHz (valores comuns</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_valor_banda_slot_cont">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>310</y>
+        <width>341</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>são 1.5625, 3.125, 6.25 e 12.5):</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_valor_banda_slot">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>310</y>
+        <width>131</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_num_slots_enlace">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>370</y>
+        <width>201</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Número de slots por enlace:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_num_slots_enlace">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>370</y>
+        <width>113</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_op_alg_aloc">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>440</y>
+        <width>251</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Entre com o algoritmo de alocação:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_op_alg_aloc">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>440</y>
+        <width>111</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_mu">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>510</y>
+        <width>351</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Entre com o mu (taxa de desativação de conexões): </string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_mu">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>530</y>
+        <width>113</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_cons_exp_compr">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>590</y>
+        <width>361</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Considerar expansão e compressão do número </string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_cons_exp_compr_cont">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>610</y>
+        <width>271</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>de subportadoras das conexões? </string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_cons_exp_compr_sim">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>630</y>
+        <width>117</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Sim</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_cons_exp_compr</string>
+      </attribute>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_cons_exp_compr">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>630</y>
+        <width>117</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Não</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_cons_exp_compr</string>
+      </attribute>
+     </widget>
+     <widget class="QPushButton" name="pushButton_proximo">
+      <property name="geometry">
+       <rect>
+        <x>670</x>
+        <y>690</y>
+        <width>99</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Próximo</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_anterior">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>690</y>
+        <width>99</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Anterior</string>
+      </property>
+     </widget>
+     <widget class="Line" name="line">
+      <property name="geometry">
+       <rect>
+        <x>473</x>
+        <y>30</y>
+        <width>20</width>
+        <height>611</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+     <widget class="QStackedWidget" name="stackedWidget_parte2">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>30</y>
+        <width>451</width>
+        <height>611</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="page_3"/>
+      <widget class="QWidget" name="page_4"/>
+      <widget class="QWidget" name="page_5"/>
+      <widget class="QWidget" name="page_6"/>
+      <widget class="QWidget" name="page_7"/>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -1039,37 +479,48 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1291</width>
+     <width>1162</width>
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuOp_es">
+   <widget class="QMenu" name="menuArquivo">
     <property name="title">
-     <string>Opções</string>
+     <string>Arquivo</string>
     </property>
     <addaction name="actionNova_Simula_o"/>
-    <addaction name="actionAjuda"/>
+    <addaction name="actionAbrir_Simula_o"/>
+    <addaction name="actionSalvar_Simula_o"/>
+    <addaction name="actionExemplos"/>
     <addaction name="actionSair"/>
    </widget>
-   <addaction name="menuOp_es"/>
+   <widget class="QMenu" name="menuEditar">
+    <property name="title">
+     <string>Editar</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAjuda">
+    <property name="title">
+     <string>Ajuda</string>
+    </property>
+    <addaction name="actionSobre"/>
+   </widget>
+   <addaction name="menuArquivo"/>
+   <addaction name="menuEditar"/>
+   <addaction name="menuAjuda"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNova_Simula_o">
    <property name="text">
     <string>Nova Simulação</string>
    </property>
   </action>
-  <action name="actionAjuda">
+  <action name="actionAbrir_Simula_o">
    <property name="text">
-    <string>Ajuda</string>
+    <string>Abrir Simulação</string>
+   </property>
+  </action>
+  <action name="actionSalvar_Simula_o">
+   <property name="text">
+    <string>Salvar Simulação</string>
    </property>
   </action>
   <action name="actionSair">
@@ -1077,15 +528,22 @@
     <string>Sair</string>
    </property>
   </action>
+  <action name="actionSobre">
+   <property name="text">
+    <string>Sobre</string>
+   </property>
+  </action>
+  <action name="actionExemplos">
+   <property name="text">
+    <string>Exemplos</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_otim_dist_ruid"/>
-  <buttongroup name="buttonGroup_arq"/>
-  <buttongroup name="buttonGroup_awr_otim"/>
+  <buttongroup name="buttonGroup_op_osnr_sim_nao"/>
   <buttongroup name="buttonGroup_cons_exp_compr"/>
-  <buttongroup name="buttonGroup_cons_osnr"/>
  </buttongroups>
 </ui>
